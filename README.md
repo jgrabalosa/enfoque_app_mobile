@@ -123,7 +123,7 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
    huellas o los clientes OAuth, volver a bajar `google-services.json` a
    `android/app/`.
 3. **Google Cloud**: hecho el 15-nov-2026. Un cliente OAuth Android por
-   paquete y huella («Norday Focus - ...» en Google Auth Platform):
+   paquete y huella («Norday Focus - …» en Google Auth Platform):
    depuración, Release (clave de subida) y las tres de Play para
    `com.norday.enfoque`, y depuración para `com.norday.enfoque.prueba`.
    Firebase no crea estos clientes al añadir huellas (es la lección de

@@ -354,10 +354,9 @@ commitea (está en `.gitignore`).
   `android/app/build.gradle.kts`, no del manifest.
 - **`google-services.json` tiene que llevar las dos apps**, en el mismo
   proyecto de Firebase que Habits. No se versiona (`android/.gitignore`). El
-  que hay en la máquina de Quim, bajado el 15-nov-2026, solo lleva
-  `com.norday.enfoque.prueba`, y sin cliente OAuth Android: el login con
-  Google en Focus PRUEBA aún no se ha probado. Al dar de alta
-  `com.norday.enfoque`, volver a bajarlo.
+  que hay en la máquina de Quim es del 15-nov-2026 por la noche y lleva
+  las dos apps de Focus con sus clientes OAuth (README, puntos 2 y 3). Si
+  cambian las huellas o los clientes, volver a bajarlo.
 
 ## Formato del código
 
