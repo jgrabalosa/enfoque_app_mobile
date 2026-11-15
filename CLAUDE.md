@@ -460,12 +460,12 @@ Errores que ya se cometieron una vez. No se vuelven a cometer.
 - **Test en rojo antes del arreglo.** Si el test nuevo pasa contra el código
   sin arreglar, no demuestra nada: parar.
 
-### Método de trabajo (vale para los cuatro repos)
+### Método de trabajo (vale para los cinco repos)
 
-- **La primera línea de un prompt se comprueba, no se recuerda.** Este repo
-  está en `C:\Dev\Norday\enfoque_app_mobile`, junto a `habitos-app`,
-  `habitos_app_mobile` y `norday_flutter_core`; `conocimiento_app_mobile`
-  está en `C:\Dev\Conocimiento\`.
+- **La primera línea de un prompt se comprueba, no se recuerda.** Son cinco
+  repos: cuatro están en `C:\Dev\Norday\` (`habitos-app`,
+  `habitos_app_mobile`, `norday_flutter_core` y este, `enfoque_app_mobile`)
+  y `conocimiento_app_mobile` está en `C:\Dev\Conocimiento\`.
 - **Un solo agente por repo a la vez.** Todo lo que haga otro agente se
   revisa en el remoto antes de mergear.
 - **Las cifras de verificación se cuentan contra el repositorio**, nunca se
