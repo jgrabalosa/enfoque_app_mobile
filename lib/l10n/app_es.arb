@@ -208,15 +208,6 @@
   "@resultadoDescartada": {
     "description": "Título del resultado: terminada antes de 10 minutos"
   },
-  "resultadoMinutos": "{minutos, plural, =1{1 minuto} other{{minutos} minutos}}",
-  "@resultadoMinutos": {
-    "description": "Minutos que suma la sesión",
-    "placeholders": {
-      "minutos": {
-        "type": "int"
-      }
-    }
-  },
   "resultadoDescartadaCuerpo": "Menos de 10 minutos: no cuenta, pero tampoco se pierde.",
   "@resultadoDescartadaCuerpo": {
     "description": "Explicación de la sesión descartada"
@@ -233,30 +224,27 @@
   "@resultadoPerdidaReinicio": {
     "description": "Motivo de pérdida: reinicio del móvil o cambio de hora"
   },
-  "resultadoAporteAceptado": "+{minutos} min a {nombre} ({minutosDia} / {minutosObjetivo})",
+  "resultadoAporteAceptado": "+{duracion} a {nombre} ({progreso})",
   "@resultadoAporteAceptado": {
-    "description": "Minutos llevados al hábito con su progreso de hoy: «+25 min a Leer (30 / 30)»",
+    "description": "Minutos llevados al hábito con su progreso de hoy: «+25 min a Leer (30 / 30)», «+1 h 30 min a Leer (1 h 30 min / 2 h)». Lo compone textoAporte",
     "placeholders": {
-      "minutos": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       },
       "nombre": {
         "type": "String"
       },
-      "minutosDia": {
-        "type": "int"
-      },
-      "minutosObjetivo": {
-        "type": "int"
+      "progreso": {
+        "type": "String"
       }
     }
   },
-  "resultadoAporteSinProgreso": "+{minutos} min a {nombre}",
+  "resultadoAporteSinProgreso": "+{duracion} a {nombre}",
   "@resultadoAporteSinProgreso": {
-    "description": "Minutos llevados al hábito cuando no llega su progreso",
+    "description": "Minutos llevados al hábito cuando no llega su progreso: «+25 min a Leer». Lo compone textoAporte",
     "placeholders": {
-      "minutos": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       },
       "nombre": {
         "type": "String"
@@ -506,6 +494,18 @@
       },
       "objetivo": {
         "type": "String"
+      }
+    }
+  },
+  "progresoCifras": "{hecho} / {objetivo}",
+  "@progresoCifras": {
+    "description": "Lo hecho y el objetivo, los dos de menos de una hora, sin unidad porque ya va delante: el «30 / 30» de «+25 min a Leer (30 / 30)». Lo elige progresoLegible",
+    "placeholders": {
+      "hecho": {
+        "type": "int"
+      },
+      "objetivo": {
+        "type": "int"
       }
     }
   }

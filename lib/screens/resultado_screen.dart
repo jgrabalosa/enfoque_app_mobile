@@ -139,7 +139,7 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
                   const SizedBox(height: AppSpacing.md),
                   if (s.estado.cuenta)
                     Text(
-                      l.resultadoMinutos(s.minutos),
+                      duracionLegible(l, s.minutos),
                       textAlign: TextAlign.center,
                       style: tema.displaySmall?.copyWith(color: t.successText),
                     ),
@@ -241,14 +241,7 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
       EstadoAporte.aceptado => [
         linea(
           LucideIcons.target,
-          aporte.minutosDia != null && aporte.minutosObjetivo != null
-              ? l.resultadoAporteAceptado(
-                  aporte.minutos,
-                  nombre,
-                  aporte.minutosDia!,
-                  aporte.minutosObjetivo!,
-                )
-              : l.resultadoAporteSinProgreso(aporte.minutos, nombre),
+          textoAporte(l, aporte, nombre),
           color: t.successText,
         ),
         if (aporte.monedas > 0)

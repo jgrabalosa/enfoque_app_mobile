@@ -67,18 +67,46 @@ void main() {
   });
 
   test('resultado: «+25 min a Leer (30 / 30)»', () async {
-    expect(
-      (await l('es')).resultadoAporteAceptado(25, 'Leer', 30, 30),
-      '+25 min a Leer (30 / 30)',
+    const a = Aporte(
+      estado: EstadoAporte.aceptado,
+      minutos: 25,
+      minutosDia: 30,
+      minutosObjetivo: 30,
     );
+    expect(textoAporte(await l('es'), a, 'Leer'), '+25 min a Leer (30 / 30)');
+    expect(textoAporte(await l('en'), a, 'Leer'), '+25 min to Leer (30 / 30)');
     expect(
-      (await l('en')).resultadoAporteAceptado(25, 'Leer', 30, 30),
-      '+25 min to Leer (30 / 30)',
-    );
-    expect(
-      (await l('pt')).resultadoAporteAceptado(25, 'Leer', 30, 30),
+      textoAporte(await l('pt'), a, 'Leer'),
       '+25 min para Leer (30 / 30)',
     );
+  });
+
+  test('resultado desde una hora: en horas y minutos', () async {
+    const largo = Aporte(
+      estado: EstadoAporte.aceptado,
+      minutos: 90,
+      minutosDia: 90,
+      minutosObjetivo: 120,
+    );
+    const borde = Aporte(
+      estado: EstadoAporte.aceptado,
+      minutos: 59,
+      minutosDia: 59,
+      minutosObjetivo: 60,
+    );
+    const sinProgreso = Aporte(estado: EstadoAporte.aceptado, minutos: 60);
+    final es = await l('es');
+    expect(
+      textoAporte(es, largo, 'Leer'),
+      '+1 h 30 min a Leer (1 h 30 min / 2 h)',
+    );
+    expect(textoAporte(es, borde, 'Leer'), '+59 min a Leer (59 min / 1 h)');
+    expect(textoAporte(es, sinProgreso, 'Leer'), '+1 h a Leer');
+    expect(
+      textoAporte(await l('en'), largo, 'Leer'),
+      '+1 h 30 min to Leer (1 h 30 min / 2 h)',
+    );
+    expect(textoAporte(await l('pt'), sinProgreso, 'Leer'), '+1 h para Leer');
   });
 
   test('el nombre de la app es el mismo en los tres idiomas', () async {
@@ -93,7 +121,6 @@ void main() {
     expect(es.inicioRachaDias(3), '3 días');
     expect(es.resultadoMonedas(1), '+1 moneda');
     expect(es.resultadoMonedas(10), '+10 monedas');
-    expect(es.resultadoMinutos(1), '1 minuto');
   });
 
   test('los textos compuestos de Estadísticas salen del ARB', () async {

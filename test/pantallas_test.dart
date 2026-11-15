@@ -318,15 +318,13 @@ void main() {
       WidgetTester tester, {
       ResultadoEnvio? envio,
       DestinoDisponible? destino = destinoLeer,
+      Duration duracion = const Duration(minutes: 25),
       Duration hecho = const Duration(minutes: 25),
     }) async {
       final m = Montaje(tester);
       if (envio != null) m.api.envios.add(envio);
       await m.controlador.iniciar();
-      await m.controlador.empezar(
-        duracion: const Duration(minutes: 25),
-        destino: destino,
-      );
+      await m.controlador.empezar(duracion: duracion, destino: destino);
       m.reloj.avanzar(hecho);
       await m.motor.terminar();
       await asentar(tester);
@@ -358,7 +356,7 @@ void main() {
         ),
       );
       expect(find.text(l.resultadoCompletada), findsOneWidget);
-      expect(find.text('25 minutos'), findsOneWidget);
+      expect(find.text('25 min'), findsOneWidget);
       expect(find.text('+25 min a Leer (30 / 30)'), findsOneWidget);
       expect(find.text('+10 monedas'), findsOneWidget);
       expect(find.text(l.resultadoDiaHecho), findsOneWidget);
@@ -369,6 +367,33 @@ void main() {
       await tester.tap(find.text(l.resultadoVolver));
       await asentar(tester);
       expect(m.controlador.resultado.value, isNull);
+    });
+
+    testWidgets('una hora o más: «+1 h 30 min a Leer (1 h 30 min / 2 h)»', (
+      tester,
+    ) async {
+      await acabar(
+        tester,
+        duracion: const Duration(minutes: 120),
+        hecho: const Duration(minutes: 90),
+        envio: const EnvioAceptado(
+          RespuestaSesion(
+            aporte: Aporte(
+              estado: EstadoAporte.aceptado,
+              minutos: 90,
+              minutosDia: 90,
+              minutosObjetivo: 120,
+            ),
+          ),
+          nueva: true,
+        ),
+      );
+      expect(find.text(l.resultadoTerminada), findsOneWidget);
+      expect(find.text('1 h 30 min'), findsOneWidget);
+      expect(
+        find.text('+1 h 30 min a Leer (1 h 30 min / 2 h)'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('rechazado: el motivo del backend', (tester) async {

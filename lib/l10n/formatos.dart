@@ -19,15 +19,25 @@ String nombreDestino(AppLocalizations l, DestinoDisponible d) =>
     d.nombre.trim().isEmpty ? l.filaSesionHabito : d.nombre;
 
 /// Lo hecho de un objetivo. Si los dos son de menos de una hora, la unidad
-/// va una vez al final, como siempre: «20 / 30 min». Si alguno llega a la
-/// hora, cada cifra con [duracionLegible]: «45 min / 1 h 30 min».
-String progresoLegible(AppLocalizations l, int hecho, int objetivo) =>
-    hecho < 60 && objetivo < 60
-    ? l.progresoMinutos(hecho < 0 ? 0 : hecho, objetivo < 0 ? 0 : objetivo)
-    : l.progresoDuraciones(
-        duracionLegible(l, hecho),
-        duracionLegible(l, objetivo),
-      );
+/// va una vez al final, como siempre: «20 / 30 min» (o sin ella si
+/// [conUnidad] es false, porque ya va delante: «30 / 30»). Si alguno llega a
+/// la hora, cada cifra con [duracionLegible]: «45 min / 1 h 30 min».
+String progresoLegible(
+  AppLocalizations l,
+  int hecho,
+  int objetivo, {
+  bool conUnidad = true,
+}) {
+  if (hecho < 60 && objetivo < 60) {
+    final h = hecho < 0 ? 0 : hecho;
+    final o = objetivo < 0 ? 0 : objetivo;
+    return conUnidad ? l.progresoMinutos(h, o) : l.progresoCifras(h, o);
+  }
+  return l.progresoDuraciones(
+    duracionLegible(l, hecho),
+    duracionLegible(l, objetivo),
+  );
+}
 
 /// Un destino con su progreso de hoy: «Leer · 20 / 30 min»,
 /// «Leer · 1 h / 1 h 30 min».
@@ -36,3 +46,20 @@ String textoDestino(AppLocalizations l, DestinoDisponible d) =>
       nombreDestino(l, d),
       progresoLegible(l, d.minutosDia, d.minutosObjetivo),
     );
+
+/// Lo que la sesión llevó al hábito: «+25 min a Leer (30 / 30)»,
+/// «+1 h 30 min a Leer (1 h 30 min / 2 h)», o «+25 min a Leer» si no llega
+/// su progreso.
+String textoAporte(AppLocalizations l, Aporte a, String nombre) {
+  final duracion = duracionLegible(l, a.minutos);
+  final dia = a.minutosDia;
+  final objetivo = a.minutosObjetivo;
+  if (dia == null || objetivo == null) {
+    return l.resultadoAporteSinProgreso(duracion, nombre);
+  }
+  return l.resultadoAporteAceptado(
+    duracion,
+    nombre,
+    progresoLegible(l, dia, objetivo, conUnidad: false),
+  );
+}

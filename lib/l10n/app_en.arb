@@ -43,13 +43,12 @@
   "resultadoTerminada": "Session finished",
   "resultadoPerdida": "Session lost",
   "resultadoDescartada": "Session discarded",
-  "resultadoMinutos": "{minutos, plural, =1{1 minute} other{{minutos} minutes}}",
   "resultadoDescartadaCuerpo": "Less than 10 minutes: it doesn't count, but it isn't lost either.",
   "resultadoPerdidaRendicion": "You gave up. It adds no minutes.",
   "resultadoPerdidaSalida": "You left the app and didn't come back in time.",
   "resultadoPerdidaReinicio": "Your phone restarted during the session.",
-  "resultadoAporteAceptado": "+{minutos} min to {nombre} ({minutosDia} / {minutosObjetivo})",
-  "resultadoAporteSinProgreso": "+{minutos} min to {nombre}",
+  "resultadoAporteAceptado": "+{duracion} to {nombre} ({progreso})",
+  "resultadoAporteSinProgreso": "+{duracion} to {nombre}",
   "resultadoMonedas": "{monedas, plural, =1{+1 coin} other{+{monedas} coins}}",
   "resultadoDiaHecho": "Today's goal reached",
   "resultadoAporteRepetido": "These minutes were already in {nombre}.",
@@ -87,5 +86,6 @@
   "durHoras": "{h} h",
   "durHorasMinutos": "{h} h {m} min",
   "progresoMinutos": "{hecho} / {objetivo} min",
-  "progresoDuraciones": "{hecho} / {objetivo}"
+  "progresoDuraciones": "{hecho} / {objetivo}",
+  "progresoCifras": "{hecho} / {objetivo}"
 }

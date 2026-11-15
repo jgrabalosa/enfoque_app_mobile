@@ -43,13 +43,12 @@
   "resultadoTerminada": "Sessão terminada",
   "resultadoPerdida": "Sessão perdida",
   "resultadoDescartada": "Sessão descartada",
-  "resultadoMinutos": "{minutos, plural, =1{1 minuto} other{{minutos} minutos}}",
   "resultadoDescartadaCuerpo": "Menos de 10 minutos: não conta, mas também não se perde.",
   "resultadoPerdidaRendicion": "Desististe. Não soma minutos.",
   "resultadoPerdidaSalida": "Saíste da app e não voltaste a tempo.",
   "resultadoPerdidaReinicio": "O telemóvel reiniciou-se durante a sessão.",
-  "resultadoAporteAceptado": "+{minutos} min para {nombre} ({minutosDia} / {minutosObjetivo})",
-  "resultadoAporteSinProgreso": "+{minutos} min para {nombre}",
+  "resultadoAporteAceptado": "+{duracion} para {nombre} ({progreso})",
+  "resultadoAporteSinProgreso": "+{duracion} para {nombre}",
   "resultadoMonedas": "{monedas, plural, =1{+1 moeda} other{+{monedas} moedas}}",
   "resultadoDiaHecho": "Objetivo de hoje cumprido",
   "resultadoAporteRepetido": "Estes minutos já estavam em {nombre}.",
@@ -87,5 +86,6 @@
   "durHoras": "{h} h",
   "durHorasMinutos": "{h} h {m} min",
   "progresoMinutos": "{hecho} / {objetivo} min",
-  "progresoDuraciones": "{hecho} / {objetivo}"
+  "progresoDuraciones": "{hecho} / {objetivo}",
+  "progresoCifras": "{hecho} / {objetivo}"
 }
