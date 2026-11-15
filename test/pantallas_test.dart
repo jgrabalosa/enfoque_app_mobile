@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:enfoque_app_mobile/l10n/app_localizations.dart';
 import 'package:enfoque_app_mobile/models/enfoque.dart';
 import 'package:enfoque_app_mobile/models/enlace_entrada.dart';
@@ -106,6 +108,24 @@ void main() {
       await tester.tap(find.text(l.inicioEmpezar));
       await asentar(tester);
       expect(m.permisosPedidos, [7]);
+      await cerrarSesion(tester, m);
+    });
+
+    testWidgets('el primer Empezar no espera al permiso ni al registro del '
+        'aviso', (tester) async {
+      tester.view.physicalSize = const Size(800, 2000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final m = Montaje(tester);
+      m.puertaPermiso = Completer<bool>();
+      await m.controlador.iniciar();
+      await tester.pumpWidget(inicio(m));
+      await asentar(tester);
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      expect(m.permisosPedidos, [7]);
+      expect(m.motor.sesion.value!.estado, EstadoSesion.corriendo);
+      m.puertaPermiso!.complete(false);
       await cerrarSesion(tester, m);
     });
 

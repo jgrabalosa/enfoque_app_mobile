@@ -134,15 +134,20 @@ class _InicioScreenState extends State<InicioScreen> {
   }
 
   /// La primera vez que se pulsa Empezar, el permiso de notificaciones (para
-  /// los avisos de gracia y de fin). Una sola vez: si se deniega, las reglas
-  /// no cambian.
+  /// los avisos de gracia y de fin). Una sola vez. No se espera ni al diálogo
+  /// ni al registro del aviso en el backend: si se deniega, las reglas no
+  /// cambian, y la sesión no puede quedarse esperando a la red.
   Future<void> _pedirPermisoSiEsLaPrimera() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       if (prefs.getBool(_s.clavePermisoPedido) ?? false) return;
       await prefs.setBool(_s.clavePermisoPedido, true);
       if (widget.usuarioId > 0) {
-        await _s.pedirPermisoAvisos(widget.usuarioId);
+        unawaited(
+          _s
+              .pedirPermisoAvisos(widget.usuarioId)
+              .then<void>((_) {}, onError: (Object _) {}),
+        );
       }
     } catch (_) {
       // Sin permiso la sesión es la misma.

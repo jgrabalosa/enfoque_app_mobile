@@ -98,8 +98,9 @@ el backend saca el usuario del JWT.
    (`{"destino": {tipo, id, nombre, minutosDia, minutosObjetivo},
    "usuarioId": N}`).
 6. **`NotificacionesService`** — el permiso `POST_NOTIFICATIONS` se pide al
-   pulsar Empezar la primera vez (`pedirYRegistrar`; se apunta en
-   `enfoque_permiso_avisos_pedido` y no se vuelve a pedir). El token se
+   pulsar Empezar la primera vez (`pedirYRegistrar`, sin esperarlo: la
+   sesión empieza en el acto; se apunta en `enfoque_permiso_avisos_pedido` y
+   no se vuelve a pedir). El token se
    registra al arrancar con sesión y al volver a primer plano, como en Habits.
 7. **`SplashGenerico`** — sin `rutaImagen`: pinta a Nori (no hay símbolo
    propio todavía).

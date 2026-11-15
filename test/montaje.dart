@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:enfoque_app_mobile/l10n/app_localizations.dart';
 import 'package:enfoque_app_mobile/services/cola_envios.dart';
 import 'package:enfoque_app_mobile/services/controlador_enfoque.dart';
@@ -41,7 +43,7 @@ class Montaje {
       usuarioActual: () async => usuarioId,
       pedirPermisoAvisos: (id) async {
         permisosPedidos.add(id);
-        return true;
+        return await puertaPermiso?.future ?? true;
       },
       celebrar: (codigos) async => celebrados.addAll(codigos),
     );
@@ -57,6 +59,9 @@ class Montaje {
   late final ControladorEnfoque controlador;
   late final ServiciosEnfoque servicios;
   final List<int> permisosPedidos = [];
+
+  /// Si está puesta, el permiso no contesta hasta que se complete.
+  Completer<bool>? puertaPermiso;
   final List<String> celebrados = [];
 
   /// [hijo] dentro de un MaterialApp con los textos y el tema, y los
