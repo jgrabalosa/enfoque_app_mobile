@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 import '../l10n/app_localizations.dart';
+import '../l10n/formatos.dart';
 import '../models/enfoque.dart';
 import '../services/cola_envios.dart';
 import '../services/servicios_enfoque.dart';
@@ -305,7 +306,7 @@ class _Total extends StatelessWidget {
     final tema = Theme.of(context).textTheme;
     return Semantics(
       container: true,
-      label: l.estTotalEtiqueta(etiqueta, l.estMinutos(minutos)),
+      label: l.estTotalEtiqueta(etiqueta, duracionLegible(l, minutos)),
       excludeSemantics: true,
       child: SuperficieIdentidad(
         relleno: const EdgeInsets.all(AppSpacing.ms),
@@ -317,7 +318,7 @@ class _Total extends StatelessWidget {
               style: tema.labelMedium?.copyWith(color: t.textMuted),
             ),
             Text(
-              l.estMinutos(minutos),
+              duracionLegible(l, minutos),
               style: tema.titleLarge?.copyWith(color: t.text),
             ),
           ],
@@ -450,7 +451,7 @@ class FilaSesion extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l.filaSesionResumen(minutos, objetivo, nombre),
+                    textoFilaSesion(l, minutos, objetivo, nombre),
                     style: tema.bodyLarge?.copyWith(color: t.text),
                   ),
                   Text(

@@ -61,8 +61,7 @@
   "resultadoVolver": "Voltar ao início",
   "estSemana": "Esta semana",
   "estMes": "Este mês",
-  "estMinutos": "{minutos} min",
-  "estBarraEtiqueta": "{dia}: {minutos} minutos",
+  "estBarraEtiqueta": "{dia}: {duracion}",
   "estHistorial": "Histórico",
   "estSinSesiones": "Ainda não há sessões.",
   "estCargarMas": "Carregar mais",
@@ -87,5 +86,6 @@
   "durHorasMinutos": "{h} h {m} min",
   "progresoMinutos": "{hecho} / {objetivo} min",
   "progresoDuraciones": "{hecho} / {objetivo}",
-  "progresoCifras": "{hecho} / {objetivo}"
+  "progresoCifras": "{hecho} / {objetivo}",
+  "filaSesionResumenDuraciones": "{hecho} de {objetivo} · {destino}"
 }

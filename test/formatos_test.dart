@@ -109,6 +109,25 @@ void main() {
     expect(textoAporte(await l('pt'), sinProgreso, 'Leer'), '+1 h para Leer');
   });
 
+  test(
+    'fila del historial: «25 de 25 min» y, desde una hora, en horas',
+    () async {
+      final es = await l('es');
+      expect(textoFilaSesion(es, 25, 25, 'Leer'), '25 de 25 min · Leer');
+      expect(textoFilaSesion(es, 59, 59, 'Leer'), '59 de 59 min · Leer');
+      expect(textoFilaSesion(es, 45, 60, 'Leer'), '45 min de 1 h · Leer');
+      expect(textoFilaSesion(es, 61, 120, 'Leer'), '1 h 1 min de 2 h · Leer');
+      expect(
+        textoFilaSesion(await l('en'), 90, 120, 'Leer'),
+        '1 h 30 min of 2 h · Leer',
+      );
+      expect(
+        textoFilaSesion(await l('pt'), 90, 120, 'Leer'),
+        '1 h 30 min de 2 h · Leer',
+      );
+    },
+  );
+
   test('el nombre de la app es el mismo en los tres idiomas', () async {
     for (final idioma in ['es', 'en', 'pt']) {
       expect((await l(idioma)).appNombre, 'Norday Focus');
@@ -127,7 +146,7 @@ void main() {
     for (final idioma in ['es', 'en', 'pt']) {
       final t = await l(idioma);
       expect(
-        t.estTotalEtiqueta(t.estSemana, '40 min'),
+        t.estTotalEtiqueta(t.estSemana, duracionLegible(t, 40)),
         '${t.estSemana}: 40 min',
       );
       expect(

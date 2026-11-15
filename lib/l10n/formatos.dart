@@ -63,3 +63,23 @@ String textoAporte(AppLocalizations l, Aporte a, String nombre) {
     progresoLegible(l, dia, objetivo, conUnidad: false),
   );
 }
+
+/// La primera línea de una fila del historial: «25 de 25 min · Leer»
+/// mientras las dos cifras sean de menos de una hora; si alguna llega,
+/// «1 h 30 min de 2 h · Leer».
+String textoFilaSesion(
+  AppLocalizations l,
+  int minutos,
+  int objetivo,
+  String destino,
+) => minutos < 60 && objetivo < 60
+    ? l.filaSesionResumen(
+        minutos < 0 ? 0 : minutos,
+        objetivo < 0 ? 0 : objetivo,
+        destino,
+      )
+    : l.filaSesionResumenDuraciones(
+        duracionLegible(l, minutos),
+        duracionLegible(l, objetivo),
+        destino,
+      );

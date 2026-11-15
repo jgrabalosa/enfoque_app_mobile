@@ -319,24 +319,15 @@
   "@estMes": {
     "description": "Total del mes"
   },
-  "estMinutos": "{minutos} min",
-  "@estMinutos": {
-    "description": "Total de minutos",
-    "placeholders": {
-      "minutos": {
-        "type": "int"
-      }
-    }
-  },
-  "estBarraEtiqueta": "{dia}: {minutos} minutos",
+  "estBarraEtiqueta": "{dia}: {duracion}",
   "@estBarraEtiqueta": {
-    "description": "Lo que oye el lector en cada barra de la semana",
+    "description": "Lo que oye el lector en cada barra de la semana: «lunes: 25 min», «lunes: 1 h 30 min». {duracion} sale de duracionLegible",
     "placeholders": {
       "dia": {
         "type": "String"
       },
-      "minutos": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       }
     }
   },
@@ -506,6 +497,21 @@
       },
       "objetivo": {
         "type": "int"
+      }
+    }
+  },
+  "filaSesionResumenDuraciones": "{hecho} de {objetivo} · {destino}",
+  "@filaSesionResumenDuraciones": {
+    "description": "Fila del historial cuando lo hecho o el objetivo llegan a una hora, ya formateados: «1 h 30 min de 2 h · Leer». Lo elige textoFilaSesion; con los dos de menos de una hora va filaSesionResumen",
+    "placeholders": {
+      "hecho": {
+        "type": "String"
+      },
+      "objetivo": {
+        "type": "String"
+      },
+      "destino": {
+        "type": "String"
       }
     }
   }

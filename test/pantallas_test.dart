@@ -479,14 +479,73 @@ void main() {
       await asentar(tester);
 
       expect(find.byType(BarrasSemana), findsOneWidget);
-      expect(find.bySemanticsLabel('lunes: 25 minutos'), findsOneWidget);
-      expect(find.bySemanticsLabel('miércoles: 15 minutos'), findsOneWidget);
+      expect(find.bySemanticsLabel('lunes: 25 min'), findsOneWidget);
+      expect(find.bySemanticsLabel('miércoles: 15 min'), findsOneWidget);
       expect(find.bySemanticsLabel('${l.estSemana}: 40 min'), findsOneWidget);
-      expect(find.bySemanticsLabel('${l.estMes}: 80 min'), findsOneWidget);
+      expect(find.bySemanticsLabel('${l.estMes}: 1 h 20 min'), findsOneWidget);
       expect(find.textContaining(l.estadoPendiente), findsOneWidget);
       expect(find.text('15 de 25 min · Leer'), findsOneWidget);
       expect(find.textContaining(l.estadoCompletada), findsOneWidget);
       expect(find.text('25 de 25 min · Leer'), findsOneWidget);
+    });
+
+    testWidgets('desde una hora, en horas: barras, totales e historial', (
+      tester,
+    ) async {
+      final m = Montaje(tester);
+      // Miércoles 18-nov-2026.
+      final hoy = DateTime(2026, 11, 18);
+      m.api.resumenDado = ResumenEnfoque(
+        dias: [
+          DiaResumen(dia: DateTime(2026, 11, 16), minutos: 60, sesiones: 1),
+          DiaResumen(dia: DateTime(2026, 11, 17), minutos: 59, sesiones: 2),
+          DiaResumen(dia: DateTime(2026, 11, 18), minutos: 90, sesiones: 1),
+        ],
+      );
+      m.api.historialDado = PaginaHistorial(
+        sesiones: [
+          SesionServidor(
+            clave: 's1',
+            inicioUtc: DateTime.utc(2026, 11, 18, 8),
+            duracionSeg: 90 * 60 + 30,
+            duracionObjetivoMin: 120,
+            estado: EstadoEnvio.terminada,
+            destinoTipo: 'habito',
+            destinoId: 16,
+          ),
+        ],
+      );
+      m.api.listaDestinos = [destinoLeer];
+
+      await tester.pumpWidget(
+        m.app(Scaffold(body: EstadisticasScreen(hoy: () => hoy))),
+      );
+      await asentar(tester);
+
+      expect(find.bySemanticsLabel('lunes: 1 h'), findsOneWidget);
+      expect(find.bySemanticsLabel('martes: 59 min'), findsOneWidget);
+      expect(find.bySemanticsLabel('miércoles: 1 h 30 min'), findsOneWidget);
+      // Las cifras de encima de las barras.
+      expect(
+        find.descendant(
+          of: find.byType(BarrasSemana),
+          matching: find.text('1 h 30 min'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(BarrasSemana),
+          matching: find.text('59 min'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.bySemanticsLabel('${l.estSemana}: 3 h 29 min'),
+        findsOneWidget,
+      );
+      expect(find.text('3 h 29 min'), findsNWidgets(2));
+      expect(find.text('1 h 30 min de 2 h · Leer'), findsOneWidget);
     });
   });
 

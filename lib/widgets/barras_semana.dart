@@ -5,10 +5,12 @@ import 'package:intl/intl.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 import '../l10n/app_localizations.dart';
+import '../l10n/formatos.dart';
 
-/// Las barras de minutos de los siete días de la semana. Cada barra se oye
-/// entera («lunes: 25 minutos»); la altura es relativa al día con más
-/// minutos. Los días que aún no han llegado van apagados.
+/// Las barras de minutos de los siete días de la semana. Encima de cada una,
+/// su duración («25 min», «1 h 30 min»), encogida si no cabe en la columna;
+/// cada barra se oye entera («lunes: 25 min»). La altura es relativa al día
+/// con más minutos. Los días que aún no han llegado van apagados.
 class BarrasSemana extends StatelessWidget {
   const BarrasSemana({
     super.key,
@@ -42,15 +44,19 @@ class BarrasSemana extends StatelessWidget {
                 container: true,
                 label: l.estBarraEtiqueta(
                   DateFormat.EEEE(locale).format(d.dia),
-                  d.minutos,
+                  duracionLegible(l, d.minutos),
                 ),
                 excludeSemantics: true,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      d.minutos > 0 ? '${d.minutos}' : '',
-                      style: tema.labelSmall?.copyWith(color: t.textMuted),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        d.minutos > 0 ? duracionLegible(l, d.minutos) : '',
+                        maxLines: 1,
+                        style: tema.labelSmall?.copyWith(color: t.textMuted),
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Container(
