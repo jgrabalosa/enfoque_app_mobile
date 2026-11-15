@@ -1,6 +1,19 @@
 import '../models/enfoque.dart';
 import 'app_localizations.dart';
 
+/// [minutos] en horas y minutos: «45 min», «1 h», «1 h 30 min». La única
+/// regla de duración de la app: menos de 60, en minutos; desde 60, en horas
+/// y los minutos que sobren. Se guarda y se envía siempre en minutos; los
+/// chips, el selector de duración y la cuenta atrás no pasan por aquí.
+String duracionLegible(AppLocalizations l, int minutos) {
+  final total = minutos < 0 ? 0 : minutos;
+  final horas = total ~/ 60;
+  final resto = total % 60;
+  if (horas == 0) return l.durMinutos(resto);
+  if (resto == 0) return l.durHoras(horas);
+  return l.durHorasMinutos(horas, resto);
+}
+
 /// El nombre de un destino, o «Hábito» si el backend no mandó ninguno.
 String nombreDestino(AppLocalizations l, DestinoDisponible d) =>
     d.nombre.trim().isEmpty ? l.filaSesionHabito : d.nombre;

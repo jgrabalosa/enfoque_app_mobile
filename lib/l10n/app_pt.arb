@@ -82,5 +82,8 @@
   "canalFinDescripcion": "Avisa-te quando a sessão termina com o ecrã desligado.",
   "estNoEnviadaAntigua": "Ficou mais de 7 dias por enviar: o servidor já não a aceita.",
   "estTotalEtiqueta": "{etiqueta}: {total}",
-  "filaSesionCuandoEstado": "{cuando} · {estado}"
+  "filaSesionCuandoEstado": "{cuando} · {estado}",
+  "durMinutos": "{m} min",
+  "durHoras": "{h} h",
+  "durHorasMinutos": "{h} h {m} min"
 }

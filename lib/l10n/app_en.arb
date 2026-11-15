@@ -82,5 +82,8 @@
   "canalFinDescripcion": "Tells you when the session ends with the screen off.",
   "estNoEnviadaAntigua": "It went unsent for more than 7 days: the server no longer accepts it.",
   "estTotalEtiqueta": "{etiqueta}: {total}",
-  "filaSesionCuandoEstado": "{cuando} · {estado}"
+  "filaSesionCuandoEstado": "{cuando} · {estado}",
+  "durMinutos": "{m} min",
+  "durHoras": "{h} h",
+  "durHorasMinutos": "{h} h {m} min"
 }

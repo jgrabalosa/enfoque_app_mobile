@@ -12,6 +12,29 @@ void main() {
   Future<AppLocalizations> l(String idioma) =>
       AppLocalizations.delegate.load(Locale(idioma));
 
+  test('duraciones: menos de 60 en min; desde 60, en h y min', () async {
+    const esperado = {
+      0: '0 min',
+      1: '1 min',
+      59: '59 min',
+      60: '1 h',
+      61: '1 h 1 min',
+      90: '1 h 30 min',
+      120: '2 h',
+      125: '2 h 5 min',
+    };
+    for (final idioma in ['es', 'en', 'pt']) {
+      final t = await l(idioma);
+      esperado.forEach((minutos, texto) {
+        expect(duracionLegible(t, minutos), texto, reason: '$idioma, $minutos');
+      });
+    }
+  });
+
+  test('una duración negativa se enseña como 0 min', () async {
+    expect(duracionLegible(await l('es'), -5), '0 min');
+  });
+
   test('destino con su progreso: «Leer · 20 / 30 min»', () async {
     expect(textoDestino(await l('es'), destinoLeer), 'Leer · 20 / 30 min');
     expect(textoDestino(await l('en'), destinoLeer), 'Leer · 20 / 30 min');

@@ -457,5 +457,35 @@
         "type": "String"
       }
     }
+  },
+  "durMinutos": "{m} min",
+  "@durMinutos": {
+    "description": "Una duración de menos de una hora: «45 min». La compone duracionLegible",
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "durHoras": "{h} h",
+  "@durHoras": {
+    "description": "Una duración de horas justas: «2 h». La compone duracionLegible",
+    "placeholders": {
+      "h": {
+        "type": "int"
+      }
+    }
+  },
+  "durHorasMinutos": "{h} h {m} min",
+  "@durHorasMinutos": {
+    "description": "Una duración de una hora o más con minutos sueltos: «1 h 30 min». La compone duracionLegible",
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
   }
 }
