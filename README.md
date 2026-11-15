@@ -1,0 +1,131 @@
+# enfoque_app_mobile — Norday Focus
+
+App Android de **Norday Focus**, el temporizador de concentración del
+ecosistema **Norday**. Versión en desarrollo: 1.0.0 (1). Aún no está en
+Google Play (`com.norday.enfoque`).
+
+## Qué hace
+
+- **Sesiones de concentración con bloqueo suave**: de 10 a 120 minutos, de 5
+  en 5 (25 por defecto), sin pausas. Si sales a otra app con la pantalla
+  encendida, tienes 10 segundos para volver (con aviso, si hay permiso); si
+  no vuelves, la sesión se pierde. Apagar o bloquear la pantalla no cuenta
+  como salir.
+- **Terminar antes** cuenta con los minutos hechos si son 10 o más; si no, se
+  descarta sin castigo. **Rendirse** la pierde.
+- **Minutos a un hábito**: una sesión puede ir a un hábito de minutos de
+  Norday Habits (cuenta compartida). Los minutos se suman al hábito y es el
+  hábito quien paga, con sus reglas. Sin hábito, la sesión cuenta para las
+  estadísticas, sin premio.
+- **Inicio**: minutos y sesiones de hoy, racha de enfoque, duración y destino
+  («Leer · 20 / 30 min»).
+- **Resultado** de cada sesión: «+25 min a Leer (30 / 30)», las monedas del
+  hábito o el motivo si el hábito no los aceptó.
+- **Estadísticas**: minutos por día de la semana, totales de la semana y del
+  mes, e historial (incluidas las sesiones pendientes de enviar).
+- **Sin conexión**: las sesiones acabadas se guardan en el móvil y se envían
+  en cuanto hay red.
+- Comparte con Norday Habits la cuenta, las monedas, las tres identidades
+  visuales y a Nori. Menú con Nori, tienda, logros, colección y perfil.
+- En **español, inglés y portugués**.
+
+Pestañas: Inicio y Estadísticas, más el menú.
+
+## Stack
+
+Flutter 3.44.4 (Dart 3.12) · Android · Firebase (Crashlytics y
+notificaciones) · `flutter_local_notifications` 23 · Lucide Icons. El backend
+es [`habitos-app`](https://github.com/jgrabalosa/habitos-app) (módulo
+`enfoque`, `/api/enfoque`).
+
+Todo lo genérico (sesión, motor de la sesión con bloqueo suave, tienda,
+mascota, logros, identidades, perfil) vive en el paquete
+[`norday_flutter_core`](https://github.com/jgrabalosa/norday_flutter_core),
+que esta app consume por tag. Aquí sólo vive lo que sabe de enfoque.
+
+## Compilar
+
+Hace falta, fuera de Git:
+
+- `android/app/google-services.json` (Firebase), con las dos apps de Focus
+  dadas de alta en el **mismo proyecto que Norday Habits**
+  (`habitos-app-5a054`): `com.norday.enfoque` y `com.norday.enfoque.prueba`.
+  Tiene que ser ese proyecto: el login con Google del core usa el cliente
+  web de ese proyecto, y los push los manda ese mismo backend.
+- `android/key.properties` y el keystore, sólo para builds de release.
+
+Hay dos variantes (flavors), y **siempre se indica una** con `--flavor`:
+
+| Flavor | Paquete | Nombre | Backend |
+|---|---|---|---|
+| `produccion` | `com.norday.enfoque` | Norday Focus | Producción (por defecto) |
+| `prueba` | `com.norday.enfoque.prueba` | Norday Focus PRUEBA | Staging, con `--dart-define` |
+
+Al arrancar, la app comprueba que el flavor y la URL del backend van juntos
+(`lib/entorno.dart`). Si no cuadran, se para en «Entorno incorrecto» sin hacer
+ninguna petición.
+
+App de prueba contra staging. Se instala junto a la de Play, sin sustituirla:
+
+```powershell
+flutter pub get
+flutter run --flavor prueba --dart-define=NORDAY_API_URL=https://staging-api.norday.app/api
+```
+
+Para dejarla instalada y usarla sin cable:
+
+```powershell
+flutter build apk --debug --flavor prueba --dart-define=NORDAY_API_URL=https://staging-api.norday.app/api
+adb install -r build\app\outputs\flutter-apk\app-prueba-debug.apk
+```
+
+Probar el enlace de entrada (con un hábito de minutos tuyo, id 16):
+
+```powershell
+adb shell am start -a android.intent.action.VIEW -d "norday-enfoque://sesion?destino=habito&id=16" com.norday.enfoque.prueba
+```
+
+**Nunca se instala `--flavor produccion` en un móvil que tenga la app de
+Play** (cuando exista): mismo paquete, otra firma.
+
+Los `app_localizations*.dart` se generan al compilar y no se versionan.
+
+### Requisitos de Android que no son los de Norday Habits
+
+`flutter_local_notifications` 23 pide, y están puestos en `android/`:
+
+- `compileSdk = 37` (Flutter 3.44.4 trae 36);
+- Android Gradle Plugin **9.1.1** (Habits usa 9.0.1);
+- desugaring (`isCoreLibraryDesugaringEnabled` y
+  `desugar_jdk_libs:2.1.4`).
+
+**Nada del Gradle ni del Kotlin se ha compilado aún**: se escribió en una
+máquina sin SDK de Android. El primer `flutter build apk` lo dirá.
+
+## Lo que tiene que hacer Quim antes de publicar
+
+1. **Firebase**: dar de alta `com.norday.enfoque` y `com.norday.enfoque.prueba`
+   en `habitos-app-5a054`, con la huella SHA-1 de depuración de cada máquina
+   y la de la clave de subida. Bajar `google-services.json` y dejarlo en
+   `android/app/`.
+2. **Google Cloud**: un cliente OAuth Android por paquete y huella (Firebase
+   sola no basta para Google Sign-In; es la lección de Habits).
+3. **Tag del core**: poner `v0.55.0` en `norday_flutter_core` y seguir los
+   pasos de «Pendiente con el core 0.55.0» de `CLAUDE.md` (quitar el
+   override, `flutter pub upgrade norday_flutter_core`, comprobar el
+   `resolved-ref` y commitear el `pubspec.lock`).
+4. **Icono, splash y gráficos de Play**: Norday Focus no tiene aún ni icono
+   ni símbolo. Hoy lleva el icono por defecto de Flutter y el splash pinta a
+   Nori sobre Azul Noche. Cuando los haya, en `store/` y
+   `assets/branding/`, con `flutter_launcher_icons` y
+   `flutter_native_splash` como en Habits. El icono pequeño de los avisos
+   también es provisional (el del launcher).
+5. **Ficha de Play** de `com.norday.enfoque`, aunque sea en prueba cerrada:
+   Norday Habits no puede publicar su «Empezar sesión» sin ella.
+6. **Backend**: desplegar `wip-enfoque` (módulo `enfoque`, `AppNorday`
+   con `enfoque`, `version_app` V25) antes de que nadie use la app.
+
+## Documentación
+
+- [`CLAUDE.md`](CLAUDE.md) — arquitectura, reglas obligatorias, decisiones y
+  lecciones aprendidas.
