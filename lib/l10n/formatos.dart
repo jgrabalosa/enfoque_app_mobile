@@ -18,6 +18,21 @@ String duracionLegible(AppLocalizations l, int minutos) {
 String nombreDestino(AppLocalizations l, DestinoDisponible d) =>
     d.nombre.trim().isEmpty ? l.filaSesionHabito : d.nombre;
 
-/// Un destino con su progreso de hoy: «Leer · 20 / 30 min».
+/// Lo hecho de un objetivo. Si los dos son de menos de una hora, la unidad
+/// va una vez al final, como siempre: «20 / 30 min». Si alguno llega a la
+/// hora, cada cifra con [duracionLegible]: «45 min / 1 h 30 min».
+String progresoLegible(AppLocalizations l, int hecho, int objetivo) =>
+    hecho < 60 && objetivo < 60
+    ? l.progresoMinutos(hecho < 0 ? 0 : hecho, objetivo < 0 ? 0 : objetivo)
+    : l.progresoDuraciones(
+        duracionLegible(l, hecho),
+        duracionLegible(l, objetivo),
+      );
+
+/// Un destino con su progreso de hoy: «Leer · 20 / 30 min»,
+/// «Leer · 1 h / 1 h 30 min».
 String textoDestino(AppLocalizations l, DestinoDisponible d) =>
-    l.destinoProgreso(nombreDestino(l, d), d.minutosDia, d.minutosObjetivo);
+    l.destinoProgreso(
+      nombreDestino(l, d),
+      progresoLegible(l, d.minutosDia, d.minutosObjetivo),
+    );

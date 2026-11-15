@@ -115,18 +115,15 @@
   "@destinoSinHabitoAyuda": {
     "description": "Explicación bajo «Sin hábito»"
   },
-  "destinoProgreso": "{nombre} · {minutosDia} / {minutosObjetivo} min",
+  "destinoProgreso": "{nombre} · {progreso}",
   "@destinoProgreso": {
-    "description": "Un hábito de minutos con lo llevado hoy y su objetivo: «Leer · 20 / 30 min»",
+    "description": "Un hábito de minutos con lo llevado hoy y su objetivo: «Leer · 20 / 30 min», «Leer · 1 h / 1 h 30 min». {progreso} lo compone progresoLegible",
     "placeholders": {
       "nombre": {
         "type": "String"
       },
-      "minutosDia": {
-        "type": "int"
-      },
-      "minutosObjetivo": {
-        "type": "int"
+      "progreso": {
+        "type": "String"
       }
     }
   },
@@ -485,6 +482,30 @@
       },
       "m": {
         "type": "int"
+      }
+    }
+  },
+  "progresoMinutos": "{hecho} / {objetivo} min",
+  "@progresoMinutos": {
+    "description": "Lo hecho y el objetivo, los dos de menos de una hora: «20 / 30 min». Lo elige progresoLegible",
+    "placeholders": {
+      "hecho": {
+        "type": "int"
+      },
+      "objetivo": {
+        "type": "int"
+      }
+    }
+  },
+  "progresoDuraciones": "{hecho} / {objetivo}",
+  "@progresoDuraciones": {
+    "description": "Lo hecho y el objetivo ya formateados: «45 min / 1 h 30 min». Lo elige progresoLegible",
+    "placeholders": {
+      "hecho": {
+        "type": "String"
+      },
+      "objetivo": {
+        "type": "String"
       }
     }
   }

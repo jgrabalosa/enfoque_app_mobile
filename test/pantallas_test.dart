@@ -111,6 +111,16 @@ void main() {
       await cerrarSesion(tester, m);
     });
 
+    testWidgets('un destino de una hora o más, en horas', (tester) async {
+      final m = Montaje(tester);
+      m.api.listaDestinos = [destinoLeerLargo];
+      await tester.pumpWidget(inicio(m));
+      await asentar(tester);
+
+      expect(find.text('Leer · 1 h / 1 h 30 min'), findsOneWidget);
+      expect(find.textContaining('60 / 90'), findsNothing);
+    });
+
     testWidgets('el primer Empezar no espera al permiso ni al registro del '
         'aviso', (tester) async {
       tester.view.physicalSize = const Size(800, 2000);
@@ -252,6 +262,27 @@ void main() {
         m.controlador.resultado.value!.sesion.estado,
         EstadoSesion.perdida,
       );
+    });
+
+    testWidgets('el destino de una hora o más va en horas', (tester) async {
+      final m = Montaje(tester);
+      await m.controlador.iniciar();
+      await m.controlador.empezar(
+        duracion: const Duration(minutes: 25),
+        destino: destinoLeerLargo,
+      );
+      await tester.pumpWidget(
+        m.app(
+          SesionScreen(
+            controlador: m.controlador,
+            cargarMascota: () async => null,
+          ),
+        ),
+      );
+      await asentar(tester);
+
+      expect(find.text('Leer · 1 h / 1 h 30 min'), findsOneWidget);
+      await cerrarSesion(tester, m);
     });
 
     testWidgets('Terminar con 10 min o más: cuenta con lo hecho', (

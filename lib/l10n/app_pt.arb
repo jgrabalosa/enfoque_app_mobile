@@ -23,7 +23,7 @@
   "inicioDestino": "Para onde vão os minutos?",
   "destinoSinHabito": "Sem hábito",
   "destinoSinHabitoAyuda": "Conta para as tuas estatísticas, sem prémio.",
-  "destinoProgreso": "{nombre} · {minutosDia} / {minutosObjetivo} min",
+  "destinoProgreso": "{nombre} · {progreso}",
   "destinoCrearEnHabits": "Cria hábitos no Norday Habits",
   "destinoSinHabitosMinutos": "Não tens hábitos de minutos para hoje.",
   "destinoNoDisponible": "Esse hábito não está disponível para uma sessão agora.",
@@ -85,5 +85,7 @@
   "filaSesionCuandoEstado": "{cuando} · {estado}",
   "durMinutos": "{m} min",
   "durHoras": "{h} h",
-  "durHorasMinutos": "{h} h {m} min"
+  "durHorasMinutos": "{h} h {m} min",
+  "progresoMinutos": "{hecho} / {objetivo} min",
+  "progresoDuraciones": "{hecho} / {objetivo}"
 }

@@ -8,6 +8,15 @@ const DestinoDisponible destinoLeer = DestinoDisponible(
   minutosObjetivo: 30,
 );
 
+/// Un destino de más de una hora: «Leer · 1 h / 1 h 30 min».
+const DestinoDisponible destinoLeerLargo = DestinoDisponible(
+  tipo: 'habito',
+  id: 17,
+  nombre: 'Leer',
+  minutosDia: 60,
+  minutosObjetivo: 90,
+);
+
 PeticionSesion peticionDePrueba({
   String clave = '3f2a8c1e-5b7d-4e9a-8c6f-1a2b3c4d5e6f',
   EstadoEnvio estado = EstadoEnvio.completada,

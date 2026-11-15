@@ -23,7 +23,7 @@
   "inicioDestino": "Where do the minutes go?",
   "destinoSinHabito": "No habit",
   "destinoSinHabitoAyuda": "Counts towards your stats, with no reward.",
-  "destinoProgreso": "{nombre} · {minutosDia} / {minutosObjetivo} min",
+  "destinoProgreso": "{nombre} · {progreso}",
   "destinoCrearEnHabits": "Create habits in Norday Habits",
   "destinoSinHabitosMinutos": "You have no minute habits for today.",
   "destinoNoDisponible": "That habit isn't available for a session right now.",
@@ -85,5 +85,7 @@
   "filaSesionCuandoEstado": "{cuando} · {estado}",
   "durMinutos": "{m} min",
   "durHoras": "{h} h",
-  "durHorasMinutos": "{h} h {m} min"
+  "durHorasMinutos": "{h} h {m} min",
+  "progresoMinutos": "{hecho} / {objetivo} min",
+  "progresoDuraciones": "{hecho} / {objetivo}"
 }

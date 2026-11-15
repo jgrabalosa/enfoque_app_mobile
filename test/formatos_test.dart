@@ -41,6 +41,19 @@ void main() {
     expect(textoDestino(await l('pt'), destinoLeer), 'Leer · 20 / 30 min');
   });
 
+  test('destino desde una hora: cada cifra en horas y minutos', () async {
+    DestinoDisponible leer(int dia, int objetivo) =>
+        destinoLeer.conProgreso(dia, objetivo);
+    for (final idioma in ['es', 'en', 'pt']) {
+      final t = await l(idioma);
+      expect(textoDestino(t, destinoLeerLargo), 'Leer · 1 h / 1 h 30 min');
+      expect(textoDestino(t, leer(59, 59)), 'Leer · 59 / 59 min');
+      expect(textoDestino(t, leer(45, 60)), 'Leer · 45 min / 1 h');
+      expect(textoDestino(t, leer(61, 120)), 'Leer · 1 h 1 min / 2 h');
+      expect(textoDestino(t, leer(0, 90)), 'Leer · 0 min / 1 h 30 min');
+    }
+  });
+
   test('un destino sin nombre se llama «Hábito»', () async {
     const sinNombre = DestinoDisponible(
       tipo: 'habito',
