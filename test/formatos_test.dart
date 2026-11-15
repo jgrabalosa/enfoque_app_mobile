@@ -59,4 +59,18 @@ void main() {
     expect(es.resultadoMonedas(10), '+10 monedas');
     expect(es.resultadoMinutos(1), '1 minuto');
   });
+
+  test('los textos compuestos de Estadísticas salen del ARB', () async {
+    for (final idioma in ['es', 'en', 'pt']) {
+      final t = await l(idioma);
+      expect(
+        t.estTotalEtiqueta(t.estSemana, '40 min'),
+        '${t.estSemana}: 40 min',
+      );
+      expect(
+        t.filaSesionCuandoEstado('16 nov 09:00', t.estadoCompletada),
+        '16 nov 09:00 · ${t.estadoCompletada}',
+      );
+    }
+  });
 }

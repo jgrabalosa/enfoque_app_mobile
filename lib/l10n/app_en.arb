@@ -80,5 +80,7 @@
   "canalGraciaDescripcion": "Reminds you to come back before you lose the session.",
   "canalFinNombre": "End of the session",
   "canalFinDescripcion": "Tells you when the session ends with the screen off.",
-  "estNoEnviadaAntigua": "It went unsent for more than 7 days: the server no longer accepts it."
+  "estNoEnviadaAntigua": "It went unsent for more than 7 days: the server no longer accepts it.",
+  "estTotalEtiqueta": "{etiqueta}: {total}",
+  "filaSesionCuandoEstado": "{cuando} · {estado}"
 }

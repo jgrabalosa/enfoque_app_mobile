@@ -305,7 +305,7 @@ class _Total extends StatelessWidget {
     final tema = Theme.of(context).textTheme;
     return Semantics(
       container: true,
-      label: '$etiqueta: ${l.estMinutos(minutos)}',
+      label: l.estTotalEtiqueta(etiqueta, l.estMinutos(minutos)),
       excludeSemantics: true,
       child: SuperficieIdentidad(
         relleno: const EdgeInsets.all(AppSpacing.ms),
@@ -454,7 +454,9 @@ class FilaSesion extends StatelessWidget {
                     style: tema.bodyLarge?.copyWith(color: t.text),
                   ),
                   Text(
-                    cuando.isEmpty ? textoEstado : '$cuando · $textoEstado',
+                    cuando.isEmpty
+                        ? textoEstado
+                        : l.filaSesionCuandoEstado(cuando, textoEstado),
                     style: tema.bodySmall?.copyWith(color: color),
                   ),
                   if (estado == EstadoFila.noEnviada)

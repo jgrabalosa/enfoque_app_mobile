@@ -433,5 +433,29 @@
   "estNoEnviadaAntigua": "Llevaba más de 7 días sin enviarse: el servidor ya no la acepta.",
   "@estNoEnviadaAntigua": {
     "description": "Motivo de una sesión que la app descartó sin enviar por llevar más de 7 días en la cola"
+  },
+  "estTotalEtiqueta": "{etiqueta}: {total}",
+  "@estTotalEtiqueta": {
+    "description": "Lo que oye el lector en un total de Estadísticas: «Esta semana: 40 min»",
+    "placeholders": {
+      "etiqueta": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "filaSesionCuandoEstado": "{cuando} · {estado}",
+  "@filaSesionCuandoEstado": {
+    "description": "Segunda línea de una fila del historial: la fecha y hora de inicio y el estado",
+    "placeholders": {
+      "cuando": {
+        "type": "String"
+      },
+      "estado": {
+        "type": "String"
+      }
+    }
   }
 }

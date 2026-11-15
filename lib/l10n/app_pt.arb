@@ -80,5 +80,7 @@
   "canalGraciaDescripcion": "Avisa-te para voltares antes de perderes a sessão.",
   "canalFinNombre": "Fim da sessão",
   "canalFinDescripcion": "Avisa-te quando a sessão termina com o ecrã desligado.",
-  "estNoEnviadaAntigua": "Ficou mais de 7 dias por enviar: o servidor já não a aceita."
+  "estNoEnviadaAntigua": "Ficou mais de 7 dias por enviar: o servidor já não a aceita.",
+  "estTotalEtiqueta": "{etiqueta}: {total}",
+  "filaSesionCuandoEstado": "{cuando} · {estado}"
 }
