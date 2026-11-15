@@ -161,6 +161,10 @@ El contrato es el de `EnfoqueController` del backend:
   guardado pisaría lo que hubiera. El almacén es inyectable (`AlmacenCola`).
 - Una sola pasada a la vez; lo que se pide durante una pasada se hace al
   acabarla.
+- **Más de 7 días sin enviar**: al empezar cada pasada, las que empezaron
+  hace más de 7 días (de cualquier usuario) salen de la cola y quedan como
+  no enviadas por antigüedad (`antigua`, código 0): el backend las
+  rechazaría con un 400.
 
 ### El reloj del móvil, desfasado
 

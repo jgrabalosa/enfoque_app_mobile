@@ -273,4 +273,36 @@ void main() {
       expect(cola.pendientes.value.map((e) => e.clave), ['vieja', 'nueva']);
     });
   });
+
+  test('más de 7 días sin enviar: se descarta (el backend la rechazaría) y '
+      'queda como no enviada por antigüedad', () async {
+    final cola = nuevaCola();
+    final vieja = PeticionSesion(
+      clave: 'vieja',
+      inicioUtc: ahora.subtract(const Duration(days: 7, minutes: 1)),
+      duracionSeg: 1500,
+      duracionObjetivoMin: 25,
+      estado: EstadoEnvio.completada,
+    );
+    final casi = vieja.conInicio(
+      ahora.subtract(const Duration(days: 6, hours: 23)),
+    );
+    await cola.encolar(vieja, usuarioId: 8);
+    await cola.encolar(
+      PeticionSesion.fromJson({...casi.toJson(), 'clave': 'casi'})!,
+      usuarioId: 7,
+    );
+    await cola.procesar();
+    expect(api.enviadas.map((p) => p.clave), ['casi']);
+    expect(cola.pendientes.value, isEmpty);
+    final n = cola.noAceptados.value.single;
+    expect(n.clave, 'vieja');
+    expect(n.usuarioId, 8);
+    expect(n.antigua, isTrue);
+    expect(n.codigoHttp, 0);
+    // Y sobrevive a reiniciar la app.
+    final otra = nuevaCola();
+    await otra.cargar();
+    expect(otra.noAceptados.value.single.antigua, isTrue);
+  });
 }

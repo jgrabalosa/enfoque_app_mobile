@@ -84,6 +84,10 @@ class EnvioNoAceptado {
   final String? mensaje;
   final DateTime fechaUtc;
 
+  /// No llegó a enviarse: llevaba más de [ColaEnvios.antiguedadMaxima] en la
+  /// cola y el backend la habría rechazado. [codigoHttp] es 0.
+  final bool antigua;
+
   const EnvioNoAceptado({
     required this.peticion,
     required this.usuarioId,
@@ -91,6 +95,7 @@ class EnvioNoAceptado {
     required this.fechaUtc,
     this.destino,
     this.mensaje,
+    this.antigua = false,
   });
 
   String get clave => peticion.clave;
@@ -102,6 +107,7 @@ class EnvioNoAceptado {
     'codigoHttp': codigoHttp,
     'mensaje': mensaje,
     'fechaUtc': fechaUtc.toUtc().toIso8601String(),
+    'antigua': antigua,
   };
 
   static EnvioNoAceptado? fromJson(Object? json) {
@@ -124,6 +130,7 @@ class EnvioNoAceptado {
       codigoHttp: codigo,
       mensaje: textoDe(m['mensaje']),
       fechaUtc: fecha.toUtc(),
+      antigua: boolDe(m['antigua']) ?? false,
     );
   }
 }
@@ -180,6 +187,7 @@ class ColaEnvios {
     this.esperaBase = const Duration(seconds: 30),
     this.esperaMaxima = const Duration(minutes: 30),
     this.maximoNoAceptados = 50,
+    this.antiguedadMaxima = const Duration(days: 7),
     this.clavePendientes = 'enfoque_cola_envios',
     this.claveNoAceptados = 'enfoque_envios_no_aceptados',
   }) : _ahora = ahora ?? DateTime.now,
@@ -201,6 +209,10 @@ class ColaEnvios {
 
   /// Cuántos no aceptados se guardan (los más recientes).
   final int maximoNoAceptados;
+
+  /// Una sesión que empezó hace más de esto ya no se envía: el backend
+  /// rechaza las que empezaron hace más de 7 días.
+  final Duration antiguedadMaxima;
 
   final String clavePendientes;
   final String claveNoAceptados;
@@ -347,6 +359,7 @@ class ColaEnvios {
 
   Future<void> _pasada(bool forzar) async {
     if (!await cargar()) return;
+    await _descartarAntiguas();
     final usuario = await usuarioActual();
     if (usuario == null) return;
     final ahora = _ahora().toUtc();
@@ -370,18 +383,15 @@ class ColaEnvios {
           _quitar(envio.clave);
         case EnvioRechazado(:final codigoHttp, :final mensaje):
           _quitar(envio.clave);
-          _noAceptados.value = List.unmodifiable(
-            [
-              EnvioNoAceptado(
-                peticion: envio.peticion,
-                usuarioId: envio.usuarioId,
-                destino: envio.destino,
-                codigoHttp: codigoHttp,
-                mensaje: mensaje,
-                fechaUtc: _ahora().toUtc(),
-              ),
-              ..._noAceptados.value.where((e) => e.clave != envio.clave),
-            ].take(maximoNoAceptados),
+          _apuntarNoAceptado(
+            EnvioNoAceptado(
+              peticion: envio.peticion,
+              usuarioId: envio.usuarioId,
+              destino: envio.destino,
+              codigoHttp: codigoHttp,
+              mensaje: mensaje,
+              fechaUtc: _ahora().toUtc(),
+            ),
           );
         case EnvioFallido():
           _sustituir(
@@ -392,6 +402,39 @@ class ColaEnvios {
       }
       await _guardarSinLanzar();
     }
+  }
+
+  /// Saca de la cola, de todos los usuarios, las que empezaron hace más de
+  /// [antiguedadMaxima] y las apunta como no enviadas por antigüedad.
+  Future<void> _descartarAntiguas() async {
+    final limite = _ahora().toUtc().subtract(antiguedadMaxima);
+    final antiguas = _pendientes.value
+        .where((e) => e.peticion.inicioUtc.isBefore(limite))
+        .toList();
+    if (antiguas.isEmpty) return;
+    for (final e in antiguas) {
+      _quitar(e.clave);
+      _apuntarNoAceptado(
+        EnvioNoAceptado(
+          peticion: e.peticion,
+          usuarioId: e.usuarioId,
+          destino: e.destino,
+          codigoHttp: 0,
+          fechaUtc: _ahora().toUtc(),
+          antigua: true,
+        ),
+      );
+    }
+    await _guardarSinLanzar();
+  }
+
+  void _apuntarNoAceptado(EnvioNoAceptado n) {
+    _noAceptados.value = List.unmodifiable(
+      [
+        n,
+        ..._noAceptados.value.where((e) => e.clave != n.clave),
+      ].take(maximoNoAceptados),
+    );
   }
 
   void _quitar(String clave) {

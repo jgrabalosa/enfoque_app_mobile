@@ -327,6 +327,7 @@ class FilaSesion extends StatelessWidget {
     this.destino,
     this.conDestino = false,
     this.motivo,
+    this.antigua = false,
   });
 
   /// Del backend.
@@ -365,6 +366,7 @@ class FilaSesion extends StatelessWidget {
     destino: envio.destino?.nombre,
     conDestino: envio.peticion.conDestino,
     motivo: envio.mensaje,
+    antigua: envio.antigua,
   );
 
   final DateTime? inicio;
@@ -380,6 +382,10 @@ class FilaSesion extends StatelessWidget {
 
   /// Solo en [EstadoFila.noEnviada]: el motivo del backend.
   final String? motivo;
+
+  /// Solo en [EstadoFila.noEnviada]: la app la descartó por antigua, sin
+  /// llegar a enviarla.
+  final bool antigua;
 
   @override
   Widget build(BuildContext context) {
@@ -438,7 +444,9 @@ class FilaSesion extends StatelessWidget {
                   ),
                   if (estado == EstadoFila.noEnviada)
                     Text(
-                      motivo ?? l.estNoEnviadaMotivo,
+                      antigua
+                          ? l.estNoEnviadaAntigua
+                          : motivo ?? l.estNoEnviadaMotivo,
                       style: tema.bodySmall?.copyWith(color: t.textMuted),
                     ),
                 ],

@@ -429,5 +429,9 @@
   "canalFinDescripcion": "Te avisa cuando la sesión termina con la pantalla apagada.",
   "@canalFinDescripcion": {
     "description": "Descripción del canal del aviso de fin"
+  },
+  "estNoEnviadaAntigua": "Llevaba más de 7 días sin enviarse: el servidor ya no la acepta.",
+  "@estNoEnviadaAntigua": {
+    "description": "Motivo de una sesión que la app descartó sin enviar por llevar más de 7 días en la cola"
   }
 }
