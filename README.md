@@ -138,9 +138,10 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
    aro con aguja): se puede sustituir por el definitivo con el mismo nombre
    (silueta blanca sobre transparente).
 7. **Política de privacidad y URL de borrado de cuenta**: la ficha de Play
-   pide las dos. Las de `norday.app` (`privacidad.html` y
-   `eliminar-cuenta.html`, en el backend) hoy solo hablan de Norday Habits.
-   **A decidir**: ampliarlas a Norday Focus o hacer unas propias.
+   pide las dos. Son las de `norday.app` (`privacidad.html` y
+   `eliminar-cuenta.html`, en el backend), ampliadas a Norday Focus en
+   `wip-enfoque` el 15-nov-2026: valen en cuanto ese backend esté en
+   producción.
 8. **Prueba cerrada**: comprobar en Play Console si la cuenta exige una
    prueba cerrada antes de que una app nueva pueda salir a Producción, y
    contar con ese plazo.
