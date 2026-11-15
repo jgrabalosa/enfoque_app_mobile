@@ -70,7 +70,8 @@ lista completa, en el `CLAUDE.md` del paquete.
 - `models/enfoque.dart` — los modelos del contrato, con parseo tolerante.
   `models/enlace_entrada.dart` — el enlace `norday-enfoque://`.
 - `l10n/` — `AppLocalizations` (`app_*.arb`), `textos_enfoque.dart` y
-  `formatos.dart` («Leer · 20 / 30 min»).
+  `formatos.dart` (las duraciones y los textos con cifras: «Leer · 20 /
+  30 min», «+1 h 30 min a Leer (1 h 30 min / 2 h)»; ver «Duraciones»).
 - `widgets/` — `barras_semana.dart` y `barra_navegacion.dart` (copiado tal
   cual de `identidad_ui.dart` de Habits).
 - `google_fonts/` — las mismas siete familias que Habits, con sus licencias
@@ -301,6 +302,30 @@ Ninguna pantalla lleva literales. Dos catálogos y dos clases, como en Habits:
 Los `app_localizations*.dart` los genera `flutter gen-l10n` y **no** se
 versionan. Los textos que manda el backend (`motivoTexto`, `mensaje`) ya
 vienen traducidos al idioma del usuario y se enseñan tal cual.
+
+### Duraciones
+
+Una sola regla para todo lo que enseña minutos al usuario (decisión del
+15-nov-2026, la misma que Norday Habits): menos de 60, «{m} min»; desde
+60, «{h} h» si no sobran minutos y si no «{h} h {m} min». La aplica
+`duracionLegible` (`l10n/formatos.dart`, claves `durMinutos`, `durHoras` y
+`durHorasMinutos`). Es de la app, no del core. Se guarda y se envía siempre
+en minutos.
+
+- **Pasan por ella**: la cifra de minutos de hoy en Inicio, el progreso del
+  destino (Inicio y sesión), «Llevas…» al terminar, la cifra grande y el
+  aporte del Resultado, los totales de semana y mes, la cifra de encima de
+  cada barra y lo que oye el lector en ella, y el historial.
+- **Pares** (lo hecho y su objetivo): si los dos son de menos de una hora,
+  la unidad va una vez al final, como siempre («Leer · 20 / 30 min»,
+  «(30 / 30)», «25 de 25 min · Leer»); si alguno llega a la hora, cada
+  cifra con la regla («Leer · 45 min / 1 h 30 min», «1 h 30 min de 2 h ·
+  Leer»). Lo deciden `progresoLegible`, `textoAporte` y `textoFilaSesion`.
+- **No pasan por ella**: los chips de duración (15/25/45/60), el selector
+  de 10 a 120 (`duracionMinutos`, `duracionEtiqueta`) y la cuenta atrás
+  `mm:ss` del core. Siguen en minutos.
+- Donde el sitio es estrecho (la cifra de Inicio, encima de las barras) el
+  texto se encoge con `FittedBox` en vez de cortarse.
 
 ## Tocar el paquete
 
