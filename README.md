@@ -52,7 +52,10 @@ Hace falta, fuera de Git:
   (`habitos-app-5a054`): `com.norday.enfoque` y `com.norday.enfoque.prueba`.
   Tiene que ser ese proyecto: el login con Google del core usa el cliente
   web de ese proyecto, y los push los manda ese mismo backend.
-- `android/key.properties` y el keystore, sólo para builds de release.
+- `android/key.properties` y el keystore, sólo para builds de release. La
+  clave de subida de Focus es **propia, no la de Habits** (creada el
+  15-nov-2026, alias `norday-enfoque`). El keystore y las contraseñas no
+  van en ningún repo.
 
 Hay dos variantes (flavors), y **siempre se indica una** con `--flavor`:
 
@@ -99,7 +102,9 @@ desugaring (`isCoreLibraryDesugaringEnabled` y `desugar_jdk_libs:2.1.4`) y
 `multiDexEnabled`.
 
 Se compiló por primera vez el 15-nov-2026, en debug y con el flavor
-`prueba`. Falta compilar una build de release, que es la que pasa por R8.
+`prueba`. El mismo día compiló la primera build de release (AAB con
+`--flavor produccion`, que pasa por R8), firmada con la clave de subida.
+Aún no se ha probado una release en un móvil.
 
 ## Lo que tiene que hacer Quim antes de publicar
 
@@ -109,23 +114,30 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
 
 1. **GitHub**: hecho el 15-nov-2026 (`jgrabalosa/enfoque_app_mobile`, con
    la rama `wip`).
-2. **Firebase**: `com.norday.enfoque.prueba` está dado de alta desde el
-   15-nov-2026 en `habitos-app-5a054`, con la SHA-1 de depuración de la
-   máquina de Quim. Falta añadir la de cada otra máquina y la de la clave de
-   subida. Falta dar de alta `com.norday.enfoque`; para ese paquete, además, la SHA-1
-   de la **clave de firma de apps de Play** (Play Console → Integridad de la
-   app → Firma de apps), que solo existe cuando la app está creada en Play:
-   la app instalada desde Play va firmada con esa, no con la de subida.
-   Bajar `google-services.json` y dejarlo en `android/app/`.
-3. **Google Cloud**: un cliente OAuth Android por paquete y huella, incluida
-   la de firma de apps de Play (Firebase sola no basta para Google Sign-In;
-   es la lección de Habits). Sin ella, el login con Google falla en la app
-   de Play aunque funcione en una build local.
+2. **Firebase**: hecho el 15-nov-2026. En `habitos-app-5a054` están
+   `com.norday.enfoque.prueba` (SHA-1 de depuración de la máquina de Quim)
+   y `com.norday.enfoque`: depuración, clave de subida y las **tres claves
+   de firma de apps de Play** (actual, clásica y poscuántica; la app se
+   creó con firma híbrida y Play pide registrar las tres). Si se compila en
+   otra máquina, añadir su SHA-1 de depuración. Cada vez que cambien las
+   huellas o los clientes OAuth, volver a bajar `google-services.json` a
+   `android/app/`.
+3. **Google Cloud**: hecho el 15-nov-2026. Un cliente OAuth Android por
+   paquete y huella («Norday Focus - ...» en Google Auth Platform):
+   depuración, Release (clave de subida) y las tres de Play para
+   `com.norday.enfoque`, y depuración para `com.norday.enfoque.prueba`.
+   Firebase no crea estos clientes al añadir huellas (es la lección de
+   Habits): sin el de Play, el login con Google falla en la app de Play
+   aunque funcione en una build local. Una release de `prueba` necesitaría
+   además su cliente con la clave de subida.
 4. **Primer build**: hecho el 15-nov-2026, en debug y con el flavor
    `prueba`. En el móvil ya funcionan el login, Inicio y el enlace de
-   entrada desde Habits. Antes de pensar en un `.aab`, faltan los avisos de
-   gracia y de fin y una build de release.
-5. **Tag del core**: hecho el 16-nov-2026. El core va fijado por `v0.55.0` y el `pubspec.lock` está versionado.
+   entrada desde Habits. Los avisos de gracia y de fin están hechos, pero
+   sin probar en el móvil. La release compila (ver «Toolchain de
+   Android»); probarla en el móvil va después de desplegar el backend
+   `wip-enfoque` en producción, porque el flavor `produccion` solo habla
+   con producción.
+5. **Tag del core**: hecho el 15-nov-2026. El core va fijado por `v0.55.0` y el `pubspec.lock` está versionado.
 6. **Icono, splash y gráficos de Play**: Norday Focus no tiene aún ni icono
    ni símbolo. Hoy lleva el icono por defecto de Flutter y el splash pinta a
    Nori sobre Azul Noche. Cuando los haya, en `store/` y
@@ -139,9 +151,11 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
    `eliminar-cuenta.html`, en el backend), ampliadas a Norday Focus en
    `wip-enfoque` el 15-nov-2026: valen en cuanto ese backend esté en
    producción.
-8. **Prueba cerrada**: comprobar en Play Console si la cuenta exige una
-   prueba cerrada antes de que una app nueva pueda salir a Producción, y
-   contar con ese plazo.
+8. **Prueba cerrada**: obligatoria. La cuenta de desarrollador es personal
+   y de 2026: hacen falta 12 testers apuntados durante 14 días seguidos
+   antes de pedir el acceso a Producción. La app existe en Play Console
+   desde el 15-nov-2026 («Norday Focus», sin coste, firma de apps
+   gestionada por Google).
 9. **Orden de salida con Norday Habits**: Norday Habits con «Empezar sesión»
    no sale a Producción hasta que Norday Focus sea visible en Producción (o
    salen a la vez): sin ella, el botón lleva a una ficha que no existe. En

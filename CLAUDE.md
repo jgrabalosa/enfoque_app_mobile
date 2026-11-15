@@ -340,7 +340,7 @@ allí, se cambia aquí el `ref:` al tag nuevo y se hace
 `pubspec_overrides.yaml` con `path: ../norday_flutter_core`, que no se
 commitea (está en `.gitignore`).
 
-**Core fijado por `v0.55.0`** (16-nov-2026): `resolved-ref` `5861899d85e2933774c6349ad0e98844f3eb5965`. El `pubspec.lock` se versiona desde entonces.
+**Core fijado por `v0.55.0`** (15-nov-2026): `resolved-ref` `5861899d85e2933774c6349ad0e98844f3eb5965`. El `pubspec.lock` se versiona desde entonces.
 
 ## Variantes: produccion y prueba
 
@@ -393,8 +393,10 @@ Lo que el diseño no decía y se resolvió con la opción más conservadora.
 - **Compilado por primera vez el 15-nov-2026**, en debug y con el flavor
   `prueba`, en la máquina de Quim. En el móvil, contra staging, funcionan el
   login, Inicio y el enlace desde Norday Habits («Empezar sesión» abre Focus
-  con el hábito elegido). **Aún sin probar**: los avisos de gracia y de fin,
-  una build de release (R8) y la prueba a fondo de la sesión, que hará Quim.
+  con el hábito elegido). **Aún sin probar en el móvil**: los avisos de gracia
+  y de fin, una build de release (el primer AAB compila desde el
+  15-nov-2026, firmado con la clave de subida propia de Focus) y la prueba
+  a fondo de la sesión, que hará Quim.
 - **La sesión se cierra en el motor en cuanto `encolar` confirma que quedó
   guardada**, antes de enviarla (revisión del 15-nov-2026): la cola guarda
   el cuerpo exacto, y esperar al envío bloquearía empezar otra sesión sin
