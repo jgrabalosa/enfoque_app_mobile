@@ -118,7 +118,9 @@ máquina sin SDK de Android. El primer `flutter build apk` lo dirá.
    Nori sobre Azul Noche. Cuando los haya, en `store/` y
    `assets/branding/`, con `flutter_launcher_icons` y
    `flutter_native_splash` como en Habits. El icono pequeño de los avisos
-   también es provisional (el del launcher).
+   es un vector propio y genérico (`res/drawable/ic_stat_enfoque.xml`, un
+   aro con aguja): se puede sustituir por el definitivo con el mismo nombre
+   (silueta blanca sobre transparente).
 5. **Ficha de Play** de `com.norday.enfoque`, aunque sea en prueba cerrada:
    Norday Habits no puede publicar su «Empezar sesión» sin ella.
 6. **Backend**: desplegar `wip-enfoque` (módulo `enfoque`, `AppNorday`

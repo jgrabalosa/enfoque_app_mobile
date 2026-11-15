@@ -255,8 +255,9 @@ Habits).
   AGP 9.0.1, Gradle 9.1.0). Lo único que añade: desugaring con
   `desugar_jdk_libs:2.1.4` y `multiDexEnabled`, que pide la 22.3.3 en su
   README.
-- El icono pequeño es `@mipmap/ic_launcher` (provisional), protegido de R8
-  en `res/raw/keep.xml`.
+- El icono pequeño es `res/drawable/ic_stat_enfoque.xml`: un aro con una
+  aguja, blanco sobre transparente, genérico y provisional. Protegido de R8
+  en `res/raw/keep.xml`. Se sustituye por el definitivo cuando haya icono.
 
 ## Identidad de marca (aplicar siempre en UI nueva)
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:enfoque_app_mobile/services/avisos_sesion_locales.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -137,5 +139,17 @@ void main() {
     expect(salida.avisos[0].titulo, isNot(salida.avisos[1].titulo));
     expect(salida.avisos[0].cuerpo, contains('10'));
     expect(salida.avisos[1].cuerpo, contains('10'));
+  });
+
+  test('el icono pequeño es el drawable monocromo propio y R8 lo conserva', () {
+    expect(iconoAvisos, 'ic_stat_enfoque');
+    final icono = File(
+      'android/app/src/main/res/drawable/$iconoAvisos.xml',
+    ).readAsStringSync();
+    expect(icono, contains('<vector'));
+    expect(
+      File('android/app/src/main/res/raw/keep.xml').readAsStringSync(),
+      contains('@drawable/$iconoAvisos'),
+    );
   });
 }

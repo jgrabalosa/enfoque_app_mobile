@@ -35,15 +35,10 @@ class SalidaAvisosPlugin implements SalidaAvisos {
 
   /// Una vez, en `main()`. Tocar un aviso abre la app, que es lo único que
   /// tiene que hacer: la sesión se recompone sola al volver.
-  ///
-  /// El icono es el del launcher, provisional: la guía de Android pide un
-  /// drawable monocromo para el icono pequeño
-  /// (https://developer.android.com/develop/ui/views/notifications/custom-notification#icon).
-  /// Lo protege de R8 `res/raw/keep.xml`.
   Future<void> inicializar() async {
     await _plugin.initialize(
       settings: const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings(iconoAvisos),
       ),
     );
   }
@@ -82,6 +77,13 @@ class SalidaAvisosPlugin implements SalidaAvisos {
   @override
   Future<void> cancelar(int id) => _plugin.cancel(id: id);
 }
+
+/// El icono pequeño de los avisos: `res/drawable/ic_stat_enfoque.xml`, una
+/// silueta blanca sobre transparente, como pide Android
+/// (https://developer.android.com/develop/ui/views/notifications/custom-notification#icon).
+/// El plugin lo busca por nombre entre los drawables; lo protege de R8
+/// `res/raw/keep.xml`. Provisional, hasta que haya icono definitivo.
+const String iconoAvisos = 'ic_stat_enfoque';
 
 /// Inexacto y que sale aunque el móvil esté en reposo, sin alarma exacta: no
 /// pide `SCHEDULE_EXACT_ALARM` y vale para un aviso de fin, que puede llegar
