@@ -1,0 +1,433 @@
+{
+  "@@locale": "es",
+  "appNombre": "Norday Focus",
+  "@appNombre": {
+    "description": "Nombre de la app, igual en todos los idiomas: título de la tarea y wordmark del login (TextosApp.nombre del core)"
+  },
+  "loginLema": "Concéntrate. Tus minutos cuentan.",
+  "@loginLema": {
+    "description": "Lema bajo el nombre en el login (TextosApp.lemaLogin)"
+  },
+  "actualizacionObligatoriaTexto": "Para seguir usando Norday Focus, actualiza la app. Tus sesiones y tu progreso se quedan tal cual.",
+  "@actualizacionObligatoriaTexto": {
+    "description": "Cuerpo de la actualización obligatoria del core (TextosApp.actualizacionObligatoria)"
+  },
+  "eliminarCuentaCuerpo": "Se borrarán para siempre tu cuenta de Norday y todo lo que guarda en cada una de sus apps: tus sesiones, tus hábitos, tus logros y tus puntos.\n\nEsta acción no se puede deshacer.",
+  "@eliminarCuentaCuerpo": {
+    "description": "Perfil del core: primera confirmación de borrado de cuenta (TextosApp.eliminarCuenta). La cuenta es una sola para todas las apps"
+  },
+  "navInicio": "Inicio",
+  "@navInicio": {
+    "description": "Pestaña Inicio"
+  },
+  "navEstadisticas": "Estadísticas",
+  "@navEstadisticas": {
+    "description": "Pestaña Estadísticas"
+  },
+  "navMenu": "Menú",
+  "@navMenu": {
+    "description": "Botón del menú en la barra inferior"
+  },
+  "menuNori": "Nori",
+  "@menuNori": {
+    "description": "Entrada del menú a la pantalla de la mascota (nombre propio)"
+  },
+  "shellCerrarSesion": "Cerrar sesión",
+  "@shellCerrarSesion": {
+    "description": "Entrada del menú para salir de la cuenta"
+  },
+  "shellPulsaAtras": "Pulsa atrás otra vez para salir",
+  "@shellPulsaAtras": {
+    "description": "Aviso del doble atrás para salir"
+  },
+  "inicioMinutosHoy": "Minutos hoy",
+  "@inicioMinutosHoy": {
+    "description": "Etiqueta de la cifra de minutos de hoy"
+  },
+  "inicioSesionesHoy": "Sesiones hoy",
+  "@inicioSesionesHoy": {
+    "description": "Etiqueta de la cifra de sesiones de hoy"
+  },
+  "inicioRacha": "Racha",
+  "@inicioRacha": {
+    "description": "Etiqueta de la racha de enfoque"
+  },
+  "inicioRachaDias": "{dias, plural, =1{1 día} other{{dias} días}}",
+  "@inicioRachaDias": {
+    "description": "Valor de la racha de enfoque",
+    "placeholders": {
+      "dias": {
+        "type": "int"
+      }
+    }
+  },
+  "inicioCifraEtiqueta": "{etiqueta}: {valor}",
+  "@inicioCifraEtiqueta": {
+    "description": "Lo que oye el lector de pantalla en cada cifra de Inicio",
+    "placeholders": {
+      "etiqueta": {
+        "type": "String"
+      },
+      "valor": {
+        "type": "String"
+      }
+    }
+  },
+  "inicioDuracion": "Duración",
+  "@inicioDuracion": {
+    "description": "Título del bloque de duración"
+  },
+  "duracionMinutos": "{minutos} min",
+  "@duracionMinutos": {
+    "description": "Una duración en minutos (chips y selector)",
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      }
+    }
+  },
+  "duracionEtiqueta": "Duración: {minutos} minutos",
+  "@duracionEtiqueta": {
+    "description": "Lo que oye el lector en el selector de duración",
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      }
+    }
+  },
+  "duracionMenos": "Cinco minutos menos",
+  "@duracionMenos": {
+    "description": "Botón para bajar la duración, para el lector"
+  },
+  "duracionMas": "Cinco minutos más",
+  "@duracionMas": {
+    "description": "Botón para subir la duración, para el lector"
+  },
+  "inicioDestino": "¿A dónde van los minutos?",
+  "@inicioDestino": {
+    "description": "Título del bloque de destino"
+  },
+  "destinoSinHabito": "Sin hábito",
+  "@destinoSinHabito": {
+    "description": "Opción de sesión sin destino"
+  },
+  "destinoSinHabitoAyuda": "Cuenta para tus estadísticas, sin premio.",
+  "@destinoSinHabitoAyuda": {
+    "description": "Explicación bajo «Sin hábito»"
+  },
+  "destinoProgreso": "{nombre} · {minutosDia} / {minutosObjetivo} min",
+  "@destinoProgreso": {
+    "description": "Un hábito de minutos con lo llevado hoy y su objetivo: «Leer · 20 / 30 min»",
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      },
+      "minutosDia": {
+        "type": "int"
+      },
+      "minutosObjetivo": {
+        "type": "int"
+      }
+    }
+  },
+  "destinoCrearEnHabits": "Crea hábitos en Norday Habits",
+  "@destinoCrearEnHabits": {
+    "description": "Enlace cuando no hay hábitos de minutos: abre Norday Habits o su ficha de Play"
+  },
+  "destinoSinHabitosMinutos": "No tienes hábitos de minutos para hoy.",
+  "@destinoSinHabitosMinutos": {
+    "description": "Texto cuando no hay destinos"
+  },
+  "destinoNoDisponible": "Ese hábito no está disponible para una sesión ahora.",
+  "@destinoNoDisponible": {
+    "description": "Aviso cuando un enlace pide un hábito que no está en la lista de destinos"
+  },
+  "destinosError": "No se pudieron cargar tus hábitos.",
+  "@destinosError": {
+    "description": "Error al cargar los destinos"
+  },
+  "abrirHabitsError": "No se pudo abrir Norday Habits ni Google Play.",
+  "@abrirHabitsError": {
+    "description": "Aviso si no se abre nada al pulsar «Crea hábitos en Norday Habits»"
+  },
+  "inicioEmpezar": "Empezar",
+  "@inicioEmpezar": {
+    "description": "Botón para empezar la sesión"
+  },
+  "inicioNoSePudoEmpezar": "No se pudo empezar la sesión.",
+  "@inicioNoSePudoEmpezar": {
+    "description": "Error al empezar una sesión"
+  },
+  "sesionTerminar": "Terminar",
+  "@sesionTerminar": {
+    "description": "Botón para terminar la sesión antes de la meta"
+  },
+  "sesionRendirse": "Rendirse",
+  "@sesionRendirse": {
+    "description": "Botón para rendirse (la sesión se pierde)"
+  },
+  "sesionSeguir": "Seguir",
+  "@sesionSeguir": {
+    "description": "Botón para volver a la sesión desde una confirmación"
+  },
+  "sesionTerminarTitulo": "¿Terminar ya?",
+  "@sesionTerminarTitulo": {
+    "description": "Título de la confirmación de Terminar"
+  },
+  "sesionTerminarCuenta": "Llevas {minutos} min. La sesión cuenta con lo hecho.",
+  "@sesionTerminarCuenta": {
+    "description": "Confirmación de Terminar con al menos 10 minutos",
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      }
+    }
+  },
+  "sesionTerminarCorta": "Llevas menos de 10 minutos: la sesión no contará, pero tampoco se pierde.",
+  "@sesionTerminarCorta": {
+    "description": "Confirmación de Terminar antes del mínimo"
+  },
+  "sesionRendirseTitulo": "¿Rendirte?",
+  "@sesionRendirseTitulo": {
+    "description": "Título de la confirmación de Rendirse"
+  },
+  "sesionRendirseCuerpo": "La sesión se pierde y no suma minutos.",
+  "@sesionRendirseCuerpo": {
+    "description": "Cuerpo de la confirmación de Rendirse"
+  },
+  "resultadoCompletada": "Sesión completada",
+  "@resultadoCompletada": {
+    "description": "Título del resultado: llegó a la meta"
+  },
+  "resultadoTerminada": "Sesión terminada",
+  "@resultadoTerminada": {
+    "description": "Título del resultado: terminada antes, con al menos 10 minutos"
+  },
+  "resultadoPerdida": "Sesión perdida",
+  "@resultadoPerdida": {
+    "description": "Título del resultado: perdida"
+  },
+  "resultadoDescartada": "Sesión descartada",
+  "@resultadoDescartada": {
+    "description": "Título del resultado: terminada antes de 10 minutos"
+  },
+  "resultadoMinutos": "{minutos, plural, =1{1 minuto} other{{minutos} minutos}}",
+  "@resultadoMinutos": {
+    "description": "Minutos que suma la sesión",
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      }
+    }
+  },
+  "resultadoDescartadaCuerpo": "Menos de 10 minutos: no cuenta, pero tampoco se pierde.",
+  "@resultadoDescartadaCuerpo": {
+    "description": "Explicación de la sesión descartada"
+  },
+  "resultadoPerdidaRendicion": "Te rendiste. No suma minutos.",
+  "@resultadoPerdidaRendicion": {
+    "description": "Motivo de pérdida: rendirse"
+  },
+  "resultadoPerdidaSalida": "Saliste de la app y no volviste a tiempo.",
+  "@resultadoPerdidaSalida": {
+    "description": "Motivo de pérdida: salir y no volver en la gracia"
+  },
+  "resultadoPerdidaReinicio": "El móvil se reinició durante la sesión.",
+  "@resultadoPerdidaReinicio": {
+    "description": "Motivo de pérdida: reinicio del móvil o cambio de hora"
+  },
+  "resultadoAporteAceptado": "+{minutos} min a {nombre} ({minutosDia} / {minutosObjetivo})",
+  "@resultadoAporteAceptado": {
+    "description": "Minutos llevados al hábito con su progreso de hoy: «+25 min a Leer (30 / 30)»",
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      },
+      "nombre": {
+        "type": "String"
+      },
+      "minutosDia": {
+        "type": "int"
+      },
+      "minutosObjetivo": {
+        "type": "int"
+      }
+    }
+  },
+  "resultadoAporteSinProgreso": "+{minutos} min a {nombre}",
+  "@resultadoAporteSinProgreso": {
+    "description": "Minutos llevados al hábito cuando no llega su progreso",
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      },
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "resultadoMonedas": "{monedas, plural, =1{+1 moneda} other{+{monedas} monedas}}",
+  "@resultadoMonedas": {
+    "description": "Monedas que pagó el hábito",
+    "placeholders": {
+      "monedas": {
+        "type": "int"
+      }
+    }
+  },
+  "resultadoDiaHecho": "Objetivo de hoy cumplido",
+  "@resultadoDiaHecho": {
+    "description": "El hábito ha llegado hoy a sus minutos objetivo"
+  },
+  "resultadoAporteRepetido": "Estos minutos ya estaban en {nombre}.",
+  "@resultadoAporteRepetido": {
+    "description": "La sesión ya se había llevado al hábito antes (reintento)",
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "resultadoAporteRechazado": "No se sumaron a {nombre}.",
+  "@resultadoAporteRechazado": {
+    "description": "El hábito no aceptó los minutos; debajo va el motivo",
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "resultadoMotivoDesconocido": "El hábito no pudo recibirlos.",
+  "@resultadoMotivoDesconocido": {
+    "description": "Motivo de rechazo cuando el backend no manda texto"
+  },
+  "resultadoEnviando": "Guardando la sesión…",
+  "@resultadoEnviando": {
+    "description": "Mientras se envía la sesión"
+  },
+  "resultadoPendiente": "Pendiente de enviar. Se enviará en cuanto haya conexión.",
+  "@resultadoPendiente": {
+    "description": "La sesión está en la cola sin conexión"
+  },
+  "resultadoNoAceptada": "No se pudo guardar la sesión.",
+  "@resultadoNoAceptada": {
+    "description": "El backend no aceptó la sesión (400 o 409); debajo va el motivo"
+  },
+  "resultadoLogrosEnHabits": "{n, plural, =1{Tienes un logro nuevo en Norday Habits} other{Tienes {n} logros nuevos en Norday Habits}}",
+  "@resultadoLogrosEnHabits": {
+    "description": "Logros del hábito que esta app no sabe nombrar",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "resultadoVolver": "Volver al inicio",
+  "@resultadoVolver": {
+    "description": "Botón para salir del resultado"
+  },
+  "estSemana": "Esta semana",
+  "@estSemana": {
+    "description": "Total de la semana"
+  },
+  "estMes": "Este mes",
+  "@estMes": {
+    "description": "Total del mes"
+  },
+  "estMinutos": "{minutos} min",
+  "@estMinutos": {
+    "description": "Total de minutos",
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      }
+    }
+  },
+  "estBarraEtiqueta": "{dia}: {minutos} minutos",
+  "@estBarraEtiqueta": {
+    "description": "Lo que oye el lector en cada barra de la semana",
+    "placeholders": {
+      "dia": {
+        "type": "String"
+      },
+      "minutos": {
+        "type": "int"
+      }
+    }
+  },
+  "estHistorial": "Historial",
+  "@estHistorial": {
+    "description": "Título del historial"
+  },
+  "estSinSesiones": "Aún no hay sesiones.",
+  "@estSinSesiones": {
+    "description": "Historial vacío"
+  },
+  "estCargarMas": "Cargar más",
+  "@estCargarMas": {
+    "description": "Botón para la página siguiente del historial"
+  },
+  "estError": "No se pudieron cargar tus estadísticas.",
+  "@estError": {
+    "description": "Error al cargar el resumen o el historial"
+  },
+  "estadoCompletada": "Completada",
+  "@estadoCompletada": {
+    "description": "Estado de una sesión en el historial"
+  },
+  "estadoTerminada": "Terminada",
+  "@estadoTerminada": {
+    "description": "Estado de una sesión en el historial"
+  },
+  "estadoPerdida": "Perdida",
+  "@estadoPerdida": {
+    "description": "Estado de una sesión en el historial"
+  },
+  "estadoPendiente": "Pendiente de enviar",
+  "@estadoPendiente": {
+    "description": "Sesión en la cola sin conexión"
+  },
+  "estadoNoEnviada": "No enviada",
+  "@estadoNoEnviada": {
+    "description": "Sesión que el backend no aceptó (400 o 409)"
+  },
+  "estNoEnviadaMotivo": "El servidor no la aceptó.",
+  "@estNoEnviadaMotivo": {
+    "description": "Motivo de una no enviada cuando el backend no manda texto"
+  },
+  "filaSesionResumen": "{minutos} de {objetivo} min · {destino}",
+  "@filaSesionResumen": {
+    "description": "Fila del historial: minutos hechos, objetivo y destino",
+    "placeholders": {
+      "minutos": {
+        "type": "int"
+      },
+      "objetivo": {
+        "type": "int"
+      },
+      "destino": {
+        "type": "String"
+      }
+    }
+  },
+  "filaSesionHabito": "Hábito",
+  "@filaSesionHabito": {
+    "description": "Destino de una sesión del historial cuyo nombre no se conoce"
+  },
+  "canalGraciaNombre": "Aviso al salir de la sesión",
+  "@canalGraciaNombre": {
+    "description": "Nombre del canal de notificaciones de la gracia (Ajustes de Android)"
+  },
+  "canalGraciaDescripcion": "Te avisa de que vuelvas antes de perder la sesión.",
+  "@canalGraciaDescripcion": {
+    "description": "Descripción del canal de la gracia"
+  },
+  "canalFinNombre": "Fin de la sesión",
+  "@canalFinNombre": {
+    "description": "Nombre del canal del aviso de fin"
+  },
+  "canalFinDescripcion": "Te avisa cuando la sesión termina con la pantalla apagada.",
+  "@canalFinDescripcion": {
+    "description": "Descripción del canal del aviso de fin"
+  }
+}
