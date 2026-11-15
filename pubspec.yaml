@@ -15,8 +15,8 @@ dependencies:
   # El motor del ecosistema: red, temas, gamificación, mascota, onboarding,
   # preferencias y la sesión con bloqueo suave. Lo que vive ahí no sabe de
   # enfoque ni de hábitos.
-  # Mientras no exista el tag v0.55.0, pubspec_overrides.yaml (no versionado)
-  # apunta a ../norday_flutter_core. Ver CLAUDE.md, «Tocar el paquete».
+  # Fijado por tag (v0.55.0); el pubspec.lock se versiona. Para probar una
+  # rama del core sin tag, ver CLAUDE.md, «Tocar el paquete».
   norday_flutter_core:
     git:
       url: https://github.com/jgrabalosa/norday_flutter_core.git

@@ -125,10 +125,7 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
    `prueba`. En el móvil ya funcionan el login, Inicio y el enlace de
    entrada desde Habits. Antes de pensar en un `.aab`, faltan los avisos de
    gracia y de fin y una build de release.
-5. **Tag del core**: poner `v0.55.0` en `norday_flutter_core` y seguir los
-   pasos de «Pendiente con el core 0.55.0» de `CLAUDE.md` (quitar el
-   override, `flutter pub upgrade norday_flutter_core`, comprobar el
-   `resolved-ref` y commitear el `pubspec.lock`).
+5. **Tag del core**: hecho el 16-nov-2026. El core va fijado por `v0.55.0` y el `pubspec.lock` está versionado.
 6. **Icono, splash y gráficos de Play**: Norday Focus no tiene aún ni icono
    ni símbolo. Hoy lleva el icono por defecto de Flutter y el splash pinta a
    Nori sobre Azul Noche. Cuando los haya, en `store/` y

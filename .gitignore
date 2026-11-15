@@ -52,9 +52,3 @@ android/build/
 # Override local del core para desarrollar contra ../norday_flutter_core.
 # Nunca se commitea: en el repo, la dependencia va siempre por tag.
 pubspec_overrides.yaml
-
-# TEMPORAL: mientras no exista el tag v0.55.0 del core, el lock apunta a la
-# ruta local del override y no sirve a nadie. Cuando Quim ponga el tag, se
-# quita esta línea y se commitea el pubspec.lock (pasos en CLAUDE.md,
-# «Tocar el paquete»).
-pubspec.lock

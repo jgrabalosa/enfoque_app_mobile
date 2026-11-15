@@ -340,17 +340,7 @@ allí, se cambia aquí el `ref:` al tag nuevo y se hace
 `pubspec_overrides.yaml` con `path: ../norday_flutter_core`, que no se
 commitea (está en `.gitignore`).
 
-**Pendiente con el core 0.55.0**: el `ref:` ya apunta a `v0.55.0`, pero el
-tag no existe todavía y el desarrollo va con el override. Por eso
-`pubspec.lock` está **temporalmente** en `.gitignore`. Cuando Quim ponga el
-tag `v0.55.0` en el core:
-
-1. Borrar `pubspec_overrides.yaml`.
-2. `flutter pub upgrade norday_flutter_core`.
-3. Comprobar que el `resolved-ref` del `pubspec.lock` es el commit que da
-   `git rev-parse v0.55.0^{commit}` en el core.
-4. Quitar la línea `pubspec.lock` (y su comentario) del `.gitignore`.
-5. `flutter analyze` y `flutter test`, y commitear el lock.
+**Core fijado por `v0.55.0`** (16-nov-2026): `resolved-ref` `5861899d85e2933774c6349ad0e98844f3eb5965`. El `pubspec.lock` se versiona desde entonces.
 
 ## Variantes: produccion y prueba
 
