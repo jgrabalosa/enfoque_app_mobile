@@ -1,0 +1,51 @@
+name: enfoque_app_mobile
+description: "Norday Focus: temporizador de concentración con bloqueo suave."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  # El motor del ecosistema: red, temas, gamificación, mascota, onboarding,
+  # preferencias y la sesión con bloqueo suave. Lo que vive ahí no sabe de
+  # enfoque ni de hábitos.
+  # Mientras no exista el tag v0.55.0, pubspec_overrides.yaml (no versionado)
+  # apunta a ../norday_flutter_core. Ver CLAUDE.md, «Tocar el paquete».
+  norday_flutter_core:
+    git:
+      url: https://github.com/jgrabalosa/norday_flutter_core.git
+      ref: v0.55.0
+  intl: any
+  http: ^1.2.0
+  shared_preferences: ^2.5.5
+  firebase_core: ^4.11.0
+  google_fonts: ^8.1.0
+  firebase_crashlytics: ^5.2.6
+  lucide_icons_flutter: ^3.1.15
+  # Los avisos locales de la sesión (gracia y fin). Van aquí y no en el core:
+  # obligan a activar el desugaring en el Gradle de la app (ver CLAUDE.md).
+  flutter_local_notifications: ^23.0.2
+  timezone: ^0.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    # Las fuentes de las identidades, empaquetadas. `google_fonts` mira
+    # primero en los assets y sólo baja por HTTP si no encuentra el fichero,
+    # así que basta con listarlas aquí: NO van en la sección `fonts:`, y sus
+    # nombres no se pueden tocar porque el paquete las busca por el nombre con
+    # el que las sirve la API de Google. Son las mismas que en Norday Habits.
+    # Sin itálicas: ninguna identidad pide `FontStyle.italic`.
+    - google_fonts/

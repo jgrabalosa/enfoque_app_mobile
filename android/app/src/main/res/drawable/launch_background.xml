@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arranque provisional: solo el Azul Noche de la marca. Norday Focus aún no
+     tiene icono ni símbolo propios; cuando los haya, flutter_native_splash
+     (como en Norday Habits) sustituye este fichero. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/azul_noche" />
+</layer-list>

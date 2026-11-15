@@ -1,0 +1,60 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Localizaciones generadas por flutter gen-l10n (se regeneran en cada build)
+lib/l10n/app_localizations*.dart
+
+android/build/
+
+# Override local del core para desarrollar contra ../norday_flutter_core.
+# Nunca se commitea: en el repo, la dependencia va siempre por tag.
+pubspec_overrides.yaml
+
+# TEMPORAL: mientras no exista el tag v0.55.0 del core, el lock apunta a la
+# ruta local del override y no sirve a nadie. Cuando Quim ponga el tag, se
+# quita esta línea y se commitea el pubspec.lock (pasos en CLAUDE.md,
+# «Tocar el paquete»).
+pubspec.lock

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Azul Noche de la marca. Fondo del arranque mientras Flutter pinta su
+         primer frame (SplashGenerico, con Nori). -->
+    <color name="azul_noche">#0A1628</color>
+</resources>
