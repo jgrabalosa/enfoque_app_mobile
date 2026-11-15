@@ -171,12 +171,12 @@
   "@sesionTerminarTitulo": {
     "description": "Título de la confirmación de Terminar"
   },
-  "sesionTerminarCuenta": "Llevas {minutos} min. La sesión cuenta con lo hecho.",
+  "sesionTerminarCuenta": "Llevas {duracion}. La sesión cuenta con lo hecho.",
   "@sesionTerminarCuenta": {
-    "description": "Confirmación de Terminar con al menos 10 minutos",
+    "description": "Confirmación de Terminar con al menos 10 minutos: «Llevas 25 min», «Llevas 1 h 15 min». {duracion} sale de duracionLegible",
     "placeholders": {
-      "minutos": {
-        "type": "int"
+      "duracion": {
+        "type": "String"
       }
     }
   },

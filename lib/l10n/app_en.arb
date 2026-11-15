@@ -35,7 +35,7 @@
   "sesionRendirse": "Give up",
   "sesionSeguir": "Keep going",
   "sesionTerminarTitulo": "Finish now?",
-  "sesionTerminarCuenta": "You've done {minutos} min. The session counts what you've done.",
+  "sesionTerminarCuenta": "You've done {duracion}. The session counts what you've done.",
   "sesionTerminarCorta": "You've done less than 10 minutes: the session won't count, but it isn't lost either.",
   "sesionRendirseTitulo": "Give up?",
   "sesionRendirseCuerpo": "The session is lost and adds no minutes.",

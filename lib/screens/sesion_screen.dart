@@ -98,7 +98,7 @@ class _SesionScreenState extends State<SesionScreen> {
     final si = await _confirmar(
       titulo: l.sesionTerminarTitulo,
       cuerpo: cuenta
-          ? l.sesionTerminarCuenta(hecho.inMinutes)
+          ? l.sesionTerminarCuenta(duracionLegible(l, hecho.inMinutes))
           : l.sesionTerminarCorta,
       accion: l.sesionTerminar,
     );

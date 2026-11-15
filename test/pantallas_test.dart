@@ -61,8 +61,8 @@ void main() {
       final m = Montaje(tester);
       m.api.listaDestinos = [destinoLeer];
       m.api.resumenDado = ResumenEnfoque(
-        dias: [DiaResumen(dia: hoy, minutos: 50, sesiones: 2)],
-        totalMinutos: 50,
+        dias: [DiaResumen(dia: hoy, minutos: 40, sesiones: 2)],
+        totalMinutos: 40,
         totalSesiones: 2,
         rachaActual: 3,
       );
@@ -71,11 +71,11 @@ void main() {
       await asentar(tester);
 
       expect(m.api.resumenesPedidos.single, (hoy, hoy));
-      expect(find.text('50'), findsOneWidget);
+      expect(find.text('40 min'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
       expect(find.text('3 días'), findsOneWidget);
       expect(
-        find.bySemanticsLabel('${l.inicioMinutosHoy}: 50'),
+        find.bySemanticsLabel('${l.inicioMinutosHoy}: 40 min'),
         findsOneWidget,
       );
       expect(find.text('Leer · 20 / 30 min'), findsOneWidget);
@@ -109,6 +109,23 @@ void main() {
       await asentar(tester);
       expect(m.permisosPedidos, [7]);
       await cerrarSesion(tester, m);
+    });
+
+    testWidgets('los minutos de hoy, desde una hora, en horas', (tester) async {
+      final m = Montaje(tester);
+      m.api.resumenDado = ResumenEnfoque(
+        dias: [DiaResumen(dia: hoy, minutos: 90, sesiones: 3)],
+        totalMinutos: 90,
+        totalSesiones: 3,
+      );
+      await tester.pumpWidget(inicio(m));
+      await asentar(tester);
+
+      expect(find.text('1 h 30 min'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel('${l.inicioMinutosHoy}: 1 h 30 min'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('un destino de una hora o más, en horas', (tester) async {
@@ -285,6 +302,35 @@ void main() {
       await cerrarSesion(tester, m);
     });
 
+    testWidgets('Terminar con una hora o más: «Llevas 1 h 15 min»', (
+      tester,
+    ) async {
+      final m = Montaje(tester);
+      await m.controlador.iniciar();
+      await m.controlador.empezar(duracion: const Duration(minutes: 120));
+      await tester.pumpWidget(
+        m.app(
+          SesionScreen(
+            controlador: m.controlador,
+            cargarMascota: () async => null,
+          ),
+        ),
+      );
+      m.reloj.avanzar(const Duration(minutes: 75));
+      await tester.pump(const Duration(seconds: 1));
+      await asentar(tester);
+
+      await tester.tap(find.text(l.sesionTerminar));
+      await asentar(tester);
+      expect(
+        find.text('Llevas 1 h 15 min. La sesión cuenta con lo hecho.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text(l.sesionSeguir));
+      await asentar(tester);
+      await cerrarSesion(tester, m);
+    });
+
     testWidgets('Terminar con 10 min o más: cuenta con lo hecho', (
       tester,
     ) async {
@@ -306,7 +352,10 @@ void main() {
 
       await tester.tap(find.text(l.sesionTerminar));
       await asentar(tester);
-      expect(find.text(l.sesionTerminarCuenta(12)), findsOneWidget);
+      expect(
+        find.text('Llevas 12 min. La sesión cuenta con lo hecho.'),
+        findsOneWidget,
+      );
       await tester.tap(find.text(l.sesionTerminar).last);
       await asentar(tester);
       expect(m.api.enviadas.single.estado, EstadoEnvio.terminada);

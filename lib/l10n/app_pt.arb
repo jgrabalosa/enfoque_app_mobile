@@ -35,7 +35,7 @@
   "sesionRendirse": "Desistir",
   "sesionSeguir": "Continuar",
   "sesionTerminarTitulo": "Terminar já?",
-  "sesionTerminarCuenta": "Já levas {minutos} min. A sessão conta com o que fizeste.",
+  "sesionTerminarCuenta": "Já levas {duracion}. A sessão conta com o que fizeste.",
   "sesionTerminarCorta": "Levas menos de 10 minutos: a sessão não vai contar, mas também não se perde.",
   "sesionRendirseTitulo": "Desistir?",
   "sesionRendirseCuerpo": "A sessão perde-se e não soma minutos.",

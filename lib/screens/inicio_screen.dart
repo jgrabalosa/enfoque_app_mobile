@@ -274,8 +274,9 @@ class _InicioScreenState extends State<InicioScreen> {
   }
 }
 
-/// Minutos hoy, sesiones hoy y racha. Con error, una raya en vez de la
-/// cifra: un cero diría algo que no se sabe.
+/// Minutos hoy (con [duracionLegible]: «40 min», «1 h 30 min»), sesiones
+/// hoy y racha. Con error, una raya en vez de la cifra: un cero diría algo
+/// que no se sabe.
 class _CifrasHoy extends StatelessWidget {
   const _CifrasHoy({
     required this.resumen,
@@ -298,7 +299,7 @@ class _CifrasHoy extends StatelessWidget {
         Expanded(
           child: _Cifra(
             etiqueta: l.inicioMinutosHoy,
-            valor: cifra(() => '${dia!.minutos}'),
+            valor: cifra(() => duracionLegible(l, dia!.minutos)),
             icono: LucideIcons.timer,
           ),
         ),
@@ -349,11 +350,16 @@ class _Cifra extends StatelessWidget {
           children: [
             Icon(icono, size: 18, color: t.points),
             const SizedBox(height: AppSpacing.xs),
-            Text(
-              valor,
-              style: tema.titleLarge?.copyWith(color: t.text),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            // «1 h 30 min» no cabe entero en un tercio de pantalla: se
+            // encoge en vez de cortarse.
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                valor,
+                style: tema.titleLarge?.copyWith(color: t.text),
+                maxLines: 1,
+              ),
             ),
             Text(
               etiqueta,
