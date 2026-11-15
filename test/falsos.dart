@@ -84,9 +84,17 @@ class ApiFalsa implements ApiEnfoque {
     return resumenDado;
   }
 
+  /// Páginas concretas del historial; las demás, [historialDado].
+  final Map<int, PaginaHistorial> paginasHistorial = {};
+
+  /// Si hay puerta para una página, esa página espera a que se complete.
+  final Map<int, Completer<void>> puertasHistorial = {};
+
   @override
-  Future<PaginaHistorial> historial({int pagina = 0, int tamano = 20}) async =>
-      historialDado;
+  Future<PaginaHistorial> historial({int pagina = 0, int tamano = 20}) async {
+    await puertasHistorial[pagina]?.future;
+    return paginasHistorial[pagina] ?? historialDado;
+  }
 }
 
 class LanzadorFalso implements Lanzador {

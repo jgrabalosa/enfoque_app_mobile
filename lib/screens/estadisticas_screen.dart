@@ -44,9 +44,13 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
   bool _cargandoMas = false;
   bool _error = false;
 
-  /// Nombres de los destinos que el backend da hoy, para poner nombre a las
-  /// sesiones del historial (que solo traen tipo e id).
-  Map<int, String> _nombres = const {};
+  /// Nombres de los destinos que el backend da hoy, por (tipo, id), para
+  /// poner nombre a las sesiones del historial (que solo traen tipo e id).
+  Map<(String, int), String> _nombres = const {};
+
+  /// Sube con cada [_cargar]: una página de «Cargar más» pedida antes de la
+  /// última recarga ya no es de esta lista y se descarta.
+  int _generacion = 0;
 
   DateTime get _hoy {
     final h = (widget.hoy ?? DateTime.now)();
@@ -75,7 +79,9 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
   }
 
   Future<void> _cargar() async {
+    _generacion++;
     setState(() {
+      _cargandoMas = false;
       _cargando = true;
       _error = false;
     });
@@ -113,7 +119,9 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
     try {
       final destinos = await _s.api.destinos();
       if (!mounted) return;
-      setState(() => _nombres = {for (final d in destinos) d.id: d.nombre});
+      setState(
+        () => _nombres = {for (final d in destinos) (d.tipo, d.id): d.nombre},
+      );
     } catch (_) {
       // Sin nombres, «Hábito».
     }
@@ -121,13 +129,14 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
 
   Future<void> _cargarMas() async {
     if (_cargandoMas) return;
+    final generacion = _generacion;
     setState(() => _cargandoMas = true);
     try {
       final pagina = await _s.api.historial(
         pagina: _pagina + 1,
         tamano: _tamanoPagina,
       );
-      if (!mounted) return;
+      if (!mounted || generacion != _generacion) return;
       setState(() {
         final claves = _historial.map((e) => e.clave).toSet();
         _historial.addAll(
@@ -137,9 +146,13 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
         _hayMas = pagina.hayMas;
       });
     } catch (e) {
-      if (mounted) MensajesError.enSnackBar(context, e);
+      if (mounted && generacion == _generacion) {
+        MensajesError.enSnackBar(context, e);
+      }
     } finally {
-      if (mounted) setState(() => _cargandoMas = false);
+      if (mounted && generacion == _generacion) {
+        setState(() => _cargandoMas = false);
+      }
     }
   }
 
@@ -215,7 +228,9 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
           for (final s in _historial) ...[
             FilaSesion.deServidor(
               sesion: s,
-              nombreDestino: s.destinoId == null ? null : _nombres[s.destinoId],
+              nombreDestino: s.destinoTipo == null || s.destinoId == null
+                  ? null
+                  : _nombres[(s.destinoTipo!, s.destinoId!)],
             ),
             const SizedBox(height: AppSpacing.sm),
           ],

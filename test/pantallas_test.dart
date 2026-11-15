@@ -433,4 +433,71 @@ void main() {
       expect(find.text('25 de 25 min · Leer'), findsOneWidget);
     });
   });
+
+  group('Estadísticas, carga', () {
+    SesionServidor sesion(
+      String clave, {
+      String tipo = 'habito',
+      int id = 16,
+    }) => SesionServidor(
+      clave: clave,
+      inicioUtc: DateTime.utc(2026, 11, 16, 8),
+      duracionSeg: 600,
+      duracionObjetivoMin: 25,
+      estado: EstadoEnvio.terminada,
+      destinoTipo: tipo,
+      destinoId: id,
+    );
+
+    testWidgets('«Cargar más» que llega después de recargar se descarta', (
+      tester,
+    ) async {
+      final m = Montaje(tester);
+      final hoy = DateTime(2026, 11, 18);
+      m.api.paginasHistorial[0] = PaginaHistorial(
+        sesiones: [sesion('p0')],
+        hayMas: true,
+      );
+      final puerta = Completer<void>();
+      m.api.puertasHistorial[1] = puerta;
+      m.api.paginasHistorial[1] = PaginaHistorial(sesiones: [sesion('vieja')]);
+
+      Widget pantalla(bool activa) => m.app(
+        Scaffold(
+          body: EstadisticasScreen(activa: activa, hoy: () => hoy),
+        ),
+      );
+      await tester.pumpWidget(pantalla(true));
+      await asentar(tester);
+      await tester.tap(find.text(l.estCargarMas));
+      await asentar(tester);
+
+      // Mientras tanto, recarga (vuelve a la pestaña) con otra página 0.
+      m.api.paginasHistorial[0] = PaginaHistorial(sesiones: [sesion('nueva')]);
+      await tester.pumpWidget(pantalla(false));
+      await tester.pumpWidget(pantalla(true));
+      await asentar(tester);
+      puerta.complete();
+      await asentar(tester);
+
+      expect(find.byType(FilaSesion), findsOneWidget);
+      expect(find.text(l.estCargarMas), findsNothing);
+    });
+
+    testWidgets('el nombre del destino va por tipo e id', (tester) async {
+      final m = Montaje(tester);
+      m.api.listaDestinos = [destinoLeer];
+      m.api.historialDado = PaginaHistorial(
+        sesiones: [sesion('otro', tipo: 'otro', id: 16)],
+      );
+      await tester.pumpWidget(
+        m.app(
+          Scaffold(body: EstadisticasScreen(hoy: () => DateTime(2026, 11, 18))),
+        ),
+      );
+      await asentar(tester);
+      expect(find.text('10 de 25 min · Leer'), findsNothing);
+      expect(find.text('10 de 25 min · ${l.filaSesionHabito}'), findsOneWidget);
+    });
+  });
 }
