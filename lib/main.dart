@@ -21,6 +21,7 @@ import 'services/canal_sistema.dart';
 import 'services/cola_envios.dart';
 import 'services/controlador_enfoque.dart';
 import 'services/crashlytics_service.dart';
+import 'services/desfase_servidor.dart';
 import 'services/servicios_enfoque.dart';
 
 /// El usuario con la sesión abierta, o `null` (sin token no hay usuario).
@@ -98,7 +99,11 @@ void main() async {
     unawaited(CrashlyticsService.registrarError(e, pila));
   }
 
-  final api = ApiServiceEnfoque();
+  // Lo que va el reloj del servidor por delante del móvil, medido en cada
+  // respuesta del backend; corrige el inicio de las sesiones al encolarlas.
+  final desfase = DesfaseServidor();
+  await desfase.cargar();
+  final api = ApiServiceEnfoque(desfase: desfase);
   final motor = MotorSesion(
     reloj: const RelojSistema(),
     pantalla: const PantallaSistema(),
@@ -108,6 +113,7 @@ void main() async {
     motor: motor,
     cola: ColaEnvios(api: api, usuarioActual: usuarioIdActual),
     usuarioActual: usuarioIdActual,
+    desfase: desfase,
   );
   final servicios = ServiciosEnfoque(
     api: api,

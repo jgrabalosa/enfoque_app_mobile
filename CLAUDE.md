@@ -52,6 +52,8 @@ lista completa, en el `CLAUDE.md` del paquete.
     (`enviar`/`verificar`/`parsear`).
   - `cola_envios.dart` — la cola persistente de sesiones acabadas y el
     historial local de las no aceptadas.
+  - `desfase_servidor.dart` — cuánto va el reloj del servidor por delante
+    del móvil (cabecera `Date`), para corregir el inicio al encolar.
   - `controlador_enfoque.dart` — junta el motor del core y la cola:
     empieza sesiones con su destino, recoge cada sesión acabada, la encola,
     la envía y la cierra en el motor.
@@ -160,8 +162,29 @@ El contrato es el de `EnfoqueController` del backend:
 - Una sola pasada a la vez; lo que se pide durante una pasada se hace al
   acabarla.
 
-Claves en `SharedPreferences`: `enfoque_cola_envios` y
-`enfoque_envios_no_aceptados`. La sesión en curso la guarda el core en
+### El reloj del móvil, desfasado
+
+El backend valida el inicio de cada sesión contra su reloj (que no acabe
+más de 2 minutos en el futuro, que no empezara hace más de 7 días, que no se
+solape) y saca de él el día. Un móvil que va mal de hora daría 400 o el día
+equivocado. Por eso (decisión de la revisión del 15-nov-2026):
+
+- `ApiServiceEnfoque` apunta en `DesfaseServidor` la cabecera `Date` de cada
+  respuesta del backend: desfase = servidor − móvil, guardado en
+  `enfoque_desfase_servidor_ms`.
+- El controlador corrige `inicioUtc` **una sola vez, al encolar**, con el
+  desfase conocido entonces. Después el cuerpo no cambia nunca: la misma
+  clave con otro cuerpo daría 409. Sin desfase conocido, la hora del móvil.
+- `Date` va en segundos y llega con la latencia: ±1 s de ruido. Una medida
+  solo sustituye a la guardada si se aparta más de 5 s (histéresis), y
+  desfases de menos de 5 s no se corrigen. Si no, dos sesiones seguidas
+  corregidas con medidas distintas podrían solaparse un segundo (409).
+- La duración no se toca: sale del reloj monótono.
+- **Límite**: si el desfase cambia de verdad entre dos sesiones seguidas
+  (alguien cambia la hora del móvil), esas dos pueden solaparse.
+
+Claves en `SharedPreferences`: `enfoque_cola_envios`,
+`enfoque_envios_no_aceptados` y `enfoque_desfase_servidor_ms`. La sesión en curso la guarda el core en
 `sesion_concentracion_actual`.
 
 ### Logros que paga el hábito
@@ -348,6 +371,8 @@ Lo que el diseño no decía y se resolvió con la opción más conservadora.
   demás se cuentan («en Norday Habits»).
 - **Enlace a un destino que no está en la lista**: aviso y «Sin hábito».
 - **Hoy es el día del móvil** (ver arriba).
+- **El inicio se corrige con el desfase del servidor** una sola vez, al
+  encolar (ver «El reloj del móvil, desfasado»).
 - **El permiso de avisos se pide una sola vez**, la primera vez que se pulsa
   Empezar, aunque se deniegue.
 - **Atrás en la sesión pregunta si rendirse**; no la abandona.

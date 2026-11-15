@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'dart:io' show HttpDate;
 
 import 'package:enfoque_app_mobile/services/api_service_enfoque.dart';
+import 'package:enfoque_app_mobile/services/desfase_servidor.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'datos_prueba.dart';
 
@@ -124,5 +127,32 @@ void main() {
     expect(mensajeDe('{"mensaje":""}'), isNull);
     expect(mensajeDe('[]'), isNull);
     expect(mensajeDe(''), isNull);
+  });
+
+  test('cada respuesta apunta la hora del servidor (cabecera Date)', () async {
+    SharedPreferences.setMockInitialValues({});
+    final movil = DateTime.utc(2026, 11, 16, 9);
+    final desfase = DesfaseServidor();
+    final api = ApiServiceEnfoque(
+      baseUrl: 'https://ejemplo.test/api',
+      cabeceras: () async => const {},
+      desfase: desfase,
+      ahoraUtc: () => movil,
+      cliente: MockClient(
+        (_) async => http.Response(
+          '{"destinos":[]}',
+          200,
+          headers: {
+            'content-type': 'application/json',
+            'date': HttpDate.format(movil.add(const Duration(minutes: 4))),
+          },
+        ),
+      ),
+    );
+    await api.destinos();
+    expect(desfase.desfase, const Duration(minutes: 4));
+    // También en el envío de una sesión, aunque sea un error.
+    await api.enviarSesion(peticionDePrueba());
+    expect(desfase.desfase, const Duration(minutes: 4));
   });
 }

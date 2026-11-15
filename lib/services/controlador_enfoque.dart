@@ -6,6 +6,7 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../models/enfoque.dart';
 import 'api_service_enfoque.dart';
 import 'cola_envios.dart';
+import 'desfase_servidor.dart';
 
 /// La clave de `datosApp` con el destino elegido al empezar.
 const String claveDatosDestino = 'destino';
@@ -134,11 +135,16 @@ class ControladorEnfoque {
     required this.motor,
     required this.cola,
     required this.usuarioActual,
+    this.desfase,
   });
 
   final MotorSesion motor;
   final ColaEnvios cola;
   final Future<int?> Function() usuarioActual;
+
+  /// El desfase servidor − móvil con que se corrige el inicio al encolar. Sin
+  /// él (o sin desfase conocido), la hora del móvil.
+  final DesfaseServidor? desfase;
 
   final ValueNotifier<ResultadoSesion?> _resultado = ValueNotifier(null);
   final ValueNotifier<int> _refrescos = ValueNotifier(0);
@@ -225,10 +231,16 @@ class ControladorEnfoque {
       _poner(base.con(envio: EnvioResultado.pendiente));
       return;
     }
+    // El inicio, en la hora del servidor, UNA vez: si la clave ya está en la
+    // cola, encolar no toca lo guardado, y el cuerpo de una clave no cambia
+    // nunca (con otro cuerpo, el backend daría 409).
+    final corregida = desfase == null
+        ? peticion
+        : peticion.conInicio(desfase!.corregir(peticion.inicioUtc));
     bool guardada;
     try {
       guardada = await cola.encolar(
-        peticion,
+        corregida,
         usuarioId: dueno,
         destino: destino,
       );

@@ -151,6 +151,18 @@ class PeticionSesion {
 
   bool get conDestino => destinoTipo != null && destinoId != null;
 
+  /// La misma petición con otro inicio (la corrección del desfase con el
+  /// servidor, una sola vez, al encolar).
+  PeticionSesion conInicio(DateTime inicio) => PeticionSesion(
+    clave: clave,
+    inicioUtc: inicio.toUtc(),
+    duracionSeg: duracionSeg,
+    duracionObjetivoMin: duracionObjetivoMin,
+    estado: estado,
+    destinoTipo: destinoTipo,
+    destinoId: destinoId,
+  );
+
   Map<String, Object?> toJson() => {
     'clave': clave,
     // toIso8601String de un DateTime en UTC acaba en Z: lo que pide el

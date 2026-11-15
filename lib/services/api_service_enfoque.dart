@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 import '../models/enfoque.dart';
+import 'desfase_servidor.dart';
 
 /// Qué pasó al enviar una sesión.
 sealed class ResultadoEnvio {
@@ -63,12 +64,36 @@ class ApiServiceEnfoque implements ApiEnfoque {
     http.Client? cliente,
     Future<Map<String, String>> Function()? cabeceras,
     this.baseUrl = ApiServiceCore.baseUrl,
+    this.desfase,
+    DateTime Function()? ahoraUtc,
   }) : _cliente = cliente ?? ApiServiceCore.cliente,
-       _cabeceras = cabeceras ?? ApiServiceCore.getHeaders;
+       _cabeceras = cabeceras ?? ApiServiceCore.getHeaders,
+       _ahoraUtc = ahoraUtc ?? (() => DateTime.now().toUtc());
 
   final http.Client _cliente;
   final Future<Map<String, String>> Function() _cabeceras;
   final String baseUrl;
+
+  /// Donde se apunta la cabecera `Date` de cada respuesta (ver
+  /// [DesfaseServidor]). Sin él, no se mide nada.
+  final DesfaseServidor? desfase;
+  final DateTime Function() _ahoraUtc;
+
+  /// Envía con la tubería del core y apunta la hora del servidor.
+  Future<http.Response> _enviar(
+    Future<http.Response> Function() peticion,
+  ) async {
+    final r = await ApiServiceCore.enviar(peticion);
+    final d = desfase;
+    if (d != null) {
+      try {
+        await d.registrarCabecera(r.headers['date'], _ahoraUtc());
+      } catch (_) {
+        // Medir la hora nunca rompe una petición.
+      }
+    }
+    return r;
+  }
 
   Uri _uri(String ruta, [Map<String, String>? query]) =>
       Uri.parse('$baseUrl/enfoque/$ruta').replace(queryParameters: query);
@@ -76,7 +101,7 @@ class ApiServiceEnfoque implements ApiEnfoque {
   @override
   Future<List<DestinoDisponible>> destinos() async {
     final headers = await _cabeceras();
-    final r = await ApiServiceCore.enviar(
+    final r = await _enviar(
       () => _cliente.get(_uri('destinos'), headers: headers),
     );
     ApiServiceCore.verificar(r);
@@ -87,7 +112,7 @@ class ApiServiceEnfoque implements ApiEnfoque {
   Future<ResultadoEnvio> enviarSesion(PeticionSesion peticion) async {
     try {
       final headers = await _cabeceras();
-      final r = await ApiServiceCore.enviar(
+      final r = await _enviar(
         () => _cliente.post(
           _uri('sesiones'),
           headers: headers,
@@ -130,7 +155,7 @@ class ApiServiceEnfoque implements ApiEnfoque {
   @override
   Future<ResumenEnfoque> resumen(DateTime desde, DateTime hasta) async {
     final headers = await _cabeceras();
-    final r = await ApiServiceCore.enviar(
+    final r = await _enviar(
       () => _cliente.get(
         _uri('resumen', {'desde': textoDia(desde), 'hasta': textoDia(hasta)}),
         headers: headers,
@@ -145,7 +170,7 @@ class ApiServiceEnfoque implements ApiEnfoque {
   @override
   Future<PaginaHistorial> historial({int pagina = 0, int tamano = 20}) async {
     final headers = await _cabeceras();
-    final r = await ApiServiceCore.enviar(
+    final r = await _enviar(
       () => _cliente.get(
         _uri('sesiones', {'pagina': '$pagina', 'tamano': '$tamano'}),
         headers: headers,

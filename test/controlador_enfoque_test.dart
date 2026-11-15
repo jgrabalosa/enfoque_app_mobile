@@ -6,6 +6,7 @@ import 'package:enfoque_app_mobile/models/enfoque.dart';
 import 'package:enfoque_app_mobile/services/api_service_enfoque.dart';
 import 'package:enfoque_app_mobile/services/cola_envios.dart';
 import 'package:enfoque_app_mobile/services/controlador_enfoque.dart';
+import 'package:enfoque_app_mobile/services/desfase_servidor.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,6 +32,7 @@ void main() {
   ({MotorSesion motor, ColaEnvios cola, ControladorEnfoque c}) montar(
     WidgetTester tester, {
     AlmacenCola almacen = const AlmacenPreferencias(),
+    DesfaseServidor? desfase,
   }) {
     final motor = MotorSesion(
       reloj: reloj,
@@ -48,6 +50,7 @@ void main() {
       motor: motor,
       cola: cola,
       usuarioActual: () async => usuario,
+      desfase: desfase,
     );
     return (motor: motor, cola: cola, c: c);
   }
@@ -368,5 +371,47 @@ void main() {
     expect(usuarioDeDatos(datosAppDe(destinoLeer)), isNull);
     expect(datosAppDe(null), isNull);
     expect(usuarioDeDatos({'usuarioId': 'x'}), isNull);
+  });
+
+  testWidgets('móvil con la hora mal: el inicio se corrige UNA vez al '
+      'encolar y el cuerpo no cambia en los reintentos', (tester) async {
+    final desfase = DesfaseServidor();
+    await desfase.registrar(
+      reloj.utc.add(const Duration(minutes: 3)),
+      reloj.utc,
+    );
+    api.envios.add(const EnvioFallido(ApiException(TipoErrorApi.servidor)));
+    final m = montar(tester, desfase: desfase);
+    await m.c.iniciar();
+    final inicioMovil = reloj.utc;
+    await m.c.empezar(duracion: const Duration(minutes: 25));
+    reloj.avanzar(const Duration(minutes: 12));
+    await m.motor.terminar();
+    await asentar(tester);
+    expect(
+      api.enviadas.single.inicioUtc,
+      inicioMovil.add(const Duration(minutes: 3)),
+    );
+
+    // Cambia el desfase conocido: el reintento manda el mismo cuerpo.
+    await desfase.registrar(
+      reloj.utc.add(const Duration(minutes: 9)),
+      reloj.utc,
+    );
+    await m.c.enviarPendientes();
+    await asentar(tester);
+    expect(api.cuerposEnviados, hasLength(2));
+    expect(api.cuerposEnviados[1], api.cuerposEnviados[0]);
+  });
+
+  testWidgets('sin desfase conocido: la hora del móvil', (tester) async {
+    final m = montar(tester, desfase: DesfaseServidor());
+    await m.c.iniciar();
+    final inicioMovil = reloj.utc;
+    await m.c.empezar(duracion: const Duration(minutes: 25));
+    reloj.avanzar(const Duration(minutes: 12));
+    await m.motor.terminar();
+    await asentar(tester);
+    expect(api.enviadas.single.inicioUtc, inicioMovil);
   });
 }
