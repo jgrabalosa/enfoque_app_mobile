@@ -132,6 +132,10 @@ propios en v1), ni `publicarProgresoDia`, ni el cierre del día.
 4. `HomeShell` ve el resultado nuevo y sustituye la sesión por
    `ResultadoScreen`, que se actualiza cuando llega la respuesta.
 
+`MotorSesion.iniciar()` se llama en `main()`, antes de `runApp`: el motor
+recompone y vigila la sesión aunque la app abra en el login. La recogida
+(`ControladorEnfoque.iniciar()`) la hace cada `HomeShell` al montarse.
+
 **Otra cuenta, o ninguna, al acabar**: la sesión se encola con su dueño
 igualmente y la cola solo la envía cuando ese usuario vuelva a estar
 conectado. Solo una sesión sin dueño guardado (anterior a guardarlo) y sin

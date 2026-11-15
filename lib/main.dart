@@ -125,6 +125,16 @@ void main() async {
     celebrar: CelebracionService.mostrar,
   );
 
+  // El motor escucha el ciclo de vida desde ya, antes de runApp: una sesión
+  // en marcha sigue vigilada aunque la app abra en el login (sesión de
+  // usuario caducada). Recoger la sesión acabada sigue siendo cosa de
+  // HomeShell, que sabe quién está conectado.
+  try {
+    await motor.iniciar();
+  } catch (e, pila) {
+    unawaited(CrashlyticsService.registrarError(e, pila));
+  }
+
   // Lo que llega de Android sin pedirlo: el desbloqueo (para la sesión) y
   // los enlaces norday-enfoque:// con la app abierta.
   final eventos = EventosSistema()..escuchar();
