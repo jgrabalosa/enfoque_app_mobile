@@ -30,7 +30,9 @@ dependencies:
   lucide_icons_flutter: ^3.1.15
   # Los avisos locales de la sesión (gracia y fin). Van aquí y no en el core:
   # obligan a activar el desugaring en el Gradle de la app (ver CLAUDE.md).
-  flutter_local_notifications: ^23.0.2
+  # Por debajo de la 23, que pide compileSdk 37 y AGP 9.1.1 (y con ello
+  # Gradle 9.3.1): esta app compila con el mismo toolchain que Norday Habits.
+  flutter_local_notifications: ">=22.3.3 <23.0.0"
   timezone: ^0.11.0
 
 dev_dependencies:

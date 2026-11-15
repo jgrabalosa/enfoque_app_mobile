@@ -34,7 +34,7 @@ Pestañas: Inicio y Estadísticas, más el menú.
 ## Stack
 
 Flutter 3.44.4 (Dart 3.12) · Android · Firebase (Crashlytics y
-notificaciones) · `flutter_local_notifications` 23 · Lucide Icons. El backend
+notificaciones) · `flutter_local_notifications` 22.3 · Lucide Icons. El backend
 es [`habitos-app`](https://github.com/jgrabalosa/habitos-app) (módulo
 `enfoque`, `/api/enfoque`).
 
@@ -90,14 +90,13 @@ Play** (cuando exista): mismo paquete, otra firma.
 
 Los `app_localizations*.dart` se generan al compilar y no se versionan.
 
-### Requisitos de Android que no son los de Norday Habits
+### Toolchain de Android
 
-`flutter_local_notifications` 23 pide, y están puestos en `android/`:
-
-- `compileSdk = 37` (Flutter 3.44.4 trae 36);
-- Android Gradle Plugin **9.1.1** (Habits usa 9.0.1);
-- desugaring (`isCoreLibraryDesugaringEnabled` y
-  `desugar_jdk_libs:2.1.4`).
+El mismo que Norday Habits: `compileSdk = flutter.compileSdkVersion` (36 en
+Flutter 3.44.4), Android Gradle Plugin 9.0.1 y Gradle 9.1.0. Lo único que
+añade, porque lo pide `flutter_local_notifications` 22.3.3, es el
+desugaring (`isCoreLibraryDesugaringEnabled` y `desugar_jdk_libs:2.1.4`) y
+`multiDexEnabled`.
 
 **Nada del Gradle ni del Kotlin se ha compilado aún**: se escribió en una
 máquina sin SDK de Android. El primer `flutter build apk` lo dirá.

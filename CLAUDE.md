@@ -193,8 +193,9 @@ Cada API va comentada en Kotlin con su URL de developer.android.com.
 
 ## Avisos locales
 
-`flutter_local_notifications` 23.0.2, aquí y no en el core (decisión del
-core del 15-nov-2026: en el core rompería el build de Habits).
+`flutter_local_notifications` 22.3.x (`">=22.3.3 <23.0.0"`), aquí y no en
+el core (decisión del core del 15-nov-2026: en el core rompería el build de
+Habits).
 
 - Gracia: canal `enfoque_gracia`, importancia alta, `timeoutAfter = quedan`
   (caduca sola al vencer la gracia). Id fijo 7101.
@@ -205,8 +206,10 @@ core del 15-nov-2026: en el core rompería el build de Habits).
 - Sin `SCHEDULE_EXACT_ALARM`, sin `RECEIVE_BOOT_COMPLETED` ni el receptor de
   arranque del plugin: tras un reinicio la sesión está perdida y no hay fin
   que avisar. Sí `ScheduledNotificationReceiver`.
-- **Requisitos de Gradle que no tiene Habits**: `compileSdk = 37`, AGP
-  9.1.1, desugaring con `desugar_jdk_libs:2.1.4` y `multiDexEnabled`.
+- **El toolchain es el de Habits** (`compileSdk = flutter.compileSdkVersion`,
+  AGP 9.0.1, Gradle 9.1.0). Lo único que añade: desugaring con
+  `desugar_jdk_libs:2.1.4` y `multiDexEnabled`, que pide la 22.3.3 en su
+  README.
 - El icono pequeño es `@mipmap/ic_launcher` (provisional), protegido de R8
   en `res/raw/keep.xml`.
 
@@ -310,11 +313,14 @@ toque un `.dart`, desde la raíz: `dart format lib test`.
 
 Lo que el diseño no decía y se resolvió con la opción más conservadora.
 
-- **CRÍTICA — compileSdk 37 y AGP 9.1.1.** Los pide
-  `flutter_local_notifications` 23.0.2 (la estable actual). Habits sigue en
-  36 (`flutter.compileSdkVersion`) y AGP 9.0.1. Si el SDK 37 o AGP 9.1.1
-  dan problemas en la máquina de Quim, la alternativa es fijar una versión
-  anterior del plugin; no está probado.
+- **CRÍTICA — `flutter_local_notifications` por debajo de la 23**
+  (`">=22.3.3 <23.0.0"`, decidido en la revisión del 15-nov-2026). La 23
+  pide `compileSdk` 37 y AGP 9.1.1; AGP 9.1.1 exige Gradle ≥ 9.3.1 (el
+  wrapper está en 9.1.0) y Flutter 3.44.4 no conoce el SDK 37. Con la 22.3.3
+  (mínimos: `compileSdk` 35 y AGP 8.11.1) la app usa exactamente el mismo
+  toolchain que Habits. La API que usa esta app (`initialize`, `show`,
+  `zonedSchedule`, `cancel`, `timeoutAfter`) es la misma en las dos. Subir a
+  la 23 es subir antes el toolchain de las dos apps a la vez.
 - **CRÍTICA — no compilado.** Ni el Gradle ni `MainActivity.kt` se han
   compilado: se escribieron sin SDK de Android.
 - **La sesión se cierra en el motor en cuanto está en la cola** y se ha

@@ -17,11 +17,10 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.norday.enfoque"
-    // 37 y no flutter.compileSdkVersion (36 en Flutter 3.44.4,
-    // FlutterExtension.kt): flutter_local_notifications 23 «requires that the
-    // `compileSdk` in your application's Gradle file is set to 37 at a
-    // minimum» (su README, «Gradle setup»).
-    compileSdk = 37
+    // El de Flutter (36 en 3.44.4), como Norday Habits.
+    // flutter_local_notifications 22.3.3 pide «at a minimum» 35 (su README,
+    // «Gradle setup»).
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -86,7 +85,7 @@ flutter {
 }
 
 dependencies {
-    // La versión que da el README de flutter_local_notifications 23.0.2.
+    // La versión que da el README de flutter_local_notifications 22.3.3.
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-messaging")
