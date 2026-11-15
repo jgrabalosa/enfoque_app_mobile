@@ -131,6 +131,30 @@ class EnvioNoAceptado {
 /// Programa una llamada. En la app, un [Timer]; en los tests, un falso.
 typedef Programador = Timer Function(Duration espera, void Function() accion);
 
+/// Dónde se guarda la cola. En la app, [AlmacenPreferencias]; en los tests,
+/// uno que puede fallar.
+abstract interface class AlmacenCola {
+  /// El texto guardado en [clave], o `null`. Lanza si no se puede leer.
+  Future<String?> leer(String clave);
+
+  /// Guarda [valor] en [clave]. `false` (o una excepción) si no quedó
+  /// guardado.
+  Future<bool> escribir(String clave, String valor);
+}
+
+/// [AlmacenCola] sobre `SharedPreferences`.
+class AlmacenPreferencias implements AlmacenCola {
+  const AlmacenPreferencias();
+
+  @override
+  Future<String?> leer(String clave) async =>
+      (await SharedPreferences.getInstance()).getString(clave);
+
+  @override
+  Future<bool> escribir(String clave, String valor) async =>
+      (await SharedPreferences.getInstance()).setString(clave, valor);
+}
+
 /// La cola de sesiones acabadas, persistente en `SharedPreferences`.
 ///
 /// El contrato con el backend (EnfoqueController):
@@ -152,6 +176,7 @@ class ColaEnvios {
     required this.usuarioActual,
     DateTime Function()? ahora,
     Programador? programar,
+    this.almacen = const AlmacenPreferencias(),
     this.esperaBase = const Duration(seconds: 30),
     this.esperaMaxima = const Duration(minutes: 30),
     this.maximoNoAceptados = 50,
@@ -161,6 +186,7 @@ class ColaEnvios {
        _programar = programar ?? Timer.new;
 
   final ApiEnfoque api;
+  final AlmacenCola almacen;
 
   /// El usuario con la sesión abierta, o `null`.
   final Future<int?> Function() usuarioActual;
@@ -212,27 +238,28 @@ class ColaEnvios {
   /// El último resultado de enviar [clave] en esta ejecución, o `null`.
   ResultadoEnvio? resultadoDe(String clave) => _ultimos[clave];
 
-  /// Lee la cola guardada. Lo que no se entiende se descarta.
-  Future<void> cargar() async {
-    if (_cargada) return;
-    _cargada = true;
+  /// Lee la cola guardada. Lo que no se entiende se descarta. Devuelve si
+  /// está leída: si la lectura falla no se da por cargada, y nada se escribe
+  /// hasta leerla (si no, el siguiente guardado pisaría lo que hubiera).
+  Future<bool> cargar() async {
+    if (_cargada) return true;
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final pendientes = await almacen.leer(clavePendientes);
+      final noAceptados = await almacen.leer(claveNoAceptados);
       _pendientes.value = List.unmodifiable([
-        for (final e in _leerLista(prefs, clavePendientes))
-          ?EnvioPendiente.fromJson(e),
+        for (final e in _decodificar(pendientes)) ?EnvioPendiente.fromJson(e),
       ]);
       _noAceptados.value = List.unmodifiable([
-        for (final e in _leerLista(prefs, claveNoAceptados))
-          ?EnvioNoAceptado.fromJson(e),
+        for (final e in _decodificar(noAceptados)) ?EnvioNoAceptado.fromJson(e),
       ]);
+      _cargada = true;
     } catch (e) {
       debugPrint('ColaEnvios: no se pudo leer la cola: $e');
     }
+    return _cargada;
   }
 
-  List<Object?> _leerLista(SharedPreferences prefs, String clave) {
-    final crudo = prefs.getString(clave);
+  List<Object?> _decodificar(String? crudo) {
     if (crudo == null) return const [];
     try {
       return listaDe(jsonDecode(crudo));
@@ -241,25 +268,40 @@ class ColaEnvios {
     }
   }
 
-  /// Mete [peticion] en la cola y la guarda. Si ya estaba (misma clave), no
-  /// hace nada: el motor puede entregar la misma sesión acabada dos veces si
-  /// el proceso murió antes de cerrarla.
-  Future<void> encolar(
+  /// Mete [peticion] en la cola y la guarda. Devuelve si quedó guardada:
+  /// solo entonces se puede soltar la sesión del motor. Si no se pudo leer la
+  /// cola, `false` sin escribir nada. Si escribir falla, la entrada sale
+  /// otra vez de la memoria y se relanza el error (o `false` si el almacén
+  /// dice que no guardó).
+  ///
+  /// Si ya estaba (misma clave), `true` sin tocar nada: el motor puede
+  /// entregar la misma sesión acabada dos veces si el proceso murió antes de
+  /// cerrarla, y el cuerpo encolado no cambia nunca (la misma clave con otro
+  /// cuerpo daría 409).
+  Future<bool> encolar(
     PeticionSesion peticion, {
     required int usuarioId,
     DestinoDisponible? destino,
   }) async {
-    await cargar();
-    if (_pendientes.value.any((e) => e.clave == peticion.clave)) return;
+    if (!await cargar()) return false;
+    if (_pendientes.value.any((e) => e.clave == peticion.clave)) return true;
+    final antes = _pendientes.value;
     _pendientes.value = List.unmodifiable([
-      ..._pendientes.value,
+      ...antes,
       EnvioPendiente(
         peticion: peticion,
         usuarioId: usuarioId,
         destino: destino,
       ),
     ]);
-    await _guardar();
+    try {
+      if (await _guardar()) return true;
+    } catch (_) {
+      _pendientes.value = antes;
+      rethrow;
+    }
+    _pendientes.value = antes;
+    return false;
   }
 
   /// Envía lo que toca: lo del usuario actual cuyo [EnvioPendiente.proximoIntentoUtc]
@@ -304,7 +346,7 @@ class ColaEnvios {
   }
 
   Future<void> _pasada(bool forzar) async {
-    await cargar();
+    if (!await cargar()) return;
     final usuario = await usuarioActual();
     if (usuario == null) return;
     final ahora = _ahora().toUtc();
@@ -318,6 +360,9 @@ class ColaEnvios {
         )
         .toList();
     for (final envio in candidatos) {
+      // Antes de cada envío: si ha entrado otra cuenta a mitad de pasada, el
+      // token ya es el suyo y esta sesión no se manda con él.
+      if (await usuarioActual() != envio.usuarioId) return;
       final resultado = await api.enviarSesion(envio.peticion);
       _ultimos[envio.clave] = resultado;
       switch (resultado) {
@@ -345,7 +390,7 @@ class ColaEnvios {
             ),
           );
       }
-      await _guardar();
+      await _guardarSinLanzar();
     }
   }
 
@@ -379,17 +424,28 @@ class ColaEnvios {
     );
   }
 
-  Future<void> _guardar() async {
+  /// Guarda las dos listas. `false` si el almacén dice que no guardó; las
+  /// excepciones salen. Nunca escribe sin haber leído antes.
+  Future<bool> _guardar() async {
+    if (!_cargada) return false;
+    final a = await almacen.escribir(
+      clavePendientes,
+      jsonEncode([for (final e in _pendientes.value) e.toJson()]),
+    );
+    final b = await almacen.escribir(
+      claveNoAceptados,
+      jsonEncode([for (final e in _noAceptados.value) e.toJson()]),
+    );
+    return a && b;
+  }
+
+  /// Tras un envío: si no se guarda, lo peor es reenviar con la misma clave,
+  /// que el backend contesta con el resultado original.
+  Future<void> _guardarSinLanzar() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-        clavePendientes,
-        jsonEncode([for (final e in _pendientes.value) e.toJson()]),
-      );
-      await prefs.setString(
-        claveNoAceptados,
-        jsonEncode([for (final e in _noAceptados.value) e.toJson()]),
-      );
+      if (!await _guardar()) {
+        debugPrint('ColaEnvios: la cola no quedó guardada');
+      }
     } catch (e) {
       debugPrint('ColaEnvios: no se pudo guardar la cola: $e');
     }

@@ -195,4 +195,82 @@ void main() {
     await cola.cargar();
     expect(cola.pendientes.value, isEmpty);
   });
+
+  test(
+    'la cuenta cambia a mitad de pasada: lo que queda ya no se envía',
+    () async {
+      final cola = nuevaCola();
+      await cola.encolar(peticionDePrueba(clave: 'a'), usuarioId: 7);
+      await cola.encolar(peticionDePrueba(clave: 'b'), usuarioId: 7);
+      api.envioPorDefecto = (p) {
+        usuario = 8;
+        return _aceptada;
+      };
+      await cola.procesar(forzar: true);
+      expect(api.enviadas.map((p) => p.clave), ['a']);
+      expect(cola.pendientes.value.single.clave, 'b');
+    },
+  );
+
+  group('persistencia', () {
+    late AlmacenFalso almacen;
+    ColaEnvios conAlmacen() => ColaEnvios(
+      api: api,
+      usuarioActual: () async => usuario,
+      ahora: () => ahora,
+      programar: programador.call,
+      almacen: almacen,
+    );
+    setUp(() => almacen = AlmacenFalso());
+
+    test('encolar devuelve true cuando queda guardada', () async {
+      final cola = conAlmacen();
+      expect(await cola.encolar(peticionDePrueba(), usuarioId: 7), isTrue);
+      expect(almacen.datos['enfoque_cola_envios'], contains('3f2a8c1e'));
+      // La misma clave otra vez: ya está guardada, true sin escribir.
+      final escrituras = almacen.escrituras;
+      expect(await cola.encolar(peticionDePrueba(), usuarioId: 7), isTrue);
+      expect(almacen.escrituras, escrituras);
+    });
+
+    test('setString devuelve false: encolar false y nada en memoria', () async {
+      almacen.escrituraDevuelve = false;
+      final cola = conAlmacen();
+      expect(await cola.encolar(peticionDePrueba(), usuarioId: 7), isFalse);
+      expect(cola.pendientes.value, isEmpty);
+    });
+
+    test('escribir lanza: encolar relanza y nada en memoria', () async {
+      almacen.escrituraLanza = true;
+      final cola = conAlmacen();
+      await expectLater(
+        cola.encolar(peticionDePrueba(), usuarioId: 7),
+        throwsStateError,
+      );
+      expect(cola.pendientes.value, isEmpty);
+    });
+
+    test('si no se pudo leer, no se escribe encima de lo guardado', () async {
+      final previa = conAlmacen();
+      await previa.encolar(peticionDePrueba(clave: 'vieja'), usuarioId: 7);
+
+      // Falla el cargar de arriba y el que hace encolar por dentro.
+      almacen.lecturasQueFallan = 2;
+      final cola = conAlmacen();
+      expect(await cola.cargar(), isFalse);
+      expect(
+        await cola.encolar(peticionDePrueba(clave: 'nueva'), usuarioId: 7),
+        isFalse,
+      );
+      expect(almacen.datos['enfoque_cola_envios'], contains('vieja'));
+      expect(almacen.datos['enfoque_cola_envios'], isNot(contains('nueva')));
+
+      // La siguiente vez se lee bien y no se ha perdido nada.
+      expect(
+        await cola.encolar(peticionDePrueba(clave: 'nueva'), usuarioId: 7),
+        isTrue,
+      );
+      expect(cola.pendientes.value.map((e) => e.clave), ['vieja', 'nueva']);
+    });
+  });
 }

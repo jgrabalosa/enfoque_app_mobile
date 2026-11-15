@@ -92,8 +92,9 @@ el backend saca el usuario del JWT.
    actualización obligatoria y borrado de cuenta.
 5. **La sesión** — `MotorSesion` con `RelojSistema`, `PantallaSistema` y
    `AvisosSesionLocales`. `MotorSesion.avisarDesbloqueo()` desde el receptor
-   nativo de `ACTION_USER_PRESENT`. El destino va en `datosApp`
-   (`{"destino": {tipo, id, nombre, minutosDia, minutosObjetivo}}`).
+   nativo de `ACTION_USER_PRESENT`. El destino y el dueño van en `datosApp`
+   (`{"destino": {tipo, id, nombre, minutosDia, minutosObjetivo},
+   "usuarioId": N}`).
 6. **`NotificacionesService`** — el permiso `POST_NOTIFICATIONS` se pide al
    pulsar Empezar la primera vez (`pedirYRegistrar`; se apunta en
    `enfoque_permiso_avisos_pedido` y no se vuelve a pedir). El token se
@@ -119,14 +120,19 @@ propios en v1), ni `publicarProgresoDia`, ni el cierre del día.
    - **descartada** (terminar antes de 10 min): no se envía; resultado
      «descartada» y `MotorSesion.cerrar()`.
    - **completada, terminada o perdida**: `peticionDeSesion` monta el
-     cuerpo, se mete en la cola (persistente) y se intenta enviar ya. Haya
-     ido bien o no, se cierra en el motor (ver «Decisiones»).
+     cuerpo y se mete en la cola con su dueño (el `usuarioId` de
+     `datosApp`). Si `encolar` dice que quedó guardada, se cierra en el
+     motor en el acto y el envío va después, sin bloquear. Si no se pudo
+     guardar, la sesión se queda en el motor y la recogida se reintenta en
+     el siguiente `iniciar()` o `enviarPendientes()` (al volver a primer
+     plano).
 4. `HomeShell` ve el resultado nuevo y sustituye la sesión por
    `ResultadoScreen`, que se actualiza cuando llega la respuesta.
 
-**Sin usuario** (cerró sesión con una sesión en marcha): la sesión acabada
-se queda en el motor y se recoge en el siguiente `iniciar()`, que hace cada
-`HomeShell` al montarse.
+**Otra cuenta, o ninguna, al acabar**: la sesión se encola con su dueño
+igualmente y la cola solo la envía cuando ese usuario vuelva a estar
+conectado. Solo una sesión sin dueño guardado (anterior a guardarlo) y sin
+nadie conectado se queda en el motor hasta el siguiente login.
 
 ### La cola y el contrato de reintento
 
@@ -144,8 +150,13 @@ El contrato es el de `EnfoqueController` del backend:
   encolar y se reenvía tal cual. El backend devuelve el resultado original
   sin sumar ni pagar dos veces.
 - Cada entrada lleva su `usuarioId` y **solo se envía con la sesión de ese
-  usuario abierta**: si en el mismo móvil entra otra cuenta, no se mandan
-  sesiones ajenas con su token.
+  usuario abierta**, comprobado antes de cada envío (también a mitad de
+  pasada): si en el mismo móvil entra otra cuenta, no se mandan sesiones
+  ajenas con su token.
+- **`encolar` devuelve si quedó guardada** (el `bool` de `setString`; si
+  escribir lanza, relanza) y deshace la entrada en memoria si no. Si leer la
+  cola falla, no se da por cargada y no se escribe nada: el siguiente
+  guardado pisaría lo que hubiera. El almacén es inyectable (`AlmacenCola`).
 - Una sola pasada a la vez; lo que se pide durante una pasada se hace al
   acabarla.
 
@@ -323,12 +334,14 @@ Lo que el diseño no decía y se resolvió con la opción más conservadora.
   la 23 es subir antes el toolchain de las dos apps a la vez.
 - **CRÍTICA — no compilado.** Ni el Gradle ni `MainActivity.kt` se han
   compilado: se escribieron sin SDK de Android.
-- **La sesión se cierra en el motor en cuanto está en la cola** y se ha
-  intentado enviar una vez, no solo tras un envío bueno: la cola guarda el
-  cuerpo exacto, y esperar al envío bloquearía empezar otra sesión sin red.
+- **La sesión se cierra en el motor en cuanto `encolar` confirma que quedó
+  guardada**, antes de enviarla (revisión del 15-nov-2026): la cola guarda
+  el cuerpo exacto, y esperar al envío bloquearía empezar otra sesión sin
+  red.
 - **401 no es definitivo**: la sesión espera en la cola al siguiente login.
   Tampoco lo son los 4xx que no son 400 ni 409.
-- **Las sesiones de la cola llevan su usuario** y solo se envían con él.
+- **Las sesiones llevan su dueño desde que empiezan** (en `datosApp`) y se
+  encolan con él aunque al acabar haya otra cuenta; solo se envían con él.
 - **Perdida con destino**: se envía con su destino (el backend la guarda con
   el aporte `RECHAZADO`); el resultado no dice nada del hábito.
 - **Logros del hábito**: solo se celebran los que el core sabe nombrar; los

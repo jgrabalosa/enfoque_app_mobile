@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' show AppLifecycleState;
 
@@ -28,8 +29,9 @@ void main() {
   });
 
   ({MotorSesion motor, ColaEnvios cola, ControladorEnfoque c}) montar(
-    WidgetTester tester,
-  ) {
+    WidgetTester tester, {
+    AlmacenCola almacen = const AlmacenPreferencias(),
+  }) {
     final motor = MotorSesion(
       reloj: reloj,
       pantalla: pantalla,
@@ -40,6 +42,7 @@ void main() {
       api: api,
       usuarioActual: () async => usuario,
       programar: ProgramadorFalso().call,
+      almacen: almacen,
     );
     final c = ControladorEnfoque(
       motor: motor,
@@ -263,5 +266,107 @@ void main() {
     await asentar(tester);
     expect(api.enviadas.single.estado, EstadoEnvio.terminada);
     expect(m.motor.sesion.value, isNull);
+  });
+
+  testWidgets('sin red: justo al acabar se puede empezar otra, sin esperar '
+      'al envío', (tester) async {
+    final puerta = Completer<void>();
+    api.puertaEnvio = puerta;
+    api.envioPorDefecto = (_) =>
+        const EnvioFallido(ApiException(TipoErrorApi.sinConexion));
+    final m = montar(tester);
+    await m.c.iniciar();
+    await m.c.empezar(duracion: const Duration(minutes: 10));
+    reloj.avanzar(const Duration(minutes: 10));
+    await tester.pump(const Duration(seconds: 1));
+    await asentar(tester);
+
+    // El envío sigue colgado y la sesión ya no está en el motor.
+    expect(api.enviadas, isEmpty);
+    expect(m.motor.sesion.value, isNull);
+    expect(m.cola.pendientes.value, hasLength(1));
+    await m.c.empezar(duracion: const Duration(minutes: 15));
+    expect(m.motor.sesion.value!.estado, EstadoSesion.corriendo);
+
+    puerta.complete();
+    await asentar(tester);
+    expect(api.enviadas, hasLength(1));
+    expect(m.c.resultado.value!.envio, EnvioResultado.pendiente);
+    await m.motor.rendirse();
+    await asentar(tester);
+  });
+
+  testWidgets('la cuenta cambia con la sesión en marcha: se encola con su '
+      'dueño y no se envía con el token de otro', (tester) async {
+    final m = montar(tester);
+    await m.c.iniciar();
+    await m.c.empezar(duracion: const Duration(minutes: 25));
+    usuario = 8;
+    reloj.avanzar(const Duration(minutes: 12));
+    await m.motor.terminar();
+    await asentar(tester);
+
+    expect(api.enviadas, isEmpty);
+    expect(m.cola.pendientes.value.single.usuarioId, 7);
+    expect(m.motor.sesion.value, isNull);
+    expect(m.c.resultado.value!.envio, EnvioResultado.pendiente);
+
+    usuario = 7;
+    await m.c.enviarPendientes();
+    await asentar(tester);
+    expect(api.enviadas.single.estado, EstadoEnvio.terminada);
+  });
+
+  testWidgets('si no se puede encolar, la sesión se queda en el motor y la '
+      'recogida se reintenta', (tester) async {
+    final almacen = AlmacenFalso()..escrituraDevuelve = false;
+    final m = montar(tester, almacen: almacen);
+    await m.c.iniciar();
+    await m.c.empezar(duracion: const Duration(minutes: 25));
+    reloj.avanzar(const Duration(minutes: 12));
+    await m.motor.terminar();
+    await asentar(tester);
+
+    expect(m.motor.sesion.value!.estado, EstadoSesion.terminada);
+    expect(m.cola.pendientes.value, isEmpty);
+    expect(api.enviadas, isEmpty);
+    expect(m.c.resultado.value!.envio, EnvioResultado.pendiente);
+
+    almacen.escrituraDevuelve = true;
+    await m.c.enviarPendientes();
+    await asentar(tester);
+    expect(m.motor.sesion.value, isNull);
+    expect(api.enviadas.single.estado, EstadoEnvio.terminada);
+    expect(m.c.resultado.value!.envio, EnvioResultado.enviada);
+  });
+
+  testWidgets('proceso muerto con la sesión ya enviada: al volver no se '
+      'reenvía ni hay resultado que celebrar', (tester) async {
+    final m = montar(tester);
+    await m.c.iniciar();
+    await m.c.empezar(
+      duracion: const Duration(minutes: 25),
+      destino: destinoLeer,
+    );
+    reloj.avanzar(const Duration(minutes: 25));
+    await tester.pump(const Duration(seconds: 1));
+    await asentar(tester);
+    expect(api.enviadas, hasLength(1));
+    m.motor.dispose();
+
+    // Otra ejecución con lo que quedó guardado.
+    final otra = montar(tester);
+    await otra.c.iniciar();
+    await asentar(tester);
+    expect(api.enviadas, hasLength(1));
+    expect(otra.c.resultado.value, isNull);
+    expect(otra.cola.pendientes.value, isEmpty);
+  });
+
+  test('el dueño va y vuelve por datosApp', () {
+    expect(usuarioDeDatos(datosAppDe(null, usuarioId: 7)), 7);
+    expect(usuarioDeDatos(datosAppDe(destinoLeer)), isNull);
+    expect(datosAppDe(null), isNull);
+    expect(usuarioDeDatos({'usuarioId': 'x'}), isNull);
   });
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:enfoque_app_mobile/models/enfoque.dart';
 import 'package:enfoque_app_mobile/services/api_service_enfoque.dart';
 import 'package:enfoque_app_mobile/services/canal_sistema.dart';
+import 'package:enfoque_app_mobile/services/cola_envios.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 export 'datos_prueba.dart';
@@ -122,4 +123,31 @@ class _TimerQuieto implements Timer {
   bool get isActive => _activo;
   @override
   int get tick => 0;
+}
+
+/// Un almacén de la cola en memoria que puede fallar al leer o al escribir.
+class AlmacenFalso implements AlmacenCola {
+  final Map<String, String> datos = {};
+  int lecturasQueFallan = 0;
+  bool escrituraDevuelve = true;
+  bool escrituraLanza = false;
+  int escrituras = 0;
+
+  @override
+  Future<String?> leer(String clave) async {
+    if (lecturasQueFallan > 0) {
+      lecturasQueFallan--;
+      throw StateError('disco ilegible');
+    }
+    return datos[clave];
+  }
+
+  @override
+  Future<bool> escribir(String clave, String valor) async {
+    escrituras++;
+    if (escrituraLanza) throw StateError('disco lleno');
+    if (!escrituraDevuelve) return false;
+    datos[clave] = valor;
+    return true;
+  }
 }

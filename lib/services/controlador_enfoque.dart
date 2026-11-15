@@ -10,13 +10,24 @@ import 'cola_envios.dart';
 /// La clave de `datosApp` con el destino elegido al empezar.
 const String claveDatosDestino = 'destino';
 
-/// Lo que se guarda con la sesión: el destino, o nada.
-Map<String, Object?>? datosAppDe(DestinoDisponible? destino) =>
-    destino == null ? null : {claveDatosDestino: destino.toJson()};
+/// La clave de `datosApp` con el usuario que empezó la sesión: su dueño.
+const String claveDatosUsuario = 'usuarioId';
+
+/// Lo que se guarda con la sesión: el destino y el dueño, o nada.
+Map<String, Object?>? datosAppDe(DestinoDisponible? destino, {int? usuarioId}) {
+  if (destino == null && usuarioId == null) return null;
+  return {claveDatosDestino: ?destino?.toJson(), claveDatosUsuario: ?usuarioId};
+}
 
 /// El destino guardado con la sesión, o `null`.
 DestinoDisponible? destinoDeDatos(Map<String, Object?>? datosApp) =>
     DestinoDisponible.fromJson(datosApp?[claveDatosDestino]);
+
+/// El usuario que empezó la sesión, o `null` (sesiones de antes de guardarlo).
+int? usuarioDeDatos(Map<String, Object?>? datosApp) {
+  final id = enteroDe(datosApp?[claveDatosUsuario]);
+  return id != null && id > 0 ? id : null;
+}
 
 /// La petición que se envía por una sesión acabada, o `null` si no se envía
 /// (descartada, o aún activa).
@@ -103,15 +114,21 @@ class ResultadoSesion {
 }
 
 /// Junta el motor de sesión del core y la cola de envíos: empieza sesiones
-/// con su destino, recoge cada sesión acabada, la mete en la cola, intenta
-/// enviarla y la cierra en el motor.
+/// con su destino y su dueño, recoge cada sesión acabada, la mete en la cola,
+/// la cierra en el motor y la envía.
 ///
-/// **Cuándo se cierra en el motor**: en cuanto está a salvo en la cola
-/// persistente y se ha intentado enviar una vez, haya ido bien o no. La cola
-/// guarda el cuerpo exacto y se encarga de los reintentos; si el motor
-/// esperase al envío bueno, sin red no se podría empezar otra sesión (el
-/// motor lleva una sola a la vez). Si el proceso muere antes de cerrar, el
-/// motor la entrega otra vez al arrancar y la cola la ignora por la clave.
+/// **Cuándo se cierra en el motor**: justo después de que `encolar` diga que
+/// quedó guardada, sin esperar al envío. La cola guarda el cuerpo exacto y se
+/// encarga de los reintentos; si el motor esperase al envío, sin red no se
+/// podría empezar otra sesión (lleva una sola a la vez). Si encolar falla, la
+/// sesión se queda en el motor (que la tiene guardada) y la recogida se
+/// reintenta en el siguiente [iniciar] o [enviarPendientes]. Si el proceso
+/// muere entre encolar y cerrar, el motor la entrega otra vez y la cola la
+/// reconoce por la clave.
+///
+/// **De quién es**: el usuario que la empezó va en `datosApp` y se encola con
+/// él aunque al acabar haya otra cuenta (o ninguna). La cola solo la envía
+/// con ese usuario conectado.
 class ControladorEnfoque {
   ControladorEnfoque({
     required this.motor,
@@ -155,16 +172,21 @@ class ControladorEnfoque {
     _iniciado = true;
   }
 
-  /// Empieza una sesión de [duracion] con [destino] (o sin él).
+  /// Empieza una sesión de [duracion] con [destino] (o sin él), a nombre
+  /// del usuario conectado.
   Future<SesionConcentracion> empezar({
     required Duration duracion,
     DestinoDisponible? destino,
-  }) =>
-      motor.empezar(duracionObjetivo: duracion, datosApp: datosAppDe(destino));
+  }) async => motor.empezar(
+    duracionObjetivo: duracion,
+    datosApp: datosAppDe(destino, usuarioId: await usuarioActual()),
+  );
 
   /// Reintenta todo lo pendiente ya, sin esperar a su turno. Al arrancar y
   /// al volver a primer plano.
   Future<void> enviarPendientes() async {
+    // Una sesión acabada que no se pudo encolar sigue en el motor.
+    _alCambiarSesion();
     final antes = cola.pendientes.value.length;
     await cola.procesar(forzar: true);
     if (cola.pendientes.value.length < antes) _refrescos.value++;
@@ -196,17 +218,35 @@ class ControladorEnfoque {
       return;
     }
     _resultado.value = base;
-    final usuario = await usuarioActual();
-    if (usuario == null) {
-      // Sin sesión abierta no se sabe de quién es: se queda en el motor
-      // (persistente) hasta el siguiente login, que vuelve a recogerla.
+    final dueno = usuarioDeDatos(s.datosApp) ?? await usuarioActual();
+    if (dueno == null) {
+      // Sin dueño conocido no se sabe con qué cuenta enviarla: se queda en el
+      // motor (persistente) hasta el siguiente login, que vuelve a recogerla.
       _poner(base.con(envio: EnvioResultado.pendiente));
       return;
     }
-    await cola.encolar(peticion, usuarioId: usuario, destino: destino);
+    bool guardada;
+    try {
+      guardada = await cola.encolar(
+        peticion,
+        usuarioId: dueno,
+        destino: destino,
+      );
+    } catch (e) {
+      debugPrint('ControladorEnfoque: no se pudo encolar: $e');
+      guardada = false;
+    }
+    if (!guardada) {
+      _poner(base.con(envio: EnvioResultado.pendiente));
+      return;
+    }
+    await motor.cerrar();
+    unawaited(_enviar(peticion.clave, base));
+  }
+
+  Future<void> _enviar(String clave, ResultadoSesion base) async {
     await cola.procesar(forzar: true);
-    final r = cola.resultadoDe(peticion.clave);
-    switch (r) {
+    switch (cola.resultadoDe(clave)) {
       case EnvioAceptado(:final respuesta):
         _poner(base.con(envio: EnvioResultado.enviada, respuesta: respuesta));
         _refrescos.value++;
@@ -216,7 +256,6 @@ class ControladorEnfoque {
       case null:
         _poner(base.con(envio: EnvioResultado.pendiente));
     }
-    await motor.cerrar();
   }
 
   /// Pone [r] si sigue siendo la sesión que se enseña (nadie la ha soltado).
