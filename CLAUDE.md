@@ -324,6 +324,10 @@ en minutos.
 - **No pasan por ella**: los chips de duración (15/25/45/60), el selector
   de 10 a 120 (`duracionMinutos`, `duracionEtiqueta`) y la cuenta atrás
   `mm:ss` del core. Siguen en minutos.
+- **Ninguna etiqueta dice «minutos» junto a una cifra que puede ir en
+  horas**: la de Inicio es «Tiempo hoy» (`inicioTiempoHoy`; en «Time
+  today», pt «Tempo hoje»). Los textos con «minutos» que quedan van con
+  cifras fijas («menos de 10 minutos») o sin cifra.
 - Donde el sitio es estrecho (la cifra de Inicio, encima de las barras) el
   texto se encoge con `FittedBox` en vez de cortarse.
 

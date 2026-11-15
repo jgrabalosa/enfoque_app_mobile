@@ -274,7 +274,7 @@ class _InicioScreenState extends State<InicioScreen> {
   }
 }
 
-/// Minutos hoy (con [duracionLegible]: «40 min», «1 h 30 min»), sesiones
+/// Tiempo hoy (con [duracionLegible]: «40 min», «1 h 30 min»), sesiones
 /// hoy y racha. Con error, una raya en vez de la cifra: un cero diría algo
 /// que no se sabe.
 class _CifrasHoy extends StatelessWidget {
@@ -298,7 +298,7 @@ class _CifrasHoy extends StatelessWidget {
       children: [
         Expanded(
           child: _Cifra(
-            etiqueta: l.inicioMinutosHoy,
+            etiqueta: l.inicioTiempoHoy,
             valor: cifra(() => duracionLegible(l, dia!.minutos)),
             icono: LucideIcons.timer,
           ),

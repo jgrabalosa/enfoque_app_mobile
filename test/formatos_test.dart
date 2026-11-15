@@ -128,6 +128,15 @@ void main() {
     },
   );
 
+  test(
+    'la cifra de hoy se llama «tiempo», no «minutos»: puede ir en horas',
+    () async {
+      expect((await l('es')).inicioTiempoHoy, 'Tiempo hoy');
+      expect((await l('en')).inicioTiempoHoy, 'Time today');
+      expect((await l('pt')).inicioTiempoHoy, 'Tempo hoje');
+    },
+  );
+
   test('el nombre de la app es el mismo en los tres idiomas', () async {
     for (final idioma in ['es', 'en', 'pt']) {
       expect((await l(idioma)).appNombre, 'Norday Focus');

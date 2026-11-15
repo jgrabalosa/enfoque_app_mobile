@@ -74,10 +74,7 @@ void main() {
       expect(find.text('40 min'), findsOneWidget);
       expect(find.text('2'), findsOneWidget);
       expect(find.text('3 días'), findsOneWidget);
-      expect(
-        find.bySemanticsLabel('${l.inicioMinutosHoy}: 40 min'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Tiempo hoy: 40 min'), findsOneWidget);
       expect(find.text('Leer · 20 / 30 min'), findsOneWidget);
       expect(find.text(l.destinoSinHabito), findsOneWidget);
       // 25 por defecto: en el chip y en el selector.
@@ -122,10 +119,7 @@ void main() {
       await asentar(tester);
 
       expect(find.text('1 h 30 min'), findsOneWidget);
-      expect(
-        find.bySemanticsLabel('${l.inicioMinutosHoy}: 1 h 30 min'),
-        findsOneWidget,
-      );
+      expect(find.bySemanticsLabel('Tiempo hoy: 1 h 30 min'), findsOneWidget);
     });
 
     testWidgets('un destino de una hora o más, en horas', (tester) async {

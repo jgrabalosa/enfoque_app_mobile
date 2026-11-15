@@ -10,7 +10,7 @@
   "menuNori": "Nori",
   "shellCerrarSesion": "Sair",
   "shellPulsaAtras": "Toca em voltar de novo para sair",
-  "inicioMinutosHoy": "Minutos hoje",
+  "inicioTiempoHoy": "Tempo hoje",
   "inicioSesionesHoy": "Sessões hoje",
   "inicioRacha": "Sequência",
   "inicioRachaDias": "{dias, plural, =1{1 dia} other{{dias} dias}}",
