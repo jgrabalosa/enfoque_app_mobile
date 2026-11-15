@@ -228,7 +228,9 @@ Un solo canal, `com.norday.enfoque/sistema`, en los dos sentidos:
   exportada. `flutter_deeplinking_enabled = false`: si no, Flutter empujaría
   la ruta del enlace en un Navigator sin rutas con nombre. El destino se
   aplica en Inicio en cuanto hay lista; si no está en ella, aviso y «Sin
-  hábito».
+  hábito». Si la app se abre desde Recientes
+  (`FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY`), el enlace del intent original se
+  ignora.
 - `<queries>` con `com.norday.habitos` y `com.norday.habitos.prueba`. La Focus
   de prueba abre la Habits de prueba.
 

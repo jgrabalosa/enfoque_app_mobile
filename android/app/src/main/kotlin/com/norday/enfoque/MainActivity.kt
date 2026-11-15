@@ -60,8 +60,16 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Solo en un arranque nuevo: al recrear la actividad (girar, cambiar
-        // de idioma) el intent es el mismo y el enlace ya se leyó.
-        if (savedInstanceState == null) {
+        // de idioma) el intent es el mismo y el enlace ya se leyó. Y no si se
+        // abre desde Recientes: el sistema relanza con el intent original
+        // (el enlace de entonces) y pone FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY,
+        // que «is not normally set by application code, but set for you by
+        // the system if this activity is being launched from history»
+        // (https://developer.android.com/reference/android/content/Intent#FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY).
+        // Volver a elegir aquel destino no es lo que el usuario ha pedido.
+        val desdeRecientes =
+            (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0
+        if (savedInstanceState == null && !desdeRecientes) {
             enlacePendiente = enlaceDe(intent)
         }
         registrarReceptorDesbloqueo()
@@ -74,13 +82,24 @@ class MainActivity : FlutterActivity() {
      * onDestroy()»
      * (https://developer.android.com/develop/background-work/background-tasks/broadcasts).
      *
-     * RECEIVER_EXPORTED (Android 13+, obligatorio indicar uno u otro desde
-     * Android 14): la misma página dice que para recibir todos los broadcasts
-     * del sistema, incluidos los de apps privilegiadas que no corren con el
-     * UID del sistema, hay que usar RECEIVER_EXPORTED. ACTION_USER_PRESENT es
-     * un broadcast protegido: otra app no puede enviarlo, así que exportar no
-     * abre la puerta a avisos falsos.
+     * RECEIVER_EXPORTED (Android 13+; desde Android 14 hay que indicar uno
+     * u otro). La misma página: «Some system broadcasts come from highly
+     * privileged apps, such as Bluetooth and telephony, that are part of the
+     * Android framework but don't run under the system's unique process ID
+     * (UID). To receive all system broadcasts, including broadcasts from
+     * highly privileged apps, flag your receiver with RECEIVER_EXPORTED.» y
+     * «If you flag your receiver with RECEIVER_NOT_EXPORTED, the receiver is
+     * able to receive some system broadcasts and broadcasts from your app,
+     * but not broadcasts from the highly privileged apps.» ACTION_USER_PRESENT
+     * lo manda la pantalla de bloqueo, así que se exporta. Es un broadcast
+     * protegido: otra app no puede enviarlo, y un aviso de más solo provoca
+     * una consulta de pantalla de más.
      * https://developer.android.com/reference/android/content/Context#registerReceiver(android.content.BroadcastReceiver,%20android.content.IntentFilter,%20int)
+     *
+     * Sin ContextCompat.registerReceiver: androidx.core no es dependencia
+     * directa de la app (flutter_local_notifications la trae como
+     * `implementation`, que no llega al classpath de la app), así que no está
+     * garantizado. Se usa el registerReceiver del framework con su versión.
      */
     private fun registrarReceptorDesbloqueo() {
         val filtro = IntentFilter(Intent.ACTION_USER_PRESENT)
