@@ -98,8 +98,8 @@ añade, porque lo pide `flutter_local_notifications` 22.3.3, es el
 desugaring (`isCoreLibraryDesugaringEnabled` y `desugar_jdk_libs:2.1.4`) y
 `multiDexEnabled`.
 
-**Nada del Gradle ni del Kotlin se ha compilado aún**: se escribió en una
-máquina sin SDK de Android. El primer `flutter build apk` lo dirá.
+Se compiló por primera vez el 15-nov-2026, en debug y con el flavor
+`prueba`. Falta compilar una build de release, que es la que pasa por R8.
 
 ## Lo que tiene que hacer Quim antes de publicar
 
@@ -107,12 +107,12 @@ Norday Focus sale a la vez que la versión de Norday Habits con hábitos de
 minutos. La guía del despliegue conjunto está en `docs/despliegue.md` del
 backend (`habitos-app`); aquí, solo lo que toca a esta app.
 
-1. **GitHub**: crear el repo en GitHub y subir la rama `wip`. Hoy solo existe
-   en local, sin remoto: no hay copia fuera de esta máquina ni forma de
-   revisar el diff en el remoto.
-2. **Firebase**: dar de alta `com.norday.enfoque` y `com.norday.enfoque.prueba`
-   en `habitos-app-5a054`, con la huella SHA-1 de depuración de cada máquina
-   y la de la clave de subida. Para `com.norday.enfoque`, además, la SHA-1
+1. **GitHub**: hecho el 15-nov-2026 (`jgrabalosa/enfoque_app_mobile`, con
+   la rama `wip`).
+2. **Firebase**: `com.norday.enfoque.prueba` está dado de alta desde el
+   15-nov-2026 en `habitos-app-5a054`, con la SHA-1 de depuración de la
+   máquina de Quim. Falta añadir la de cada otra máquina y la de la clave de
+   subida. Falta dar de alta `com.norday.enfoque`; para ese paquete, además, la SHA-1
    de la **clave de firma de apps de Play** (Play Console → Integridad de la
    app → Firma de apps), que solo existe cuando la app está creada en Play:
    la app instalada desde Play va firmada con esa, no con la de subida.
@@ -121,11 +121,10 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
    la de firma de apps de Play (Firebase sola no basta para Google Sign-In;
    es la lección de Habits). Sin ella, el login con Google falla en la app
    de Play aunque funcione en una build local.
-4. **Primer build**: nada del Gradle ni del Kotlin se ha compilado nunca (ver
-   «Toolchain de Android»). Primero `flutter build apk --debug --flavor
-   prueba` con el `--dart-define` de staging, y probar en un móvil la parte
-   nativa (`MainActivity.kt`, avisos y el enlace de entrada) antes de pensar
-   en un `.aab`.
+4. **Primer build**: hecho el 15-nov-2026, en debug y con el flavor
+   `prueba`. En el móvil ya funcionan el login, Inicio y el enlace de
+   entrada desde Habits. Antes de pensar en un `.aab`, faltan los avisos de
+   gracia y de fin y una build de release.
 5. **Tag del core**: poner `v0.55.0` en `norday_flutter_core` y seguir los
    pasos de «Pendiente con el core 0.55.0» de `CLAUDE.md` (quitar el
    override, `flutter pub upgrade norday_flutter_core`, comprobar el

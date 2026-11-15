@@ -362,8 +362,12 @@ tag `v0.55.0` en el core:
   cuadran. No se quita ni se salta.
 - **El nombre visible sale de `manifestPlaceholders["appLabel"]`** en
   `android/app/build.gradle.kts`, no del manifest.
-- **`google-services.json` lleva las dos apps**, en el mismo proyecto de
-  Firebase que Habits. No se versiona (`android/.gitignore`).
+- **`google-services.json` tiene que llevar las dos apps**, en el mismo
+  proyecto de Firebase que Habits. No se versiona (`android/.gitignore`). El
+  que hay en la máquina de Quim, bajado el 15-nov-2026, solo lleva
+  `com.norday.enfoque.prueba`, y sin cliente OAuth Android: el login con
+  Google en Focus PRUEBA aún no se ha probado. Al dar de alta
+  `com.norday.enfoque`, volver a bajarlo.
 
 ## Formato del código
 
@@ -396,8 +400,11 @@ Lo que el diseño no decía y se resolvió con la opción más conservadora.
   toolchain que Habits. La API que usa esta app (`initialize`, `show`,
   `zonedSchedule`, `cancel`, `timeoutAfter`) es la misma en las dos. Subir a
   la 23 es subir antes el toolchain de las dos apps a la vez.
-- **CRÍTICA — no compilado.** Ni el Gradle ni `MainActivity.kt` se han
-  compilado: se escribieron sin SDK de Android.
+- **Compilado por primera vez el 15-nov-2026**, en debug y con el flavor
+  `prueba`, en la máquina de Quim. En el móvil, contra staging, funcionan el
+  login, Inicio y el enlace desde Norday Habits («Empezar sesión» abre Focus
+  con el hábito elegido). **Aún sin probar**: los avisos de gracia y de fin,
+  una build de release (R8) y la prueba a fondo de la sesión, que hará Quim.
 - **La sesión se cierra en el motor en cuanto `encolar` confirma que quedó
   guardada**, antes de enviarla (revisión del 15-nov-2026): la cola guarda
   el cuerpo exacto, y esperar al envío bloquearía empezar otra sesión sin
