@@ -160,3 +160,79 @@ def a_lapiz(entrada, salida, semilla=3, boceto=False):
 
 if __name__ == '__main__':
     a_lapiz(sys.argv[1], sys.argv[2], boceto=len(sys.argv) > 3 and sys.argv[3] == 'boceto')
+
+
+def a_lapiz_pieza(entrada, salida, modo='objeto', semilla=3):
+    """Una pieza suelta del kit, con fondo transparente.
+
+    modo: 'objeto' (tapa lo de detrás), 'boceto' (lo mismo, a grafito) o
+    'suelo' (el césped: solo el pigmento, y se deshace hacia los bordes)."""
+    rgba = np.asarray(Image.open(entrada + '_color.png').convert('RGBA')).astype(float) / 255
+    color, alfa = rgba[..., :3], rgba[..., 3]
+    normal = np.asarray(Image.open(entrada + '_normal.png').convert('RGB')).astype(float) / 255
+    prof = np.asarray(Image.open(entrada + '_prof.png')).astype(float) / 65535
+    forma = alfa.shape
+    h, w = forma
+    y, x = np.mgrid[0:h, 0:w]
+
+    if modo == 'suelo':
+        d = np.hypot((x - w / 2) / (w * 0.5), (y - h / 2) / (h * 0.5))
+        lejos = suave(0.5, 0.98, d + (ruido(forma, 110, semilla) - 0.5) * 0.35)
+        borde = 1 - lejos
+    else:
+        borde = np.ones(forma)
+    dentro = alfa * borde
+
+    if modo == 'boceto':
+        gris = (color @ np.array([0.299, 0.587, 0.114]))[..., None]
+        grafito = 1 - (1 - gris) * 0.55
+        grafito = grafito * (GRAFITO / GRAFITO.mean()) ** 0.25
+        color = np.clip(grafito, 0, 1) * np.ones(3)
+
+    lum = color @ np.array([0.299, 0.587, 0.114])
+    sat = color.max(-1) - color.min(-1)
+    cubre = np.clip(0.72 + 0.5 * (1 - lum) + 0.2 * sat, 0, 1) * dentro
+
+    t = diente(forma, semilla)
+    capa1 = rayas(forma, ANGULO, 3.4, semilla)
+    capa2 = rayas(forma, ANGULO + 1.1, 4.2, semilla + 11)
+
+    def agarra(p, r):
+        liston = 0.9 - 0.8 * p
+        return suave(liston - 0.1, liston + 0.1, 0.55 * r + 0.45 * t) * np.clip(p * 3, 0, 1)
+
+    m1 = agarra(cubre, capa1)
+    claro = 1 - (1 - color) * 0.88
+    tinta_color = np.clip(claro * (1 - 0.1 * capa1[..., None]), 0, 1)
+    color_final = PAPEL + (tinta_color - PAPEL) * m1[..., None]
+    sombra = np.clip((0.5 - lum) * 2.0, 0, 1) * dentro
+    m2 = agarra(sombra, capa2)
+    color_final = color_final * (1 - m2[..., None] * (1 - np.clip(color * 0.75, 0, 1)) * 0.45)
+
+    gz = np.abs(ndimage.laplace(ndimage.gaussian_filter(prof, 0.7))) * 2500 * (alfa > 0.5)
+    gn = sum(np.hypot(ndimage.sobel(normal[..., c], 0), ndimage.sobel(normal[..., c], 1)) for c in range(3)) * (alfa > 0.5)
+    ga = np.hypot(ndimage.sobel(alfa, 0), ndimage.sobel(alfa, 1))
+    borde_forma = np.clip(np.maximum.reduce([gz, gn * 0.45, ga]) - 0.5, 0, 1)
+    dy = (ruido(forma, 25, semilla + 20) - 0.5) * 2.4
+    dx = (ruido(forma, 25, semilla + 21) - 0.5) * 2.4
+    borde_forma = ndimage.map_coordinates(borde_forma, [y + dy, x + dx], order=1)
+    borde_forma = np.clip(borde_forma * 1.4, 0, 1)
+    presion_linea = (0.55 + 0.45 * ruido(forma, 18, semilla + 22)) * (borde if modo == 'suelo' else 1)
+    linea = suave(0.85 - 0.8 * presion_linea, 0.95 - 0.8 * presion_linea, 0.6 * borde_forma + 0.4 * t) * borde_forma
+    if modo == 'suelo':
+        linea = linea * 0
+
+    papel = PAPEL * (1 + (t - 0.5)[..., None] * 0.05)
+    final = papel / PAPEL * color_final
+    oscuro = np.clip(color * 0.45, 0, 1) * 0.5 + GRAFITO * 0.5
+    final = final * (1 - linea[..., None] * 0.85 * (1 - oscuro))
+
+    if modo == 'suelo':
+        # Solo el pigmento: lo que no se ha pintado es transparente.
+        a = np.clip(m1 + m2 * 0.5, 0, 1) * borde
+        rgb = (final - PAPEL * (1 - a[..., None])) / np.maximum(a, 0.02)[..., None]
+    else:
+        a = np.clip(np.maximum(alfa, linea), 0, 1)
+        rgb = final
+    salida_rgba = np.dstack([np.clip(rgb, 0, 1), a])
+    Image.fromarray((salida_rgba * 255).astype(np.uint8), 'RGBA').save(salida)

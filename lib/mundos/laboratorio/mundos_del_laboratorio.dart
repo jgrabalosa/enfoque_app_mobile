@@ -10,6 +10,7 @@ import '../galaxia/pintor_codigo.dart';
 import '../galaxia/pintor_prueba.dart';
 import '../jardin/colocador_jardin.dart';
 import '../jardin/escena_jardin.dart';
+import '../jardin/jardin_isometrico.dart';
 import '../jardin/pintor_jardin.dart';
 
 /// Los mundos que enseña el laboratorio, cada uno con sus pintores. El
@@ -41,5 +42,12 @@ List<MundoDeLaboratorio> mundosDelLaboratorio() => [
     crearEscena: (semilla, cantidad) =>
         EscenaJardin(ColocadorJardin(semilla), cantidad),
     pintores: [PintorJardinLapiz()],
+  ),
+  // El jardín de Dulce en 3D a lápiz, como Neotokyo+ 3D (decisión 18).
+  MundoDeLaboratorio<EscenaJardin>(
+    nombre: 'Dulce 3D',
+    crearEscena: (semilla, cantidad) =>
+        EscenaJardinIso(ColocadorJardin(semilla), cantidad),
+    pintores: [PintorJardin3D()],
   ),
 ];

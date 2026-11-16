@@ -38,3 +38,16 @@ La app los usa en el laboratorio, en el mundo «Neotokyo+ 3D»
   papel de Dulce (contorno que tiembla, rayado en el ángulo de la mano,
   pigmento que agarra en el diente del papel y el suelo que se deshace hacia
   fuera).
+
+## El kit de Dulce 3D (para la app)
+
+- `kit_jardin.py CARPETA`: cada pieza suelta con la cámara isométrica, a 200
+  píxeles por unidad: 7 especies × 4 dibujos, 3 parterres, 3 manchas de
+  césped, 3 losas, el árbol y los 4 hitos (fuente, pérgola, banco y estanque).
+  Unos 2 minutos.
+- `kit_jardin_lapiz.py CARPETA assets/mundos/dulce`: las pasa a lápiz
+  (`lapiz_post.a_lapiz_pieza`: las plantas y los parterres, en color y en
+  boceto a grafito; el césped, solo el pigmento) y las junta en
+  `jardin.webp` + `jardin.json`.
+
+La app los usa en el mundo «Dulce 3D» (`lib/mundos/jardin/jardin_isometrico.dart`).

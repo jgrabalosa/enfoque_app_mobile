@@ -418,6 +418,12 @@ def escena(salida, semilla=7, cuantas=10):
         planta.scale = (escala, escala, escala)
     camara_isometrica(sc, (0, 0, 0.3), 5.6)
 
+    pasadas(sc, salida)
+
+
+def pasadas(sc, salida):
+    """El color y, sin luz, las normales, la profundidad, la altura y el
+    índice (para el lápiz)."""
     sc.render.filepath = salida + '_color.png'
     bpy.ops.render.render(write_still=True)
 

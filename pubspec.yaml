@@ -54,6 +54,8 @@ flutter:
     # Los edificios de Neotokyo+ renderizados con Blender (un atlas y dónde
     # está cada uno); los genera `tool/mundos/ciudad_blender.py kit`.
     - assets/mundos/neotokyo/
+    # El jardín de Dulce en 3D a lápiz (`tool/mundos/kit_jardin.py`).
+    - assets/mundos/dulce/
   # El cielo de la galaxia de Profundidad (los mundos de Focus, MU-1). Lo
   # compila el SDK al construir; se carga con `FragmentProgram.fromAsset`.
   shaders:

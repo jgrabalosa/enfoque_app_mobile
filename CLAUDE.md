@@ -115,6 +115,12 @@ lista completa, en el `CLAUDE.md` del paquete.
     completarse. **Para borrar lo que tapa un pétalo no se usa
     `Path.combine`** (falla con pétalos que salen del mismo punto): se
     pinta su forma con `BlendMode.clear` antes de dibujarlo.
+    `jardin_isometrico.dart` es «Dulce 3D», la aprobada: la misma colocación
+    en isométrico, con plantas, parterres, árbol, hitos y césped renderizados
+    en Blender y pasados a lápiz (`KitJardin`, atlas en `assets/mundos/dulce/`,
+    se rehace con `tool/mundos/kit_jardin*.py`). `PlantasJardin` pone las
+    especies altas detrás; el parterre que se llena va en boceto (grafito) y
+    se colorea al completarse.
   - `escena_mundo.dart`: lo común a todos los mundos (`EscenaMundo`,
     `PintorMundo`, los tres niveles de zoom y `MundoDeLaboratorio`), y
     `azar.dart`, el azar que no cambia de un móvil a otro.
