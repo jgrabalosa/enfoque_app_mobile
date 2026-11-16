@@ -14,7 +14,7 @@ export 'falsos.dart';
 
 /// Todo lo que una pantalla necesita, con falsos.
 class Montaje {
-  Montaje(WidgetTester tester, {int? usuarioId = 7})
+  Montaje(WidgetTester tester, {int? usuarioId = 7, String? flavor = 'prueba'})
     : reloj = RelojFalso(),
       pantalla = PantallaFalsa(),
       api = ApiFalsa(),
@@ -39,7 +39,7 @@ class Montaje {
       api: api,
       controlador: controlador,
       lanzador: lanzador,
-      flavor: 'prueba',
+      flavor: flavor,
       usuarioActual: () async => usuarioId,
       pedirPermisoAvisos: (id) async {
         permisosPedidos.add(id);

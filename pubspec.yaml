@@ -51,3 +51,7 @@ flutter:
     # el que las sirve la API de Google. Son las mismas que en Norday Habits.
     # Sin itálicas: ninguna identidad pide `FontStyle.italic`.
     - google_fonts/
+  # El cielo de la galaxia de Profundidad (los mundos de Focus, MU-1). Lo
+  # compila el SDK al construir; se carga con `FragmentProgram.fromAsset`.
+  shaders:
+    - shaders/cielo_galaxia.frag

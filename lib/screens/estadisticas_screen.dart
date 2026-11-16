@@ -8,6 +8,7 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/formatos.dart';
 import '../models/enfoque.dart';
+import '../mundos/laboratorio/laboratorio_mundos_screen.dart';
 import '../services/cola_envios.dart';
 import '../services/servicios_enfoque.dart';
 import '../widgets/barras_semana.dart';
@@ -247,6 +248,23 @@ class _EstadisticasScreenState extends State<EstadisticasScreen> {
                 child: Text(l.estCargarMas),
               ),
             ),
+          // El laboratorio de los mundos (MU-1): solo en la app de prueba,
+          // nunca en la de Play. Sin traducir: no llega a los usuarios.
+          if (_s.flavor == 'prueba') ...[
+            const SizedBox(height: AppSpacing.lg),
+            Center(
+              child: TextButton.icon(
+                key: const Key('abrir-laboratorio-mundos'),
+                icon: const Icon(Icons.auto_awesome),
+                label: const Text('Laboratorio de mundos'),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const LaboratorioMundosScreen(),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

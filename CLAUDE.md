@@ -74,6 +74,22 @@ lista completa, en el `CLAUDE.md` del paquete.
   30 min», «+1 h 30 min a Leer (1 h 30 min / 2 h)»; ver «Duraciones»).
 - `widgets/` — `barras_semana.dart` y `barra_navegacion.dart` (copiado tal
   cual de `identidad_ui.dart` de Habits).
+- `mundos/` — **los mundos de Focus, en laboratorio** (MU-1 y MU-2 de
+  `encargos/focus-mundos.md`, en el proyecto). Aún no los ve ningún usuario:
+  solo se entra desde Estadísticas con el flavor `prueba` («Laboratorio de
+  mundos»), con piezas de mentira (`FuenteFalsa`).
+  - `pieza_mundo.dart`: la pieza (número, identidad, origen y fecha; sin
+    posición ni tamaño) y `FuenteMundo`.
+  - `vista_mundo.dart`: la cámara (centro y escala) y sus cuentas.
+  - `galaxia/`: la galaxia de Profundidad. `ColocadorGalaxia` calcula dónde
+    va cada estrella a partir del número y de la semilla (constelaciones de
+    10 en tres brazos; nada se guarda); `EscenaGalaxia` lo junta para un
+    número de piezas; `PintorGalaxia` es la interfaz de las formas de
+    dibujarla: `PintorCodigo` (shader `shaders/cielo_galaxia.frag` y
+    estrellas generadas por código, sin PNG) y `PintorPrueba` (puntos y
+    líneas). `VistasGalaxia` da los tres niveles de zoom.
+  - `laboratorio/`: la pantalla y el medidor de fotogramas
+    (`addTimingsCallback`).
 - `google_fonts/` — las mismas siete familias que Habits, con sus licencias
   OFL.
 
