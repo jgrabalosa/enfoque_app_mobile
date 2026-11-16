@@ -89,6 +89,7 @@ def a_lapiz(entrada, salida, semilla=3, boceto=False):
     altura = np.asarray(Image.open(entrada + '_altura.png')).astype(float) / 65535 * 3
     forma = alfa.shape
     h, w = forma
+    k = w / 1100  # escala respecto a la resolución de base
 
     # El dibujo se deshace hacia los bordes: más flojo y a trozos.
     # Solo el suelo (lo que mira hacia arriba) se deshace hacia fuera; las
@@ -101,25 +102,23 @@ def a_lapiz(entrada, salida, semilla=3, boceto=False):
     borde = 1 - lejos * arriba
     dentro = alfa * borde
 
-    # En boceto, lo plantado (todo lo que no es el suelo) va solo a grafito:
-    # más claro y sin color.
+    # En boceto, lo plantado (todo lo que no es el suelo ni el árbol) no se
+    # colorea: se queda en papel y solo lleva el trazo (más abajo).
+    plantado = np.zeros(forma)
     if boceto:
-        indice = np.asarray(Image.open(entrada + '_indice.png')).astype(float) / 65535
-        plantado = (suave(0.02, 0.06, altura) * (indice < 0.5))[..., None]
-        gris = (color @ np.array([0.299, 0.587, 0.114]))[..., None]
-        grafito = 1 - (1 - gris) * 0.55
-        grafito = grafito * (GRAFITO / GRAFITO.mean()) ** 0.25
-        color = color * (1 - plantado) + np.clip(grafito, 0, 1) * plantado
+        ident = np.rint(np.asarray(Image.open(entrada + '_indice.png')).astype(float))
+        plantado = suave(0.02, 0.06, altura) * (ident >= 1000)
+    lum0 = color @ np.array([0.299, 0.587, 0.114])
 
     # Cuánto se cubre: todo lo que tiene color se cubre bastante (si no, las
     # luces se quedan en blanco); lo oscuro y lo saturado, más.
     lum = color @ np.array([0.299, 0.587, 0.114])
     sat = color.max(-1) - color.min(-1)
-    cubre = np.clip(0.72 + 0.5 * (1 - lum) + 0.2 * sat, 0, 1) * dentro
+    cubre = np.clip(0.72 + 0.5 * (1 - lum) + 0.2 * sat, 0, 1) * dentro * (1 - plantado)
 
-    t = diente(forma, semilla)
-    capa1 = rayas(forma, ANGULO, 3.4, semilla)
-    capa2 = rayas(forma, ANGULO + 1.1, 4.2, semilla + 11)
+    t = diente(forma, semilla, grano=1.6 * k)
+    capa1 = rayas(forma, ANGULO, 3.4 * k, semilla)
+    capa2 = rayas(forma, ANGULO + 1.1, 4.2 * k, semilla + 11)
 
     def agarra(p, r):
         liston = 0.9 - 0.8 * p
@@ -132,7 +131,7 @@ def a_lapiz(entrada, salida, semilla=3, boceto=False):
     tinta_color = np.clip(claro * (1 - 0.1 * capa1[..., None]), 0, 1)
     color_final = PAPEL + (tinta_color - PAPEL) * m1[..., None]
     # Las sombras, con una segunda capa cruzada del mismo color, más oscuro.
-    sombra = np.clip((0.5 - lum) * 2.0, 0, 1) * dentro
+    sombra = np.clip((0.5 - lum) * 2.0, 0, 1) * dentro * (1 - plantado)
     m2 = agarra(sombra, capa2)
     color_final = color_final * (1 - m2[..., None] * (1 - np.clip(color * 0.75, 0, 1)) * 0.45)
 
@@ -142,6 +141,14 @@ def a_lapiz(entrada, salida, semilla=3, boceto=False):
     gn = sum(np.hypot(ndimage.sobel(normal[..., c], 0), ndimage.sobel(normal[..., c], 1)) for c in range(3))
     ga = np.hypot(ndimage.sobel(alfa, 0), ndimage.sobel(alfa, 1))
     borde_forma = np.clip(np.maximum.reduce([gz, gn * 0.45, ga]) - 0.5, 0, 1)
+    if boceto:
+        # El trazo del boceto: donde cambia de pieza (cada pétalo y cada hoja
+        # tiene su número), una línea de un píxel.
+        cambia = np.zeros(forma)
+        cambia[:, 1:] = np.maximum(cambia[:, 1:], ident[:, 1:] != ident[:, :-1])
+        cambia[1:, :] = np.maximum(cambia[1:, :], ident[1:, :] != ident[:-1, :])
+        cambia = ndimage.gaussian_filter(cambia, 0.5) * 1.2
+        borde_forma = borde_forma * (1 - plantado) + np.clip(cambia, 0, 1) * plantado
     # El trazo tiembla: se desplaza con un ruido suave.
     dy = (ruido(forma, 25, semilla + 20) - 0.5) * 2.4
     dx = (ruido(forma, 25, semilla + 21) - 0.5) * 2.4
@@ -150,12 +157,31 @@ def a_lapiz(entrada, salida, semilla=3, boceto=False):
     presion_linea = (0.55 + 0.45 * ruido(forma, 18, semilla + 22)) * borde
     linea = suave(0.85 - 0.8 * presion_linea, 0.95 - 0.8 * presion_linea, 0.6 * borde_forma + 0.4 * t) * borde_forma
 
+    if boceto:
+        # El boceto: el contorno a grafito, más fino, con un segundo repaso
+        # que no cae justo encima (como cuando se encaja un dibujo), y unas
+        # pocas rayas sueltas en lo más oscuro.
+        dy2 = (ruido(forma, 20, semilla + 30) - 0.5) * 3.2
+        dx2 = (ruido(forma, 20, semilla + 31) - 0.5) * 3.2
+        repaso = ndimage.map_coordinates(borde_forma, [y + dy2, x + dx2], order=1)
+        p2 = 0.4 + 0.4 * ruido(forma, 14, semilla + 32)
+        repaso = suave(0.85 - 0.8 * p2, 0.95 - 0.8 * p2, 0.6 * repaso + 0.4 * t) * repaso
+        sombra_b = np.clip((0.42 - lum0) * 2.5, 0, 1) * plantado
+        rayas_b = agarra(sombra_b * 0.55, capa1)
+        trazo_b = np.clip(linea * 0.7 + repaso * 0.25 + rayas_b * 0.3, 0, 1) * plantado
+        linea = linea * (1 - plantado)
+
     papel = PAPEL * (1 + (t - 0.5)[..., None] * 0.05)
     final = papel / PAPEL * color_final
     # El contorno, del color de lo que perfila pero más oscuro, con grafito.
     oscuro = np.clip(color * 0.45, 0, 1) * 0.5 + GRAFITO * 0.5
     final = final * (1 - linea[..., None] * 0.85 * (1 - oscuro))
-    Image.fromarray((np.clip(final, 0, 1) * 255).astype(np.uint8)).save(salida)
+    if boceto:
+        final = final * (1 - trazo_b[..., None] * (1 - GRAFITO))
+    imagen = Image.fromarray((np.clip(final, 0, 1) * 255).astype(np.uint8))
+    if w > 1100:
+        imagen = imagen.resize((1100, round(h * 1100 / w)), Image.LANCZOS)
+    imagen.save(salida)
 
 
 if __name__ == '__main__':

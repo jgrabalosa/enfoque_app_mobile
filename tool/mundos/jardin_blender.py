@@ -375,9 +375,9 @@ def preparar(res):
     return sc
 
 
-def escena(salida, semilla=7, cuantas=10):
+def escena(salida, semilla=7, cuantas=10, res=1100):
     r = random.Random(semilla)
-    sc = preparar((1100, 1100))
+    sc = preparar((res, res))
     col = bpy.data.collections.new('jardin')
     sc.collection.children.link(col)
     cesped(col, lado=5.2)
@@ -387,7 +387,7 @@ def escena(salida, semilla=7, cuantas=10):
     antes_arbol = set(col.objects)
     arbol((-1.5, 1.4), col, r)
     for o in set(col.objects) - antes_arbol:
-        o.pass_index = 1  # el árbol no es del parterre: no va a boceto
+        o.pass_index = r.randint(1, 999)  # el árbol (de 1 a 999) no va a boceto
     # 10 plantas en espiral de girasol dentro del parterre. Como hace un
     # jardinero: las altas detrás (arriba en la pantalla) y las bajas
     # delante, para que se vean todas.
@@ -402,27 +402,35 @@ def escena(salida, semilla=7, cuantas=10):
     especies.sort(key=lambda e: -ALTURA[e.__name__] + r.random() * 0.05)
     for c, especie in zip(sitios, especies):
         nombre = especie.__name__
-        color = r.choice(COLORES[nombre])
+        # Cada planta con su propio azar: así es la misma con 3 o con 10.
+        rp = random.Random(semilla * 1000 + c[2])
+        color = rp.choice(COLORES[nombre])
         if c[2] >= cuantas:  # aún no se ha plantado (crecen desde el centro)
             continue
         # Cada planta cuelga de un objeto vacío que la pone en su sitio.
         planta = bpy.data.objects.new('planta', None)
         col.objects.link(planta)
         antes = set(col.objects)
-        especie(r, col, materiales(nombre, color))
+        especie(rp, col, materiales(nombre, color))
         for o in set(col.objects) - antes:
             if o.parent is None:
                 o.parent = planta
-        escala = (1.25 if nombre == 'girasol' else 1.9) + r.random() * 0.3
+        escala = (1.25 if nombre == 'girasol' else 1.9) + rp.random() * 0.3
         planta.location = (c[0], c[1], 0.08)
         planta.scale = (escala, escala, escala)
+    # Cada pieza (pétalo, hoja, piedra) con su número, para el trazo.
+    ri = random.Random(semilla + 99)
+    for o in sorted(col.objects, key=lambda o: o.name):
+        if o.pass_index == 0:
+            o.pass_index = ri.randint(1000, 65000)
     camara_isometrica(sc, (0, 0, 0.3), 5.6)
 
     sc.render.filepath = salida + '_color.png'
     bpy.ops.render.render(write_still=True)
 
     # Normales y profundidad, sin luz, para los contornos.
-    sc.view_settings.view_transform = 'Standard'
+    # Datos, no imagen: sin curva de color (si no, los números se tuercen).
+    sc.view_settings.view_transform = 'Raw'
     sc.view_settings.look = 'None'
     sc.cycles.samples = 8
     sc.cycles.use_denoising = False
@@ -448,7 +456,11 @@ def escena(salida, semilla=7, cuantas=10):
             m.node_tree.links.new(mapa.outputs[0], em.inputs['Color'])
         elif salida_nodo == 'indice':
             info = n.new('ShaderNodeObjectInfo')
-            m.node_tree.links.new(info.outputs['Object Index'], em.inputs['Color'])
+            div = n.new('ShaderNodeMath')
+            div.operation = 'DIVIDE'
+            div.inputs[1].default_value = 65535.0
+            m.node_tree.links.new(info.outputs['Object Index'], div.inputs[0])
+            m.node_tree.links.new(div.outputs[0], em.inputs['Color'])
         elif salida_nodo == 'altura':
             g = n.new('ShaderNodeNewGeometry')
             sep = n.new('ShaderNodeSeparateXYZ')
@@ -474,4 +486,5 @@ def escena(salida, semilla=7, cuantas=10):
 
 if __name__ == '__main__':
     if sys.argv[1] == 'escena':
-        escena(sys.argv[2], cuantas=int(sys.argv[3]) if len(sys.argv) > 3 else 10)
+        escena(sys.argv[2], cuantas=int(sys.argv[3]) if len(sys.argv) > 3 else 10,
+               res=int(sys.argv[4]) if len(sys.argv) > 4 else 1100)
