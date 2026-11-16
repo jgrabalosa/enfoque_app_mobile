@@ -60,3 +60,5 @@ flutter:
     - shaders/cielo_galaxia.frag
     - shaders/nebulosa.frag
     - shaders/ciudad_noche.frag
+    - shaders/pigmento.frag
+    - shaders/papel.frag

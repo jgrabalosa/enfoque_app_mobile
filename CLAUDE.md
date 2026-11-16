@@ -103,6 +103,18 @@ lista completa, en el `CLAUDE.md` del paquete.
     `assets/mundos/neotokyo/`, se rehace con `tool/mundos/`) y dibujados de
     atrás adelante con `drawAtlas`; el suelo es el mismo shader con
     `uIso = 1`.
+  - `jardin/`: el jardín de Dulce, a lápiz de color. `ColocadorJardin`
+    (el árbol en el centro y parterres de 10 en espiral de girasol, con un
+    hito cada 4). El lápiz (`lapiz_realista.dart`) va en dos tiempos: los
+    trazos dejan presión (con puntas, temblor y rayado en el ángulo de la
+    mano) y `shaders/pigmento.frag` decide dónde agarra el pigmento según
+    el diente del papel. Las flores se hornean al preparar (cuatro atlas:
+    grafito, hojas, pétalos y centro); lo demás, al aparecer en pantalla
+    (`CacheDibujos`, dos por fotograma). Todo se mezcla con `multiply`,
+    como los lápices. El parterre que se llena va a grafito y se colorea al
+    completarse. **Para borrar lo que tapa un pétalo no se usa
+    `Path.combine`** (falla con pétalos que salen del mismo punto): se
+    pinta su forma con `BlendMode.clear` antes de dibujarlo.
   - `escena_mundo.dart`: lo común a todos los mundos (`EscenaMundo`,
     `PintorMundo`, los tres niveles de zoom y `MundoDeLaboratorio`), y
     `azar.dart`, el azar que no cambia de un móvil a otro.

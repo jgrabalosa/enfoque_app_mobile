@@ -8,6 +8,9 @@ import '../galaxia/colocador_galaxia.dart';
 import '../galaxia/escena_galaxia.dart';
 import '../galaxia/pintor_codigo.dart';
 import '../galaxia/pintor_prueba.dart';
+import '../jardin/colocador_jardin.dart';
+import '../jardin/escena_jardin.dart';
+import '../jardin/pintor_jardin.dart';
 
 /// Los mundos que enseña el laboratorio, cada uno con sus pintores. El
 /// primero es el que se ve al entrar.
@@ -31,5 +34,12 @@ List<MundoDeLaboratorio> mundosDelLaboratorio() => [
     crearEscena: (semilla, cantidad) =>
         EscenaCiudadIso(ColocadorCiudad(semilla), cantidad),
     pintores: [PintorCiudadBlender()],
+  ),
+  // El jardín de Dulce, a lápiz de color (`encargos/focus-mundos.md` §12).
+  MundoDeLaboratorio<EscenaJardin>(
+    nombre: 'Dulce',
+    crearEscena: (semilla, cantidad) =>
+        EscenaJardin(ColocadorJardin(semilla), cantidad),
+    pintores: [PintorJardinLapiz()],
   ),
 ];
