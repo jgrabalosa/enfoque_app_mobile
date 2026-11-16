@@ -111,7 +111,7 @@
   "@destinoSinHabito": {
     "description": "Opción de sesión sin destino"
   },
-  "destinoSinHabitoAyuda": "Gana monedas y XP para Nori.",
+  "destinoSinHabitoAyuda": "Gana puntos y XP para Nori.",
   "@destinoSinHabitoAyuda": {
     "description": "Explicación bajo «Sin hábito»"
   },
@@ -251,9 +251,9 @@
       }
     }
   },
-  "resultadoMonedas": "{monedas, plural, =1{+1 moneda} other{+{monedas} monedas}}",
+  "resultadoMonedas": "{monedas, plural, =1{+1 punto} other{+{monedas} puntos}}",
   "@resultadoMonedas": {
-    "description": "Monedas que pagó el hábito",
+    "description": "Puntos que pagó el hábito",
     "placeholders": {
       "monedas": {
         "type": "int"
@@ -515,9 +515,9 @@
       }
     }
   },
-  "resultadoPremio": "{monedas, plural, =1{+1 moneda · +{xp} XP} other{+{monedas} monedas · +{xp} XP}}",
+  "resultadoPremio": "{monedas, plural, =1{+1 punto · +{xp} XP} other{+{monedas} puntos · +{xp} XP}}",
   "@resultadoPremio": {
-    "description": "Lo que pagó la sesión por sí misma (monedas y XP de Nori), tenga hábito o no",
+    "description": "Lo que pagó la sesión por sí misma (puntos y XP de Nori), tenga hábito o no",
     "placeholders": {
       "monedas": {
         "type": "int"
@@ -527,9 +527,9 @@
       }
     }
   },
-  "resultadoTopeAhora": "Has llegado al tope de hoy: las próximas sesiones cuentan, pero no dan monedas.",
+  "resultadoTopeAhora": "Has llegado al tope de hoy: las próximas sesiones cuentan, pero no dan puntos.",
   "@resultadoTopeAhora": {
-    "description": "Con esta sesión se ha llegado al tope de monedas de las sesiones del día"
+    "description": "Con esta sesión se ha llegado al tope de puntos de las sesiones del día"
   },
   "resultadoTopeYa": "Hoy ya has ganado todo lo que dan las sesiones. Esta cuenta igual para tus estadísticas y tus logros.",
   "@resultadoTopeYa": {
@@ -696,7 +696,7 @@
     "description": "Descripción del logro ENFOQUE_SIN_RENDIRSE"
   },
   "logroTope": "Al máximo",
-  "logroTopeDesc": "Llega al tope de monedas de las sesiones en un día",
+  "logroTopeDesc": "Llega al tope de puntos de las sesiones en un día",
   "@logroTope": {
     "description": "Nombre del logro ENFOQUE_TOPE"
   },

@@ -394,7 +394,7 @@ void main() {
       return m;
     }
 
-    testWidgets('aceptado: «+25 min a Leer (30 / 30)», monedas y logros', (
+    testWidgets('aceptado: «+25 min a Leer (30 / 30)», puntos y logros', (
       tester,
     ) async {
       final m = await acabar(
@@ -417,7 +417,7 @@ void main() {
       expect(find.text(l.resultadoCompletada), findsOneWidget);
       expect(find.text('25 min'), findsOneWidget);
       expect(find.text('+25 min a Leer (30 / 30)'), findsOneWidget);
-      expect(find.text('+10 monedas'), findsOneWidget);
+      expect(find.text('+10 puntos'), findsOneWidget);
       expect(find.text(l.resultadoDiaHecho), findsOneWidget);
       // MASCOTA_CRIA lo nombra el core y se celebra; RACHA_3 es de Habits.
       expect(find.text(l.resultadoLogrosEnHabits(1)), findsOneWidget);
@@ -447,7 +447,7 @@ void main() {
           nueva: true,
         ),
       );
-      expect(find.text('+30 monedas · +5 XP'), findsOneWidget);
+      expect(find.text('+30 puntos · +5 XP'), findsOneWidget);
       expect(find.text(l.resultadoTopeAhora), findsNothing);
       expect(find.text(l.resultadoLogrosEnHabits(1)), findsNothing);
       expect(m.celebrados, ['ENFOQUE_PRIMERA_SESION', 'MASCOTA_CRIA']);
@@ -478,9 +478,9 @@ void main() {
           nueva: true,
         ),
       );
-      expect(find.text('+30 monedas · +5 XP'), findsOneWidget);
+      expect(find.text('+30 puntos · +5 XP'), findsOneWidget);
       expect(find.text('+25 min a Leer (25 / 30)'), findsOneWidget);
-      expect(find.text('+20 monedas'), findsOneWidget);
+      expect(find.text('+20 puntos'), findsOneWidget);
       expect(find.text(l.resultadoLogrosEnHabits(1)), findsOneWidget);
       // MASCOTA_CRIA una sola vez, aunque venga en los dos.
       expect(m.celebrados, ['ENFOQUE_CON_DESTINO', 'MASCOTA_CRIA']);
@@ -498,7 +498,7 @@ void main() {
           nueva: true,
         ),
       );
-      expect(find.text('+20 monedas · +4 XP'), findsOneWidget);
+      expect(find.text('+20 puntos · +4 XP'), findsOneWidget);
       expect(find.text(l.resultadoTopeAhora), findsOneWidget);
     });
 
