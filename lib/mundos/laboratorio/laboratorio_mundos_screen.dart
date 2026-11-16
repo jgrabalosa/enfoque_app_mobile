@@ -4,19 +4,15 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
-import '../galaxia/colocador_galaxia.dart';
-import '../galaxia/escena_galaxia.dart';
-import '../galaxia/paleta_profundidad.dart';
-import '../galaxia/pintor_codigo.dart';
-import '../galaxia/pintor_prueba.dart';
-import '../galaxia/vistas_galaxia.dart';
+import '../escena_mundo.dart';
 import '../vista_mundo.dart';
 import 'medidor_fotogramas.dart';
+import 'mundos_del_laboratorio.dart';
 
-/// El laboratorio de los mundos (MU-1, `encargos/focus-mundos.md` §4): la
-/// galaxia de Profundidad con piezas de mentira, para verla en el móvil antes
-/// de construirla de verdad. **Solo existe en el flavor `prueba`**: se entra
-/// desde Estadísticas.
+/// El laboratorio de los mundos (`encargos/focus-mundos.md` §4): cada mundo
+/// con piezas de mentira, para verlo en el móvil antes de construirlo de
+/// verdad. **Solo existe en el flavor `prueba`**: se entra desde
+/// Estadísticas.
 ///
 /// Los textos van en español y sin traducir a propósito: esta pantalla no
 /// llega nunca a Play.
@@ -25,15 +21,16 @@ class LaboratorioMundosScreen extends StatefulWidget {
     super.key,
     this.semilla = 2026,
     this.cantidadInicial = 10,
-    this.pintores,
+    this.mundos,
     this.medir = true,
   });
 
   final int semilla;
   final int cantidadInicial;
 
-  /// Las formas de dibujar que se comparan. Sin ellas, «Código» y «Prueba».
-  final List<PintorGalaxia>? pintores;
+  /// Los mundos que se pueden ver. Sin ellos, los de
+  /// [mundosDelLaboratorio].
+  final List<MundoDeLaboratorio>? mundos;
 
   /// Medir los fotogramas (en los tests no hay motor que los dé).
   final bool medir;
@@ -50,14 +47,17 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
   static const Duration _viaje = Duration(milliseconds: 900);
   static const double _duracionAparicion = 1.4;
 
-  late final List<PintorGalaxia> _pintores =
-      widget.pintores ?? [PintorCodigo(), PintorPrueba()];
+  late final List<MundoDeLaboratorio> _mundos =
+      widget.mundos ?? mundosDelLaboratorio();
+  int _mundo = 0;
   int _pintor = 0;
-  bool _preparado = false;
+  final Set<int> _preparados = {};
+
+  MundoDeLaboratorio get _m => _mundos[_mundo];
 
   late int _semilla = widget.semilla;
   late int _cantidad = widget.cantidadInicial;
-  late EscenaGalaxia _escena = _nuevaEscena();
+  late EscenaMundo _escena = _nuevaEscena();
   NivelZoom _nivel = NivelZoom.hoy;
 
   final ValueNotifier<double> _segundos = ValueNotifier(0);
@@ -73,7 +73,7 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
   VistaMundo? _hacia;
   double _inicioViaje = 0;
 
-  // La estrella que está apareciendo, si la hay.
+  // La pieza que está apareciendo, si la hay.
   int? _nueva;
   double _inicioNueva = 0;
 
@@ -91,14 +91,13 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
         if (mounted) setState(() {});
       });
     }
-    _preparar();
+    _preparar(_mundo);
   }
 
-  Future<void> _preparar() async {
-    for (final p in _pintores) {
-      await p.preparar();
-    }
-    if (mounted) setState(() => _preparado = true);
+  Future<void> _preparar(int mundo) async {
+    if (_preparados.contains(mundo)) return;
+    await _mundos[mundo].preparar();
+    if (mounted) setState(() => _preparados.add(mundo));
   }
 
   @override
@@ -107,18 +106,17 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
     if (widget.medir) _medidor.parar();
     _ticker.dispose();
     _segundos.dispose();
-    for (final p in _pintores) {
-      p.liberar();
+    for (final m in _mundos) {
+      m.liberar();
     }
     super.dispose();
   }
 
-  EscenaGalaxia _nuevaEscena() =>
-      EscenaGalaxia(ColocadorGalaxia(_semilla), _cantidad);
+  EscenaMundo _nuevaEscena() => _m.crearEscena(_semilla, _cantidad);
 
   /// La vista en este momento, con el viaje de la cámara aplicado.
   VistaMundo _vistaAhora(Size tamano) {
-    _vista ??= VistasGalaxia.de(_nivel, _escena, tamano);
+    _vista ??= VistasMundo.de(_nivel, _escena, tamano);
     final desde = _desde;
     final hacia = _hacia;
     if (desde == null || hacia == null) return _vista!;
@@ -136,7 +134,7 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
     final tamano = _tamano;
     if (tamano == null) return;
     _desde = _vistaAhora(tamano);
-    _hacia = VistasGalaxia.de(nivel, _escena, tamano);
+    _hacia = VistasMundo.de(nivel, _escena, tamano);
     _inicioViaje = _segundos.value;
   }
 
@@ -175,9 +173,23 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
   }
 
   void _cambiarPintor() => setState(() {
-    _pintor = (_pintor + 1) % _pintores.length;
+    _pintor = (_pintor + 1) % _m.pintores.length;
     _medidor.reiniciar();
   });
+
+  void _cambiarMundo() {
+    setState(() {
+      _mundo = (_mundo + 1) % _mundos.length;
+      _pintor = 0;
+      _escena = _nuevaEscena();
+      _nueva = null;
+      _desde = _hacia = null;
+      final tamano = _tamano;
+      if (tamano != null) _vista = VistasMundo.de(_nivel, _escena, tamano);
+      _medidor.reiniciar();
+    });
+    _preparar(_mundo);
+  }
 
   void _alEmpezarGesto(ScaleStartDetails d) {
     final tamano = _tamano;
@@ -192,8 +204,8 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
     final vista = _vista;
     if (tamano == null || vista == null) return;
     final escala = (_escalaAlEmpezar * d.scale).clamp(
-      VistasGalaxia.escalaMinima,
-      VistasGalaxia.escalaMaxima,
+      VistasMundo.escalaMinima,
+      VistasMundo.escalaMaxima,
     );
     _vista = vista
         .movida(d.focalPointDelta)
@@ -203,14 +215,16 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
   @override
   Widget build(BuildContext context) {
     final escena = _escena;
-    final pintor = _pintores[_pintor];
-    final constelacion = escena.colocador.constelacion(escena.deLaUltima);
+    final mundo = _m;
+    final pintor = mundo.pintores[_pintor];
+    final preparado = _preparados.contains(_mundo);
     final estiloInfo = Theme.of(
       context,
     ).textTheme.bodySmall?.copyWith(color: Colors.white70);
+    final aviso = preparado ? pintor.aviso : null;
 
     return Scaffold(
-      backgroundColor: PaletaProfundidad.fondo,
+      backgroundColor: const Color(0xFF070D19),
       body: Stack(
         children: [
           Positioned.fill(
@@ -219,9 +233,9 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
                 final tamano = limites.biggest;
                 if (_tamano != tamano) {
                   _tamano = tamano;
-                  _vista = VistasGalaxia.de(_nivel, escena, tamano);
+                  _vista = VistasMundo.de(_nivel, escena, tamano);
                 }
-                if (!_preparado) {
+                if (!preparado) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 return GestureDetector(
@@ -239,7 +253,8 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
                           aparicion = ((s - _inicioNueva) / _duracionAparicion)
                               .clamp(0.0, 1.0);
                         }
-                        pintor.pintar(
+                        mundo.pintar(
+                          _pintor,
                           canvas,
                           size,
                           _vistaAhora(size),
@@ -263,7 +278,7 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
                     const BackButton(color: Colors.white),
                     Expanded(
                       child: Text(
-                        'Laboratorio de mundos',
+                        'Laboratorio de mundos · ${mundo.nombre}',
                         style: Theme.of(
                           context,
                         ).textTheme.titleMedium?.copyWith(color: Colors.white),
@@ -277,21 +292,21 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${escena.cantidad} estrellas · ${escena.completas} '
-                        'constelaciones completas',
+                        '${escena.cantidad} piezas · ${escena.completas} '
+                        'regiones completas',
                         style: estiloInfo,
                       ),
                       Text(
                         escena.cantidad == 0
-                            ? 'Sin estrellas'
-                            : '${constelacion.nombre} · '
+                            ? 'Sin piezas'
+                            : '${escena.nombreRegion(escena.deLaUltima)} · '
                                   '${escena.enLaUltima}/'
-                                  '${ColocadorGalaxia.piezasPorConstelacion}',
+                                  '${escena.piezasPorRegion}',
                         style: estiloInfo,
                       ),
                       Text(
                         'Pintor: ${pintor.nombre}'
-                        '${pintor is PintorCodigo && !pintor.conShader ? ' (sin shader)' : ''}'
+                        '${aviso == null ? '' : ' ($aviso)'}'
                         ' · semilla $_semilla',
                         style: estiloInfo,
                       ),
@@ -309,11 +324,13 @@ class _LaboratorioMundosScreenState extends State<LaboratorioMundosScreen>
                   cantidad: _cantidad,
                   nivel: _nivel,
                   pintor: pintor.nombre,
+                  mundo: _mundos.length > 1 ? mundo.nombre : null,
                   alElegirCantidad: _elegirCantidad,
                   alElegirNivel: _elegirNivel,
                   alAnadir: _anadirUna,
                   alOtraSemilla: _otraSemilla,
                   alCambiarPintor: _cambiarPintor,
+                  alCambiarMundo: _cambiarMundo,
                 ),
               ],
             ),
@@ -329,21 +346,27 @@ class _Mandos extends StatelessWidget {
     required this.cantidad,
     required this.nivel,
     required this.pintor,
+    required this.mundo,
     required this.alElegirCantidad,
     required this.alElegirNivel,
     required this.alAnadir,
     required this.alOtraSemilla,
     required this.alCambiarPintor,
+    required this.alCambiarMundo,
   });
 
   final int cantidad;
   final NivelZoom nivel;
   final String pintor;
+
+  /// El mundo que se ve, o `null` si solo hay uno.
+  final String? mundo;
   final ValueChanged<int> alElegirCantidad;
   final ValueChanged<NivelZoom> alElegirNivel;
   final VoidCallback alAnadir;
   final VoidCallback alOtraSemilla;
   final VoidCallback alCambiarPintor;
+  final VoidCallback alCambiarMundo;
 
   static const Map<NivelZoom, String> _nombres = {
     NivelZoom.hoy: 'Hoy',
@@ -388,6 +411,7 @@ class _Mandos extends StatelessWidget {
           const SizedBox(height: 4),
           Wrap(
             spacing: 8,
+            runSpacing: 4,
             alignment: WrapAlignment.center,
             children: [
               FilledButton.tonal(onPressed: alAnadir, child: const Text('+1')),
@@ -399,6 +423,11 @@ class _Mandos extends StatelessWidget {
                 onPressed: alCambiarPintor,
                 child: Text('Pintor: $pintor'),
               ),
+              if (mundo != null)
+                OutlinedButton(
+                  onPressed: alCambiarMundo,
+                  child: Text('Mundo: $mundo'),
+                ),
             ],
           ),
         ],

@@ -1,10 +1,14 @@
 import 'dart:ui' as ui;
 
+import 'package:enfoque_app_mobile/mundos/ciudad/colocador_ciudad.dart';
+import 'package:enfoque_app_mobile/mundos/ciudad/escena_ciudad.dart';
+import 'package:enfoque_app_mobile/mundos/ciudad/pintor_ciudad.dart';
+import 'package:enfoque_app_mobile/mundos/ciudad/pintor_ciudad_prueba.dart';
+import 'package:enfoque_app_mobile/mundos/escena_mundo.dart';
 import 'package:enfoque_app_mobile/mundos/galaxia/colocador_galaxia.dart';
 import 'package:enfoque_app_mobile/mundos/galaxia/escena_galaxia.dart';
 import 'package:enfoque_app_mobile/mundos/galaxia/pintor_codigo.dart';
 import 'package:enfoque_app_mobile/mundos/galaxia/pintor_prueba.dart';
-import 'package:enfoque_app_mobile/mundos/galaxia/vistas_galaxia.dart';
 import 'package:enfoque_app_mobile/mundos/laboratorio/laboratorio_mundos_screen.dart';
 import 'package:enfoque_app_mobile/screens/estadisticas_screen.dart';
 import 'package:flutter/material.dart';
@@ -19,8 +23,21 @@ void main() {
     }
   }
 
+  MundoDeLaboratorio<EscenaGalaxia> galaxia(List<PintorGalaxia> pintores) =>
+      MundoDeLaboratorio<EscenaGalaxia>(
+        nombre: 'Profundidad',
+        crearEscena: (semilla, cantidad) =>
+            EscenaGalaxia(ColocadorGalaxia(semilla), cantidad),
+        pintores: pintores,
+      );
+
   Widget laboratorio() => MaterialApp(
-    home: LaboratorioMundosScreen(pintores: [PintorPrueba()], medir: false),
+    home: LaboratorioMundosScreen(
+      mundos: [
+        galaxia([PintorPrueba()]),
+      ],
+      medir: false,
+    ),
   );
 
   group('Laboratorio de mundos', () {
@@ -29,10 +46,7 @@ void main() {
     ) async {
       await tester.pumpWidget(laboratorio());
       await avanzar(tester);
-      expect(
-        find.text('10 estrellas · 1 constelaciones completas'),
-        findsOneWidget,
-      );
+      expect(find.text('10 piezas · 1 regiones completas'), findsOneWidget);
       expect(find.textContaining('· 10/10'), findsOneWidget);
     });
 
@@ -42,10 +56,7 @@ void main() {
 
       await tester.tap(find.widgetWithText(ChoiceChip, '1000'));
       await avanzar(tester);
-      expect(
-        find.text('1000 estrellas · 100 constelaciones completas'),
-        findsOneWidget,
-      );
+      expect(find.text('1000 piezas · 100 regiones completas'), findsOneWidget);
 
       for (final nivel in ['Todo', 'Cerca', 'Hoy']) {
         await tester.tap(find.widgetWithText(ChoiceChip, nivel));
@@ -54,10 +65,7 @@ void main() {
 
       await tester.tap(find.text('+1'));
       await avanzar(tester);
-      expect(
-        find.text('1001 estrellas · 100 constelaciones completas'),
-        findsOneWidget,
-      );
+      expect(find.text('1001 piezas · 100 regiones completas'), findsOneWidget);
       expect(find.textContaining('· 1/10'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -84,7 +92,9 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: LaboratorioMundosScreen(
-            pintores: [PintorPrueba(), PintorPrueba()],
+            mundos: [
+              galaxia([PintorPrueba(), PintorPrueba()]),
+            ],
             medir: false,
           ),
         ),
@@ -97,6 +107,73 @@ void main() {
       await tester.tap(find.text('Pintor: Prueba'));
       await avanzar(tester);
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  testWidgets('cambia de mundo a Neotokyo+ y vuelve', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: LaboratorioMundosScreen(
+          mundos: [
+            galaxia([PintorPrueba()]),
+            MundoDeLaboratorio<EscenaCiudad>(
+              nombre: 'Neotokyo+',
+              crearEscena: (semilla, cantidad) =>
+                  EscenaCiudad(ColocadorCiudad(semilla), cantidad),
+              pintores: [PintorCiudadPrueba()],
+            ),
+          ],
+          medir: false,
+        ),
+      ),
+    );
+    await avanzar(tester);
+    await tester.tap(find.text('Mundo: Profundidad'));
+    await avanzar(tester);
+    expect(find.textContaining('Neotokyo+'), findsWidgets);
+    await tester.tap(find.widgetWithText(ChoiceChip, '1000'));
+    await avanzar(tester);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Todo'));
+    await avanzar(tester);
+    await tester.tap(find.text('+1'));
+    await avanzar(tester);
+    expect(find.text('1001 piezas · 100 regiones completas'), findsOneWidget);
+    await tester.tap(find.text('Mundo: Neotokyo+'));
+    await avanzar(tester);
+    expect(tester.takeException(), isNull);
+  });
+
+  group('Pintor de la ciudad', () {
+    testWidgets('carga su shader y pinta 1.000 edificios en los tres niveles', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        final pintor = PintorCiudadCodigo();
+        await pintor.preparar();
+        expect(pintor.conShader, isTrue);
+        const tamano = ui.Size(200, 400);
+        final escena = EscenaCiudad(ColocadorCiudad(2026), 1000);
+        for (final nivel in NivelZoom.values) {
+          final grabadora = ui.PictureRecorder();
+          pintor.pintar(
+            ui.Canvas(grabadora),
+            tamano,
+            VistasMundo.de(nivel, escena, tamano),
+            escena,
+            segundos: 2,
+            nueva: 999,
+            aparicion: 0.5,
+          );
+          final imagen = await grabadora.endRecording().toImage(200, 400);
+          final bytes = (await imagen.toByteData())!.buffer.asUint8List();
+          var claros = 0;
+          for (var i = 0; i < bytes.length; i += 4) {
+            if (bytes[i] + bytes[i + 1] + bytes[i + 2] > 300) claros++;
+          }
+          expect(claros, greaterThan(20), reason: nivel.name);
+        }
+        pintor.liberar();
+      });
     });
   });
 
@@ -115,7 +192,7 @@ void main() {
           pintor.pintar(
             ui.Canvas(grabadora),
             tamano,
-            VistasGalaxia.de(nivel, escena, tamano),
+            VistasMundo.de(nivel, escena, tamano),
             escena,
             segundos: 1,
             nueva: 999,
@@ -146,7 +223,7 @@ void main() {
         pintor.pintar(
           ui.Canvas(grabadora),
           tamano,
-          VistasGalaxia.hoy(escena, tamano),
+          VistasMundo.hoy(escena, tamano),
           escena,
           segundos: 0,
         );

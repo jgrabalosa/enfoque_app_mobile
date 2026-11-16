@@ -90,8 +90,22 @@ lista completa, en el `CLAUDE.md` del paquete.
     generadas por código, sin PNG; `TexturasGalaxia` deja todo a oscuras en
     el borde de su imagen para que de lejos no se vean recuadros) y `PintorPrueba` (puntos y
     líneas). `VistasGalaxia` da los tres niveles de zoom.
-  - `laboratorio/`: la pantalla y el medidor de fotogramas
-    (`addTimingsCallback`).
+  - `ciudad/`: la ciudad de Neotokyo+. `ColocadorCiudad` (manzanas de 10
+    en espiral cuadrada desde la plaza del centro, avenidas cada tres, un río
+    que se esquiva, hitos cada 4 manzanas) y `PintorCiudadCodigo`: el suelo
+    con `shaders/ciudad_noche.frag` (calles mojadas, farolas, avenidas de
+    neón y el río) y los edificios como cajas con perspectiva desde arriba,
+    con ventanas (`TexturasCiudad`) y borde de neón, en un solo
+    `drawVertices`; coches de luz y el foco de la torre.
+  - `escena_mundo.dart`: lo común a todos los mundos (`EscenaMundo`,
+    `PintorMundo`, los tres niveles de zoom y `MundoDeLaboratorio`), y
+    `azar.dart`, el azar que no cambia de un móvil a otro.
+  - `laboratorio/`: la pantalla (con «Mundo: …» para cambiar de mundo), la
+    lista de mundos (`mundos_del_laboratorio.dart`) y el medidor de
+    fotogramas (`addTimingsCallback`).
+  - **En los shaders, nunca `pow()` de un número que pueda ser negativo**:
+    GLSL no lo define y en algunos móviles sale cualquier cosa (`cuad()` en
+    `ciudad_noche.frag`).
 - `google_fonts/` — las mismas siete familias que Habits, con sus licencias
   OFL.
 

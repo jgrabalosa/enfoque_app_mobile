@@ -42,6 +42,9 @@ class PintorCodigo extends PintorGalaxia {
   bool get conShader => _cielo != null;
 
   @override
+  String? get aviso => conShader ? null : 'sin shader';
+
+  @override
   Future<void> preparar() async {
     if (_texturas != null) return;
     _texturas = TexturasGalaxia.crear(nebulosa: await _cargar(rutaNebulosa));

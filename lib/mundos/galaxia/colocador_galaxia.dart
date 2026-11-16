@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show Offset;
 
+import '../azar.dart';
 import 'nombres_constelaciones.dart';
 
 /// Dónde va cada estrella de la galaxia de Profundidad
@@ -280,17 +281,8 @@ abstract final class VariantesEstrella {
   static const int normales = 6;
 }
 
-/// Un número entre 0 y 1 que solo depende de (semilla, numero, sal).
-/// SplitMix32: igual en todos los móviles, sin `Random`.
-double _azar(int semilla, int numero, int sal) {
-  var x =
-      (semilla * 0x9E3779B1 + numero * 0x85EBCA77 + sal * 0xC2B2AE3D) &
-      0xFFFFFFFF;
-  x = ((x ^ (x >> 16)) * 0x85EBCA6B) & 0xFFFFFFFF;
-  x = ((x ^ (x >> 13)) * 0xC2B2AE35) & 0xFFFFFFFF;
-  x = (x ^ (x >> 16)) & 0xFFFFFFFF;
-  return x / 4294967296.0;
-}
+double _azar(int semilla, int numero, int sal) =>
+    azarMundo(semilla, numero, sal);
 
 /// Lo mismo, para quien elige nombres.
 double azarGalaxia(int semilla, int numero, int sal) =>
