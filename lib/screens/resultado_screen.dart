@@ -10,11 +10,11 @@ import '../models/enfoque.dart';
 import '../services/controlador_enfoque.dart';
 import '../services/servicios_enfoque.dart';
 
-/// Los logros que esta app sabe nombrar (los genéricos del core) y cuántos
-/// no. Norday Focus no registra los logros de hábitos y el backend tampoco se
-/// los manda en el catálogo (`X-Norday-App: enfoque`), así que celebrarlos
-/// aquí enseñaría el código crudo. Esos se cuentan y se dice que están en
-/// Norday Habits.
+/// Los logros que esta app sabe nombrar (los genéricos del core y los propios
+/// de Focus, que registra `registrarLogrosEnfoque`) y cuántos no. Norday Focus
+/// no registra los logros de hábitos y el backend tampoco se los manda en el
+/// catálogo (`X-Norday-App: enfoque`), así que celebrarlos aquí enseñaría el
+/// código crudo. Esos se cuentan y se dice que están en Norday Habits.
 ({List<String> conocidos, int otros}) separarLogros(
   BuildContext context,
   List<String> codigos,
@@ -31,8 +31,9 @@ import '../services/servicios_enfoque.dart';
   return (conocidos: conocidos, otros: otros);
 }
 
-/// El resultado de la última sesión: los minutos, lo que pasó con ellos en
-/// su hábito y el estado del envío.
+/// El resultado de la última sesión: los minutos, lo que pagó la sesión (el
+/// premio, tenga hábito o no), lo que pasó con los minutos en su hábito y el
+/// estado del envío.
 class ResultadoScreen extends StatefulWidget {
   const ResultadoScreen({super.key, required this.controlador});
 
@@ -73,7 +74,12 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
     final r = _ultimo;
     if (!mounted || r == null || r.envio != EnvioResultado.enviada) return;
     if (!_celebrados.add(r.clave)) return;
-    final logros = r.respuesta?.aporte.logros ?? const [];
+    // Los de la sesión (Focus y la fase de Nori) y los del hábito, sin
+    // repetir: un logro de fase lo puede dar cualquiera de los dos.
+    final logros = {
+      ...?r.respuesta?.premio.logros,
+      ...?r.respuesta?.aporte.logros,
+    }.toList();
     final conocidos = separarLogros(context, logros).conocidos;
     if (conocidos.isNotEmpty) {
       unawaited(AmbitoEnfoque.de(context).celebrar(conocidos));
@@ -218,8 +224,39 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
           if (r.mensaje != null) linea(LucideIcons.info, r.mensaje!),
         ];
       case EnvioResultado.enviada:
-        return _aporte(context, l, r, linea);
+        return [
+          ..._premio(context, l, r, linea),
+          ..._aporte(context, l, r, linea),
+        ];
     }
+  }
+
+  /// Lo que pagó la sesión por sí misma, tenga hábito o no. Una perdida no
+  /// paga nada y no dice nada (la explicación de arriba ya lo cuenta).
+  List<Widget> _premio(
+    BuildContext context,
+    AppLocalizations l,
+    ResultadoSesion r,
+    Widget Function(IconData, String, {Color? color}) linea,
+  ) {
+    final t = tokens(context);
+    final premio = r.respuesta?.premio ?? Premio.vacio;
+    if (!r.sesion.estado.cuenta) return const [];
+    if (premio.monedas == 0 && premio.xp == 0) {
+      return [
+        if (premio.topeAlcanzado) linea(LucideIcons.info, l.resultadoTopeYa),
+      ];
+    }
+    return [
+      linea(
+        LucideIcons.coins,
+        premio.xp > 0
+            ? l.resultadoPremio(premio.monedas, premio.xp)
+            : l.resultadoMonedas(premio.monedas),
+        color: t.pointsText,
+      ),
+      if (premio.topeAlcanzado) linea(LucideIcons.info, l.resultadoTopeAhora),
+    ];
   }
 
   List<Widget> _aporte(

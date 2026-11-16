@@ -147,8 +147,8 @@ void main() {
     final es = await l('es');
     expect(es.inicioRachaDias(1), '1 día');
     expect(es.inicioRachaDias(3), '3 días');
-    expect(es.resultadoMonedas(1), '+1 moneda');
-    expect(es.resultadoMonedas(10), '+10 monedas');
+    expect(es.resultadoMonedas(1), '+1 punto');
+    expect(es.resultadoMonedas(10), '+10 puntos');
   });
 
   test('los textos compuestos de Estadísticas salen del ARB', () async {

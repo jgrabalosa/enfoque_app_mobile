@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:enfoque_app_mobile/l10n/app_localizations.dart';
+import 'package:enfoque_app_mobile/l10n/logros_enfoque.dart';
 import 'package:enfoque_app_mobile/models/enfoque.dart';
 import 'package:enfoque_app_mobile/models/enlace_entrada.dart';
 import 'package:enfoque_app_mobile/screens/estadisticas_screen.dart';
@@ -393,7 +394,7 @@ void main() {
       return m;
     }
 
-    testWidgets('aceptado: «+25 min a Leer (30 / 30)», monedas y logros', (
+    testWidgets('aceptado: «+25 min a Leer (30 / 30)», puntos y logros', (
       tester,
     ) async {
       final m = await acabar(
@@ -416,7 +417,7 @@ void main() {
       expect(find.text(l.resultadoCompletada), findsOneWidget);
       expect(find.text('25 min'), findsOneWidget);
       expect(find.text('+25 min a Leer (30 / 30)'), findsOneWidget);
-      expect(find.text('+10 monedas'), findsOneWidget);
+      expect(find.text('+10 puntos'), findsOneWidget);
       expect(find.text(l.resultadoDiaHecho), findsOneWidget);
       // MASCOTA_CRIA lo nombra el core y se celebra; RACHA_3 es de Habits.
       expect(find.text(l.resultadoLogrosEnHabits(1)), findsOneWidget);
@@ -425,6 +426,113 @@ void main() {
       await tester.tap(find.text(l.resultadoVolver));
       await asentar(tester);
       expect(m.controlador.resultado.value, isNull);
+    });
+
+    testWidgets('sin hábito: la sesión paga lo suyo y celebra los de Focus', (
+      tester,
+    ) async {
+      registrarLogrosEnfoque();
+      final m = await acabar(
+        tester,
+        destino: null,
+        envio: const EnvioAceptado(
+          RespuestaSesion(
+            aporte: Aporte(estado: EstadoAporte.sinDestino),
+            premio: Premio(
+              monedas: 30,
+              xp: 5,
+              logros: ['ENFOQUE_PRIMERA_SESION', 'MASCOTA_CRIA'],
+            ),
+          ),
+          nueva: true,
+        ),
+      );
+      expect(find.text('+30 puntos · +5 XP'), findsOneWidget);
+      expect(find.text(l.resultadoTopeAhora), findsNothing);
+      expect(find.text(l.resultadoLogrosEnHabits(1)), findsNothing);
+      expect(m.celebrados, ['ENFOQUE_PRIMERA_SESION', 'MASCOTA_CRIA']);
+    });
+
+    testWidgets('con hábito: lo de la sesión y lo del hábito, por separado', (
+      tester,
+    ) async {
+      registrarLogrosEnfoque();
+      final m = await acabar(
+        tester,
+        envio: const EnvioAceptado(
+          RespuestaSesion(
+            aporte: Aporte(
+              estado: EstadoAporte.aceptado,
+              minutos: 25,
+              monedas: 20,
+              minutosDia: 25,
+              minutosObjetivo: 30,
+              logros: ['RACHA_3', 'MASCOTA_CRIA'],
+            ),
+            premio: Premio(
+              monedas: 30,
+              xp: 5,
+              logros: ['ENFOQUE_CON_DESTINO', 'MASCOTA_CRIA'],
+            ),
+          ),
+          nueva: true,
+        ),
+      );
+      expect(find.text('+30 puntos · +5 XP'), findsOneWidget);
+      expect(find.text('+25 min a Leer (25 / 30)'), findsOneWidget);
+      expect(find.text('+20 puntos'), findsOneWidget);
+      expect(find.text(l.resultadoLogrosEnHabits(1)), findsOneWidget);
+      // MASCOTA_CRIA una sola vez, aunque venga en los dos.
+      expect(m.celebrados, ['ENFOQUE_CON_DESTINO', 'MASCOTA_CRIA']);
+    });
+
+    testWidgets('la sesión que llega al tope lo dice', (tester) async {
+      await acabar(
+        tester,
+        destino: null,
+        envio: const EnvioAceptado(
+          RespuestaSesion(
+            aporte: Aporte(estado: EstadoAporte.sinDestino),
+            premio: Premio(monedas: 20, xp: 4, topeAlcanzado: true),
+          ),
+          nueva: true,
+        ),
+      );
+      expect(find.text('+20 puntos · +4 XP'), findsOneWidget);
+      expect(find.text(l.resultadoTopeAhora), findsOneWidget);
+    });
+
+    testWidgets('con el tope ya alcanzado: no paga, pero cuenta', (
+      tester,
+    ) async {
+      await acabar(
+        tester,
+        destino: null,
+        envio: const EnvioAceptado(
+          RespuestaSesion(
+            aporte: Aporte(estado: EstadoAporte.sinDestino),
+            premio: Premio(topeAlcanzado: true),
+          ),
+          nueva: true,
+        ),
+      );
+      expect(find.textContaining('monedas'), findsNothing);
+      expect(find.text(l.resultadoTopeYa), findsOneWidget);
+    });
+
+    testWidgets('un backend sin premio (antes de V27): nada de la sesión', (
+      tester,
+    ) async {
+      await acabar(
+        tester,
+        destino: null,
+        envio: const EnvioAceptado(
+          RespuestaSesion(aporte: Aporte(estado: EstadoAporte.sinDestino)),
+          nueva: true,
+        ),
+      );
+      expect(find.textContaining('monedas'), findsNothing);
+      expect(find.textContaining('XP'), findsNothing);
     });
 
     testWidgets('una hora o más: «+1 h 30 min a Leer (1 h 30 min / 2 h)»', (

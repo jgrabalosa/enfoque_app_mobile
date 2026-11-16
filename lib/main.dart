@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'entorno.dart';
 import 'l10n/app_localizations.dart';
+import 'l10n/logros_enfoque.dart';
 import 'l10n/textos_enfoque.dart';
 import 'models/enlace_entrada.dart';
 import 'screens/home_shell.dart';
@@ -51,6 +52,9 @@ void main() async {
   // El core habla en neutro («Norday»): el nombre, el lema del login y los
   // textos de actualización obligatoria y de borrado de cuenta los pone la app.
   registrarTextosEnfoque();
+  // Los nombres de los 21 logros propios de Focus, para la pantalla de logros
+  // y las celebraciones: el core no puede conocerlos.
+  registrarLogrosEnfoque();
   // Cada vez que la app vuelve a primer plano, si está por debajo de la
   // versión mínima que da el backend, se bloquea hasta actualizar. El
   // arranque lo comprueba el splash.
