@@ -170,10 +170,11 @@ def lavanda(r, col, m):
 
 def rosal(r, col, m):
     hoja = lamina(0.07, 0.042, copa=0.2, curva=-0.05, punta=0.9)
-    for k in range(46):
+    mata(r, col, m['hoja'], 10, 0.1, 0.06, 0.09, 0.05, alzada=(0.4, 1.0))
+    for k in range(52):
         # Hojas sobre una cúpula: el arbusto.
         a = r.random() * math.tau
-        e = r.random() * 1.2
+        e = 0.35 + r.random() * 1.0
         p = (math.cos(a) * math.cos(e) * 0.2, math.sin(a) * math.cos(e) * 0.2,
              0.06 + math.sin(e) * 0.22)
         hoja_en(p, a + (r.random() - .5), math.radians(-10 + 60 * r.random()), hoja, m['hoja'], col,

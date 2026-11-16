@@ -375,7 +375,7 @@ def preparar(res):
     return sc
 
 
-def escena(salida, semilla=7):
+def escena(salida, semilla=7, cuantas=10):
     r = random.Random(semilla)
     sc = preparar((1100, 1100))
     col = bpy.data.collections.new('jardin')
@@ -384,7 +384,10 @@ def escena(salida, semilla=7):
     camino((-2.6, -0.2), (-1.1, -0.1), 0.42, col, r)
     camino((1.15, 0.2), (2.6, 0.35), 0.42, col, r)
     parterre((0, 0), 1.1, col, r)
+    antes_arbol = set(col.objects)
     arbol((-1.5, 1.4), col, r)
+    for o in set(col.objects) - antes_arbol:
+        o.pass_index = 1  # el árbol no es del parterre: no va a boceto
     # 10 plantas en espiral de girasol dentro del parterre. Como hace un
     # jardinero: las altas detrás (arriba en la pantalla) y las bajas
     # delante, para que se vean todas.
@@ -393,13 +396,15 @@ def escena(salida, semilla=7):
     for k in range(10):
         rad = 0.8 * math.sqrt((k + 0.6) / 10.3)
         a = k * aureo + 0.4
-        sitios.append((math.cos(a) * rad, math.sin(a) * rad))
+        sitios.append((math.cos(a) * rad, math.sin(a) * rad, k))
     sitios.sort(key=lambda p: p[0] - p[1])  # de atrás adelante
     especies = list(pl.ESPECIES) + [r.choice([e for e in pl.ESPECIES if e is not pl.girasol]) for _ in range(3)]
     especies.sort(key=lambda e: -ALTURA[e.__name__] + r.random() * 0.05)
     for c, especie in zip(sitios, especies):
         nombre = especie.__name__
         color = r.choice(COLORES[nombre])
+        if c[2] >= cuantas:  # aún no se ha plantado (crecen desde el centro)
+            continue
         # Cada planta cuelga de un objeto vacío que la pone en su sitio.
         planta = bpy.data.objects.new('planta', None)
         col.objects.link(planta)
@@ -424,7 +429,8 @@ def escena(salida, semilla=7):
     sc.render.image_settings.color_depth = '16'
     sc.render.film_transparent = False
     sc.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0
-    for nombre, salida_nodo in (('normal', 'normal'), ('prof', 'prof'), ('altura', 'altura')):
+    for nombre, salida_nodo in (('normal', 'normal'), ('prof', 'prof'), ('altura', 'altura'),
+                                ('indice', 'indice')):
         sc.render.image_settings.color_mode = 'RGB' if nombre == 'normal' else 'BW'
         m = bpy.data.materials.new(nombre)
         m.use_nodes = True
@@ -440,6 +446,9 @@ def escena(salida, semilla=7):
             mapa.inputs[2].default_value = (0.5, 0.5, 0.5)
             m.node_tree.links.new(g.outputs['Normal'], mapa.inputs[0])
             m.node_tree.links.new(mapa.outputs[0], em.inputs['Color'])
+        elif salida_nodo == 'indice':
+            info = n.new('ShaderNodeObjectInfo')
+            m.node_tree.links.new(info.outputs['Object Index'], em.inputs['Color'])
         elif salida_nodo == 'altura':
             g = n.new('ShaderNodeNewGeometry')
             sep = n.new('ShaderNodeSeparateXYZ')
@@ -465,4 +474,4 @@ def escena(salida, semilla=7):
 
 if __name__ == '__main__':
     if sys.argv[1] == 'escena':
-        escena(sys.argv[2])
+        escena(sys.argv[2], cuantas=int(sys.argv[3]) if len(sys.argv) > 3 else 10)

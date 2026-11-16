@@ -81,7 +81,7 @@ def suave(a, b, x):
     return t * t * (3 - 2 * t)
 
 
-def a_lapiz(entrada, salida, semilla=3):
+def a_lapiz(entrada, salida, semilla=3, boceto=False):
     rgba = np.asarray(Image.open(entrada + '_color.png').convert('RGBA')).astype(float) / 255
     color, alfa = rgba[..., :3], rgba[..., 3]
     normal = np.asarray(Image.open(entrada + '_normal.png').convert('RGB')).astype(float) / 255
@@ -100,6 +100,16 @@ def a_lapiz(entrada, salida, semilla=3):
     lejos = suave(0.62, 1.0, d + (ruido(forma, 110, semilla) - 0.5) * 0.3)
     borde = 1 - lejos * arriba
     dentro = alfa * borde
+
+    # En boceto, lo plantado (todo lo que no es el suelo) va solo a grafito:
+    # más claro y sin color.
+    if boceto:
+        indice = np.asarray(Image.open(entrada + '_indice.png')).astype(float) / 65535
+        plantado = (suave(0.02, 0.06, altura) * (indice < 0.5))[..., None]
+        gris = (color @ np.array([0.299, 0.587, 0.114]))[..., None]
+        grafito = 1 - (1 - gris) * 0.55
+        grafito = grafito * (GRAFITO / GRAFITO.mean()) ** 0.25
+        color = color * (1 - plantado) + np.clip(grafito, 0, 1) * plantado
 
     # Cuánto se cubre: todo lo que tiene color se cubre bastante (si no, las
     # luces se quedan en blanco); lo oscuro y lo saturado, más.
@@ -149,4 +159,4 @@ def a_lapiz(entrada, salida, semilla=3):
 
 
 if __name__ == '__main__':
-    a_lapiz(sys.argv[1], sys.argv[2])
+    a_lapiz(sys.argv[1], sys.argv[2], boceto=len(sys.argv) > 3 and sys.argv[3] == 'boceto')
