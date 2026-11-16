@@ -68,6 +68,11 @@ Al arrancar, la app comprueba que el flavor y la URL del backend van juntos
 (`lib/entorno.dart`). Si no cuadran, se para en «Entorno incorrecto» sin hacer
 ninguna petición.
 
+La de prueba lleva una **cinta «PRUEBA»** arriba a la derecha en todas las
+pantallas, también al iniciar sesión: sin cinta, estás en producción. Y nunca
+abre Google Play: si falta Norday PRUEBA, «Crea hábitos en Norday Habits» lo
+dice en vez de llevar a la ficha, que abre la Habits de producción.
+
 App de prueba contra staging. Se instala junto a la de Play, sin sustituirla:
 
 ```powershell

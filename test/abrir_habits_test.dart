@@ -56,6 +56,16 @@ void main() {
     );
   });
 
+  test('la Focus de prueba sin la Habits de prueba no cae a Play', () async {
+    // Aunque Play y la web abrirían: su ficha es la de producción.
+    final l = _Lanzador(({enlace, paquete}) => enlace != null);
+    expect(
+      await abrirHabits(flavor: 'prueba', lanzador: l),
+      AperturaHabits.faltaPrueba,
+    );
+    expect(l.llamadas, [(enlace: null, paquete: 'com.norday.habitos.prueba')]);
+  });
+
   test('nada que abra nada', () async {
     final l = _Lanzador(({enlace, paquete}) => false);
     expect(await abrirHabits(flavor: null, lanzador: l), AperturaHabits.nada);
