@@ -26,6 +26,15 @@ class PintorCiudadCodigo extends PintorCiudad {
   String get nombre => 'Código';
 
   TexturasCiudad? _texturas;
+
+  /// Las texturas, cuando ya están preparadas.
+  @protected
+  TexturasCiudad? get texturas => _texturas;
+
+  /// Si la pantalla es la vista isométrica (la de «Neotokyo+ 3D»): el suelo
+  /// se dibuja girado.
+  @protected
+  bool get isometrico => false;
   FragmentShader? _suelo;
 
   bool get conShader => _suelo != null;
@@ -69,7 +78,8 @@ class PintorCiudadCodigo extends PintorCiudad {
     _escena = null;
   }
 
-  void _alCambiarEscena(EscenaCiudad escena) {
+  @protected
+  void alCambiarEscena(EscenaCiudad escena) {
     if (identical(escena, _escena)) return;
     _escena = escena;
     _ordenados = [torre, ...escena.edificios]
@@ -99,9 +109,9 @@ class PintorCiudadCodigo extends PintorCiudad {
   }) {
     final texturas = _texturas;
     if (texturas == null) return;
-    _alCambiarEscena(escena);
+    alCambiarEscena(escena);
 
-    _pintarSuelo(canvas, tamano, vista, escena, segundos);
+    pintarSuelo(canvas, tamano, vista, escena, segundos);
 
     canvas.save();
     canvas.translate(tamano.width / 2, tamano.height / 2);
@@ -110,11 +120,11 @@ class PintorCiudadCodigo extends PintorCiudad {
     final visible = vista.visible(tamano, margen: 260);
     final px = 1 / vista.escala; // un píxel, en unidades del mundo
 
-    _pintarPlaza(canvas, segundos);
+    pintarPlaza(canvas, segundos);
     for (final h in escena.hitos) {
-      if (visible.overlaps(h.rect)) _pintarHito(canvas, h, segundos, px);
+      if (visible.overlaps(h.rect)) pintarHito(canvas, h, segundos, px);
     }
-    _pintarCoches(canvas, escena, texturas, visible, segundos, px);
+    pintarCoches(canvas, escena, texturas, visible, segundos, px);
     _pintarEdificios(
       canvas,
       tamano,
@@ -135,7 +145,8 @@ class PintorCiudadCodigo extends PintorCiudad {
 
   // ── El suelo ─────────────────────────────────────────────────────────────
 
-  void _pintarSuelo(
+  @protected
+  void pintarSuelo(
     Canvas canvas,
     Size tamano,
     VistaMundo vista,
@@ -160,13 +171,15 @@ class PintorCiudadCodigo extends PintorCiudad {
       ..setFloat(7, c.rioVertical ? 1 : 0)
       ..setFloat(8, c.rioFase)
       ..setFloat(9, c.rioDesplazamiento)
-      ..setFloat(10, segundos % 1000);
+      ..setFloat(10, segundos % 1000)
+      ..setFloat(11, isometrico ? 1 : 0);
     canvas.drawRect(rect, Paint()..shader = suelo);
   }
 
   // ── La plaza del centro y los hitos ──────────────────────────────────────
 
-  void _pintarPlaza(Canvas canvas, double s) {
+  @protected
+  void pintarPlaza(Canvas canvas, double s) {
     final plaza = ColocadorCiudad.rectCelda(0, 0);
     canvas.drawRRect(
       RRect.fromRectAndRadius(plaza.deflate(6), const Radius.circular(18)),
@@ -187,7 +200,8 @@ class PintorCiudadCodigo extends PintorCiudad {
     }
   }
 
-  void _pintarHito(Canvas canvas, HitoCiudad h, double s, double px) {
+  @protected
+  void pintarHito(Canvas canvas, HitoCiudad h, double s, double px) {
     final r = h.rect.deflate(6);
     final suma = Paint()..blendMode = BlendMode.plus;
     switch (h.tipo) {
@@ -365,7 +379,8 @@ class PintorCiudadCodigo extends PintorCiudad {
 
   // ── Los coches ───────────────────────────────────────────────────────────
 
-  void _pintarCoches(
+  @protected
+  void pintarCoches(
     Canvas canvas,
     EscenaCiudad escena,
     TexturasCiudad texturas,
@@ -722,10 +737,15 @@ class PintorCiudadCodigo extends PintorCiudad {
   ) {
     if (escena.cantidad == 0 || vista.escala < 0.45) return;
     final m = escena.colocador.manzana(escena.deLaUltima);
-    final arriba = vista.aPantalla(m.rect.topCenter, tamano);
+    pintarNombre(canvas, m.nombre, vista.aPantalla(m.rect.topCenter, tamano));
+  }
+
+  /// [nombre] en neón rosa, centrado encima de [punto] (en la pantalla).
+  @protected
+  static void pintarNombre(Canvas canvas, String nombre, Offset punto) {
     final texto = TextPainter(
       text: TextSpan(
-        text: m.nombre.toUpperCase(),
+        text: nombre.toUpperCase(),
         style: TextStyle(
           color: TexturasCiudad.claro(PaletaNeotokyo.rosa),
           fontSize: 15,
@@ -739,7 +759,7 @@ class PintorCiudadCodigo extends PintorCiudad {
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    texto.paint(canvas, arriba - Offset(texto.width / 2, texto.height + 14));
+    texto.paint(canvas, punto - Offset(texto.width / 2, texto.height + 14));
     texto.dispose();
   }
 

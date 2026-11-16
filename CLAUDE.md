@@ -97,6 +97,12 @@ lista completa, en el `CLAUDE.md` del paquete.
     neón y el río) y los edificios como cajas con perspectiva desde arriba,
     con ventanas (`TexturasCiudad`) y borde de neón, en un solo
     `drawVertices`; coches de luz y el foco de la torre.
+    `ciudad_isometrica.dart` es «Neotokyo+ 3D»: la misma ciudad en
+    isométrico (`Iso`: la cámara de Blender, u = (x+y)/√2, v = (x−y)/(2√2)),
+    con los edificios renderizados en Blender (`KitNeotokyo`, atlas en
+    `assets/mundos/neotokyo/`, se rehace con `tool/mundos/`) y dibujados de
+    atrás adelante con `drawAtlas`; el suelo es el mismo shader con
+    `uIso = 1`.
   - `escena_mundo.dart`: lo común a todos los mundos (`EscenaMundo`,
     `PintorMundo`, los tres niveles de zoom y `MundoDeLaboratorio`), y
     `azar.dart`, el azar que no cambia de un móvil a otro.

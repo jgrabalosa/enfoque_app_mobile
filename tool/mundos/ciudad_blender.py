@@ -330,8 +330,13 @@ def preparar(resolucion, transparente):
     # Una luz de luna fría, muy suave, para que se vean los volúmenes.
     bpy.ops.object.light_add(type='SUN', rotation=(math.radians(50), 0, math.radians(-30)))
     luna = bpy.context.object
-    luna.data.energy = 0.25
+    luna.data.energy = 0.35
     luna.data.color = (0.6, 0.65, 1.0)
+    # Contraluz frío desde detrás de la cámara: dibuja los cantos.
+    bpy.ops.object.light_add(type='SUN', rotation=(math.radians(62), 0, math.radians(225)))
+    contra = bpy.context.object
+    contra.data.energy = 1.4
+    contra.data.color = (0.45, 0.6, 1.0)
     return sc
 
 
@@ -440,9 +445,90 @@ def sprites(carpeta, cuantos=10):
         bpy.ops.render.render(write_still=True)
 
 
+# ── El kit para la app ──────────────────────────────────────────────────────
+
+#: Píxeles por unidad de Blender en las imágenes del kit.
+PX_POR_UNIDAD = 120
+#: Las huellas (ancho, fondo) en unidades de Blender; 1 unidad = 60 del mundo
+#: de la app.
+LADOS = (0.7, 1.0, 1.3, 1.6)
+VARIANTES = 3
+
+
+def kit_lista():
+    lista = []
+    for w in LADOS:
+        for d in LADOS:
+            for v in range(VARIANTES):
+                lista.append((len(lista), w, d))
+    return lista
+
+
+def kit(carpeta, desde, hasta):
+    """Renderiza los edificios del kit [desde, hasta) como imágenes sueltas,
+    con fondo transparente, y apunta en un JSON dónde está su base en la
+    imagen, su huella y su altura."""
+    import json
+    from bpy_extras.object_utils import world_to_camera_view
+    from mathutils import Vector
+    lista = kit_lista() + [(len(kit_lista()), 1.1, 1.1)]  # el último: la torre
+    for (i, w, d) in lista[desde:hasta]:
+        es_torre = i == len(lista) - 1
+        # Primero se construye, para saber lo alto que es.
+        sc = preparar((64, 64), transparente=True)
+        sc.cycles.samples = 48
+        col = bpy.data.collections.new('e')
+        sc.collection.children.link(col)
+        if es_torre:
+            alto = torre(col)
+        else:
+            alto = edificio(5000 + i * 31, w, d, col)
+        S = PX_POR_UNIDAD
+        diag = (w + d) / math.sqrt(2)
+        ancho_px = int((diag + 1.2) * S)
+        abajo = (w + d) / (2 * math.sqrt(2)) * 0.5 + 0.45
+        alto_px = int(((alto + 1.5) * 0.866 + abajo + 0.45) * S)
+        sc.render.resolution_x, sc.render.resolution_y = ancho_px, alto_px
+        # La base queda a [abajo] unidades del borde de abajo.
+        zt = (alto_px / 2 / S - abajo) / 0.866
+        camara_isometrica(sc, (0, 0, zt), max(ancho_px, alto_px) / S)
+        v = world_to_camera_view(sc, sc.camera, Vector((0, 0, 0)))
+        ancla = (v.x * ancho_px, (1 - v.y) * alto_px)
+        sc.render.filepath = f'{carpeta}/kit_{i:03d}.png'
+        bpy.ops.render.render(write_still=True)
+        json.dump({'i': i, 'ancho': w, 'fondo': d, 'alto': alto, 'torre': es_torre,
+                   'ancla': ancla, 'px_por_unidad': S},
+                  open(f'{carpeta}/kit_{i:03d}.json', 'w'))
+
+
+def torre(coleccion):
+    """La torre de la plaza del centro: alta, con aros de neón y aguja."""
+    mat = fachada((0.04, 0.035, 0.07), (0.6, 0.9, 1.0), 0.35, 4242)
+    oscuro = liso((0.02, 0.018, 0.03), 0.6, 0.3)
+    z = 0.0
+    for (lado, h) in ((1.1, 2.2), (0.85, 2.6), (0.6, 2.2)):
+        caja(0, 0, z, lado, lado, h, mat, coleccion)
+        z += h
+        caja(0, 0, z, lado + 0.08, lado + 0.08, 0.07, oscuro, coleccion)
+        borde_neon(0, 0, z + 0.07, lado + 0.08, lado + 0.08, NEONES[0], coleccion, 0.045)
+        z += 0.07
+    cilindro(0, 0, z, 0.05, 1.4, oscuro, coleccion, 8)
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.07, location=(0, 0, z + 1.42))
+    s = bpy.context.object
+    s.data.materials.append(emision((1, 0.1, 0.15), 50))
+    _mover(s, coleccion)
+    for k in range(4):
+        ang = k * math.pi / 2
+        caja(0.56 * math.cos(ang), 0.56 * math.sin(ang), 0.3, 0.04, 0.04, 1.8,
+             letrero(NEONES[k % 4], 77 + k), coleccion)
+    return z + 1.3
+
+
 if __name__ == '__main__':
     modo, destino = sys.argv[1], sys.argv[2]
     if modo == 'escena':
         escena(destino)
+    elif modo == 'kit':
+        kit(destino, int(sys.argv[3]), int(sys.argv[4]))
     else:
         sprites(destino)

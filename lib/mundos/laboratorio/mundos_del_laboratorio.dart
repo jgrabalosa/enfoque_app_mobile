@@ -1,3 +1,4 @@
+import '../ciudad/ciudad_isometrica.dart';
 import '../ciudad/colocador_ciudad.dart';
 import '../ciudad/escena_ciudad.dart';
 import '../ciudad/pintor_ciudad.dart';
@@ -22,5 +23,13 @@ List<MundoDeLaboratorio> mundosDelLaboratorio() => [
     crearEscena: (semilla, cantidad) =>
         EscenaCiudad(ColocadorCiudad(semilla), cantidad),
     pintores: [PintorCiudadCodigo(), PintorCiudadPrueba()],
+  ),
+  // La misma ciudad en isométrico, con los edificios renderizados en
+  // Blender (`encargos/focus-mundos.md` §11).
+  MundoDeLaboratorio<EscenaCiudad>(
+    nombre: 'Neotokyo+ 3D',
+    crearEscena: (semilla, cantidad) =>
+        EscenaCiudadIso(ColocadorCiudad(semilla), cantidad),
+    pintores: [PintorCiudadBlender()],
   ),
 ];

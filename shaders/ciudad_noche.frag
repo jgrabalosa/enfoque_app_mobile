@@ -22,6 +22,7 @@ uniform float uRioVertical; // 7:  1 si baja, 0 si cruza
 uniform float uRioFase;     // 8
 uniform float uRioDesp;     // 9
 uniform float uTiempo;      // 10: segundos
+uniform float uIso;         // 11: 1 si la pantalla es la vista isométrica
 
 out vec4 fragColor;
 
@@ -87,6 +88,12 @@ float cuad(float d, float ancho) {
 void main() {
   vec2 frag = FlutterFragCoord().xy;
   vec2 w = (frag - uTamano * 0.5) / uEscala + uCentro;
+  // En la vista isométrica, lo de la pantalla es el plano de la cámara
+  // (u, v), y aquí se vuelve al suelo: u = (x+y)/√2, v = (x−y)/(2√2).
+  if (uIso > 0.5) {
+    w = vec2(w.x * 0.70710678 + w.y * 1.41421356,
+             w.x * 0.70710678 - w.y * 1.41421356);
+  }
   float r = length(w);
   vec2 sem = vec2(uSemilla * 37.0, uSemilla * 53.0);
 
