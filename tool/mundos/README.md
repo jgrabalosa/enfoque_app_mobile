@@ -25,3 +25,16 @@ Necesita el módulo de Blender para Python: `pip install bpy` (Python 3.13).
 
 La app los usa en el laboratorio, en el mundo «Neotokyo+ 3D»
 (`lib/mundos/ciudad/ciudad_isometrica.dart`).
+
+## El jardín de Dulce en 3D a lápiz (prueba, 16-nov)
+
+- `jardin_blender.py escena SALIDA`: un parterre con 10 plantas, el árbol y
+  los caminos, con la misma cámara que Neotokyo+ 3D. Saca el color, las
+  normales, la profundidad y la altura (`SALIDA_color.png`, `_normal`,
+  `_prof`, `_altura`).
+- `plantas_blender.py`: las plantas (tulipanes, margaritas, lavanda, rosal,
+  hortensia, girasol y amapolas), con pétalos y hojas como láminas curvas.
+- `lapiz_post.py SALIDA RESULTADO.png`: lo pasa a lápiz de color sobre el
+  papel de Dulce (contorno que tiembla, rayado en el ángulo de la mano,
+  pigmento que agarra en el diente del papel y el suelo que se deshace hacia
+  fuera).
