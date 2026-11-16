@@ -55,3 +55,4 @@ flutter:
   # compila el SDK al construir; se carga con `FragmentProgram.fromAsset`.
   shaders:
     - shaders/cielo_galaxia.frag
+    - shaders/nebulosa.frag

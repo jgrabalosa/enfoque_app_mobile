@@ -85,8 +85,10 @@ lista completa, en el `CLAUDE.md` del paquete.
     va cada estrella a partir del número y de la semilla (constelaciones de
     10 en tres brazos; nada se guarda); `EscenaGalaxia` lo junta para un
     número de piezas; `PintorGalaxia` es la interfaz de las formas de
-    dibujarla: `PintorCodigo` (shader `shaders/cielo_galaxia.frag` y
-    estrellas generadas por código, sin PNG) y `PintorPrueba` (puntos y
+    dibujarla: `PintorCodigo` (shaders `shaders/cielo_galaxia.frag` para el
+    cielo y `shaders/nebulosa.frag` para las nebulosas, y estrellas
+    generadas por código, sin PNG; `TexturasGalaxia` deja todo a oscuras en
+    el borde de su imagen para que de lejos no se vean recuadros) y `PintorPrueba` (puntos y
     líneas). `VistasGalaxia` da los tres niveles de zoom.
   - `laboratorio/`: la pantalla y el medidor de fotogramas
     (`addTimingsCallback`).

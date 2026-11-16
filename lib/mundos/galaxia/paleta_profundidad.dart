@@ -18,14 +18,6 @@ abstract final class PaletaProfundidad {
     Color(0xFFCFE0FF),
   ];
 
-  /// Las nebulosas y cúmulos: violeta, turquesa, rosa y azul.
-  static const List<Color> hitos = [
-    Color(0xFF7A4DDB),
-    Color(0xFF2FB3C2),
-    Color(0xFFD9578F),
-    Color(0xFF4A6FE0),
-  ];
-
   /// Las líneas de las constelaciones.
   static const Color linea = Color(0xFF8FB3FF);
 }

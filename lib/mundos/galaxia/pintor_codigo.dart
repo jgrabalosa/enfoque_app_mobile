@@ -14,9 +14,15 @@ import 'texturas_galaxia.dart';
 /// generadas al arrancar, colocadas en lote con `drawAtlas` y sumadas como
 /// luz. No hay ni un PNG.
 class PintorCodigo extends PintorGalaxia {
-  PintorCodigo({this.rutaShader = 'shaders/cielo_galaxia.frag'});
+  PintorCodigo({
+    this.rutaShader = 'shaders/cielo_galaxia.frag',
+    this.rutaNebulosa = 'shaders/nebulosa.frag',
+  });
 
   final String rutaShader;
+
+  /// El shader con el que se hacen las nebulosas de los hitos, una vez.
+  final String rutaNebulosa;
 
   /// El tamaño de una estrella en el mundo (la de cierre, el doble largo).
   static const double tamanoEstrella = 46;
@@ -37,13 +43,17 @@ class PintorCodigo extends PintorGalaxia {
 
   @override
   Future<void> preparar() async {
-    _texturas ??= TexturasGalaxia.crear();
-    if (_cielo != null) return;
+    if (_texturas != null) return;
+    _texturas = TexturasGalaxia.crear(nebulosa: await _cargar(rutaNebulosa));
+    _cielo = (await _cargar(rutaShader))?.fragmentShader();
+  }
+
+  static Future<FragmentProgram?> _cargar(String ruta) async {
     try {
-      final programa = await FragmentProgram.fromAsset(rutaShader);
-      _cielo = programa.fragmentShader();
+      return await FragmentProgram.fromAsset(ruta);
     } catch (e) {
-      debugPrint('Galaxia sin shader: $e');
+      debugPrint('Galaxia sin el shader $ruta: $e');
+      return null;
     }
   }
 
@@ -130,38 +140,29 @@ class PintorCodigo extends PintorGalaxia {
   ) {
     if (escena.hitos.isEmpty) return;
     final visible = vista.visible(tamano, margen: 400);
-    final transformaciones = <RSTransform>[];
-    final rects = <Rect>[];
-    final colores = <Color>[];
-    const lado = TexturasGalaxia.ladoHito;
+    // Cada hito en su propia imagen y con drawImageRect: son pocos (uno cada
+    // 4 constelaciones) y así ninguno se contagia del de al lado.
+    final pincel = Paint()
+      ..blendMode = BlendMode.plus
+      ..filterQuality = FilterQuality.medium
+      ..color = const Color(0xE6FFFFFF);
+    const lado = TexturasGalaxia.ladoHito * 1.0;
+    const origen = Rect.fromLTWH(0, 0, lado, lado);
     for (final h in escena.hitos) {
       if (!visible.contains(h.centro)) continue;
       final p = vista.aPantalla(h.centro, tamano);
-      transformaciones.add(
-        RSTransform.fromComponents(
-          rotation: h.giro,
-          scale: math.max(h.radio * 2 * vista.escala, 28) / lado,
-          anchorX: lado / 2,
-          anchorY: lado / 2,
-          translateX: p.dx,
-          translateY: p.dy,
-        ),
+      final px = math.max(h.radio * 2 * vista.escala, 28.0);
+      canvas.save();
+      canvas.translate(p.dx, p.dy);
+      canvas.rotate(h.giro);
+      canvas.drawImageRect(
+        texturas.hitos[h.variante],
+        origen,
+        Rect.fromCenter(center: Offset.zero, width: px, height: px),
+        pincel,
       );
-      rects.add(texturas.rectHito(h.variante));
-      colores.add(PaletaProfundidad.hitos[h.variante].withValues(alpha: 0.8));
+      canvas.restore();
     }
-    if (transformaciones.isEmpty) return;
-    canvas.drawAtlas(
-      texturas.hitos,
-      transformaciones,
-      rects,
-      colores,
-      BlendMode.modulate,
-      null,
-      Paint()
-        ..blendMode = BlendMode.plus
-        ..filterQuality = FilterQuality.medium,
-    );
   }
 
   void _pintarLineas(
@@ -188,26 +189,36 @@ class PintorCodigo extends PintorGalaxia {
       final destino = e.constelacion == escena.deLaUltima ? deHoy : normales;
       destino.addAll([a.dx, a.dy, b.dx, b.dy]);
     }
-    final pincel = Paint()
-      ..strokeWidth = 1.1
-      ..strokeCap = StrokeCap.round
-      ..blendMode = BlendMode.plus;
-    if (normales.isNotEmpty) {
+    // Cada línea, dos veces: un resplandor ancho y tenue y un trazo fino.
+    void trazar(
+      List<double> puntos,
+      Color color,
+      double fino,
+      double alfaFino,
+    ) {
+      if (puntos.isEmpty) return;
+      final lista = Float32List.fromList(puntos);
+      final pincel = Paint()
+        ..strokeCap = StrokeCap.round
+        ..blendMode = BlendMode.plus;
       canvas.drawRawPoints(
         PointMode.lines,
-        Float32List.fromList(normales),
-        pincel..color = PaletaProfundidad.linea.withValues(alpha: 0.28 * alfa),
-      );
-    }
-    if (deHoy.isNotEmpty) {
-      canvas.drawRawPoints(
-        PointMode.lines,
-        Float32List.fromList(deHoy),
+        lista,
         pincel
-          ..strokeWidth = 1.4
-          ..color = PaletaProfundidad.amarillo.withValues(alpha: 0.45 * alfa),
+          ..strokeWidth = fino * 4
+          ..color = color.withValues(alpha: alfaFino * 0.18 * alfa),
+      );
+      canvas.drawRawPoints(
+        PointMode.lines,
+        lista,
+        pincel
+          ..strokeWidth = fino
+          ..color = color.withValues(alpha: alfaFino * alfa),
       );
     }
+
+    trazar(normales, PaletaProfundidad.linea, 1.1, 0.3);
+    trazar(deHoy, PaletaProfundidad.amarillo, 1.4, 0.5);
   }
 
   void _pintarEstrellas(
@@ -227,6 +238,7 @@ class PintorCodigo extends PintorGalaxia {
     final rects = <Rect>[];
     final colores = <Color>[];
     const lado = TexturasGalaxia.ladoEstrella;
+    const celda = TexturasGalaxia.celdaEstrella;
 
     void anadir(
       EstrellaColocada e,
@@ -241,8 +253,8 @@ class PintorCodigo extends PintorGalaxia {
         RSTransform.fromComponents(
           rotation: giro,
           scale: px * factor / lado,
-          anchorX: lado / 2,
-          anchorY: lado / 2,
+          anchorX: celda / 2,
+          anchorY: celda / 2,
           translateX: p.dx,
           translateY: p.dy,
         ),
