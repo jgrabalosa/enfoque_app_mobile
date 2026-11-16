@@ -20,8 +20,8 @@ const String paqueteHabits = 'com.norday.habitos';
 String paqueteHabitsDe(String? flavor) =>
     flavor == 'prueba' ? '$paqueteHabits.prueba' : paqueteHabits;
 
-/// La ficha de Habits en la app de Google Play. Siempre la de Play: la de
-/// prueba no tiene ficha.
+/// La ficha de Habits en la app de Google Play. Sólo desde la Focus de Play:
+/// la de prueba no tiene ficha, y la de Play habla con producción.
 final Uri fichaPlayHabits = Uri.parse('market://details?id=$paqueteHabits');
 
 /// La misma ficha en la web, si no hay app de Google Play.
@@ -30,10 +30,24 @@ final Uri fichaWebHabits = Uri.parse(
 );
 
 /// Qué se acabó abriendo.
-enum AperturaHabits { app, fichaPlay, fichaWeb, nada }
+///
+/// [faltaPrueba]: nada, desde la Focus de prueba sin la Habits de prueba
+/// instalada. No se cae a Google Play: su ficha es la de la Habits de Play,
+/// que habla con producción, y desde allí se acababa entrando en la app
+/// equivocada (prueba del 16-nov-2026).
+enum AperturaHabits { app, fichaPlay, fichaWeb, faltaPrueba, nada }
+
+/// Lo que se enseña con [AperturaHabits.faltaPrueba]. Sólo lo ve quien
+/// desarrolla (la Focus de prueba), por eso no se traduce, como
+/// `PantallaEntornoIncorrecto`.
+const String textoFaltaHabitsPrueba =
+    'Instala Norday PRUEBA: la app de prueba no abre Google Play, que lleva '
+    'a la de producción.';
 
 /// Abre Norday Habits; si no está, su ficha de Google Play, y si tampoco hay
-/// Google Play, la ficha en la web. Para en lo primero que se abra.
+/// Google Play, la ficha en la web. Para en lo primero que se abra. Con el
+/// flavor `prueba` sólo intenta la Habits de prueba: si no está,
+/// [AperturaHabits.faltaPrueba].
 Future<AperturaHabits> abrirHabits({
   required String? flavor,
   required Lanzador lanzador,
@@ -41,6 +55,7 @@ Future<AperturaHabits> abrirHabits({
   if (await lanzador.abrir(paquete: paqueteHabitsDe(flavor))) {
     return AperturaHabits.app;
   }
+  if (flavor == 'prueba') return AperturaHabits.faltaPrueba;
   if (await lanzador.abrir(enlace: fichaPlayHabits)) {
     return AperturaHabits.fichaPlay;
   }

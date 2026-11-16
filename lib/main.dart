@@ -201,7 +201,12 @@ class EnfoqueApp extends StatelessWidget {
                   GlobalWidgetsLocalizations.delegate,
                   GlobalCupertinoLocalizations.delegate,
                 ],
-                builder: envolverConGrano,
+                // La cinta «PRUEBA» por fuera del grano: tiene que verse en
+                // cualquier identidad.
+                builder: (context, child) => conCintaDeEntorno(
+                  servicios.flavor,
+                  envolverConGrano(context, child),
+                ),
                 home: home ?? const SplashScreen(),
               );
             },

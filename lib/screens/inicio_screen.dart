@@ -126,10 +126,16 @@ class _InicioScreenState extends State<InicioScreen> {
 
   Future<void> _abrirHabits() async {
     final abierto = await abrirHabits(flavor: _s.flavor, lanzador: _s.lanzador);
-    if (abierto == AperturaHabits.nada && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.abrirHabitsError)),
-      );
+    if (!mounted) return;
+    final aviso = switch (abierto) {
+      AperturaHabits.nada => AppLocalizations.of(context)!.abrirHabitsError,
+      AperturaHabits.faltaPrueba => textoFaltaHabitsPrueba,
+      _ => null,
+    };
+    if (aviso != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(aviso)));
     }
   }
 

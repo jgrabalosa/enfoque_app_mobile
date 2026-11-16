@@ -7,6 +7,7 @@ import 'package:enfoque_app_mobile/screens/estadisticas_screen.dart';
 import 'package:enfoque_app_mobile/screens/inicio_screen.dart';
 import 'package:enfoque_app_mobile/screens/resultado_screen.dart';
 import 'package:enfoque_app_mobile/screens/sesion_screen.dart';
+import 'package:enfoque_app_mobile/services/abrir_habits.dart';
 import 'package:enfoque_app_mobile/services/api_service_enfoque.dart';
 import 'package:enfoque_app_mobile/services/controlador_enfoque.dart';
 import 'package:enfoque_app_mobile/widgets/barras_semana.dart';
@@ -161,6 +162,20 @@ void main() {
       await tester.tap(find.text(l.destinoCrearEnHabits));
       await asentar(tester);
       expect(m.lanzador.llamadas.single.paquete, 'com.norday.habitos.prueba');
+    });
+
+    testWidgets('sin la Habits de prueba: aviso, y no va a Google Play', (
+      tester,
+    ) async {
+      final m = Montaje(tester);
+      m.lanzador.abre = ({enlace, paquete}) => enlace != null;
+      await tester.pumpWidget(inicio(m));
+      await asentar(tester);
+
+      await tester.tap(find.text(l.destinoCrearEnHabits));
+      await asentar(tester);
+      expect(m.lanzador.llamadas.single.paquete, 'com.norday.habitos.prueba');
+      expect(find.text(textoFaltaHabitsPrueba), findsOneWidget);
     });
 
     testWidgets('un enlace deja elegido su hábito', (tester) async {
