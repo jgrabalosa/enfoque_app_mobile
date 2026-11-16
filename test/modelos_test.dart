@@ -92,6 +92,47 @@ void main() {
       expect(r.aporte.diaHecho, isNull);
     });
 
+    test('el premio de la sesión (V27), aparte del aporte', () {
+      final r = RespuestaSesion.fromJson(
+        jsonDecode(
+          '{"sesion":{"clave":"a","estado":"COMPLETADA","destino":null},'
+          '"aporte":{"estado":"SIN_DESTINO","minutos":0,"monedas":0,"xp":0,'
+          '"logros":[]},'
+          '"premio":{"monedas":30,"xp":5,'
+          '"logros":["ENFOQUE_PRIMERA_SESION","MASCOTA_CRIA"],'
+          '"topeAlcanzado":true}}',
+        ),
+      );
+      expect(r.aporte.estado, EstadoAporte.sinDestino);
+      expect(r.aporte.monedas, 0);
+      expect(r.premio.monedas, 30);
+      expect(r.premio.xp, 5);
+      expect(r.premio.logros, ['ENFOQUE_PRIMERA_SESION', 'MASCOTA_CRIA']);
+      expect(r.premio.topeAlcanzado, isTrue);
+    });
+
+    test('sin premio (un backend anterior a V27), vacío', () {
+      final r = RespuestaSesion.fromJson(jsonDecode(cuerpo201));
+      expect(r.premio.monedas, 0);
+      expect(r.premio.xp, 0);
+      expect(r.premio.logros, isEmpty);
+      expect(r.premio.topeAlcanzado, isFalse);
+    });
+
+    test('un premio raro no rompe', () {
+      final p = Premio.fromJson({
+        'monedas': '12',
+        'xp': null,
+        'logros': ['A', 3, '', null],
+        'topeAlcanzado': 'sí',
+      });
+      expect(p.monedas, 12);
+      expect(p.xp, 0);
+      expect(p.logros, ['A']);
+      expect(p.topeAlcanzado, isFalse);
+      expect(Premio.fromJson(null).monedas, 0);
+    });
+
     test('un estado de aporte desconocido no rompe', () {
       final a = Aporte.fromJson({'estado': 'NUEVO_ESTADO', 'logros': 3});
       expect(a.estado, EstadoAporte.desconocido);

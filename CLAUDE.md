@@ -109,9 +109,16 @@ el backend saca el usuario del JWT.
    `MaterialApp`, como en Habits.
 9. **`CelebracionService`** — solo para los logros que el core sabe nombrar
    (ver «Logros que paga el hábito»).
+10. **Los logros propios de Focus** — `registrarLogrosEnfoque()` en `main()`
+    (`l10n/logros_enfoque.dart`) llama a
+    `CatalogosCore.registrarLogrosDeDominio` con los 21 de Focus
+    (`codigosLogrosEnfoque`, los mismos que siembra el backend con
+    `origen_app = enfoque`, V27). Si cambia uno allí, cambia aquí.
+11. **`MascotaScreen.ayudaAnimo` y `ayudaXp`** — desde el menú, con los
+    textos de Focus (`mascotaAyudaAnimo`, `mascotaAyudaXp`): el ánimo y la XP
+    de Nori salen de las dos apps juntas.
 
-No se usan `CatalogosCore.registrarLogrosDeDominio` (Focus no tiene logros
-propios en v1), ni `publicarProgresoDia`, ni el cierre del día.
+No se usan `publicarProgresoDia` ni el cierre del día.
 
 ## La sesión, de principio a fin
 
@@ -197,14 +204,30 @@ Claves en `SharedPreferences`: `enfoque_cola_envios`,
 `enfoque_envios_no_aceptados` y `enfoque_desfase_servidor_ms`. La sesión en curso la guarda el core en
 `sesion_concentracion_actual`.
 
+### El premio de la sesión (backend V27, 16-nov-2026)
+
+Cada sesión que cuenta paga lo suyo, tenga hábito o no: 1 moneda por minuto
+(+5 si se completa) y 1 XP de Nori por cada 5 minutos, con un tope de 120
+monedas al día. Si lleva hábito, el hábito paga además lo suyo. La respuesta
+los separa: `aporte` (el hábito) y `premio` (la sesión,
+`{monedas, xp, logros, topeAlcanzado}`, modelo `Premio`). Un backend anterior
+a V27 no lo manda y se queda en `Premio.vacio`.
+
+El Resultado enseña «+30 monedas · +5 XP» para cualquier sesión que cuente y
+se haya enviado; si con ella se llega al tope, «Has llegado al tope de hoy…»;
+si el tope ya estaba, sin cifras, «Hoy ya has ganado todo lo que dan las
+sesiones…». Debajo, lo del hábito como siempre. Se celebran los logros de las
+dos partes, sin repetir. Las cifras y las reglas las decide el backend
+(`ParametrosPremioEnfoque` en `habitos-app`): aquí no se calcula nada.
+
 ### Logros que paga el hábito
 
 El aporte devuelve los logros que desbloqueó el hábito. Focus no registra los
 logros de hábitos y el backend tampoco se los da en el catálogo
 (`X-Norday-App: enfoque` los filtra), así que celebrarlos aquí enseñaría el
 código crudo. `separarLogros` celebra solo los que `CatalogosCore` sabe
-nombrar (los genéricos del core, como `MASCOTA_CRIA`) y de los demás dice
-«Tienes N logros nuevos en Norday Habits».
+nombrar (los genéricos del core, como `MASCOTA_CRIA`, y los de Focus) y de
+los demás dice «Tienes N logros nuevos en Norday Habits».
 
 ## La parte nativa (`MainActivity.kt`)
 
@@ -428,9 +451,9 @@ Lo que el diseño no decía y se resolvió con la opción más conservadora.
 - **Sin icono ni símbolo**: icono por defecto de Flutter, splash con Nori,
   arranque nativo en Azul Noche. Ni `store/` ni `assets/branding/` hasta que
   haya gráficos.
-- **Ayudas de la pantalla de Nori** (`ayudaAnimo`, `ayudaXp`): no se pasan.
-  Explicar el ánimo o la XP es hablar de hábitos y no está decidido qué
-  decir desde Focus.
+- **Ayudas de la pantalla de Nori** (`ayudaAnimo`, `ayudaXp`): se pasan desde
+  el 16-nov-2026, cuando el ánimo pasó a juntar las dos apps (antes no se
+  pasaban: explicarlo era hablar solo de hábitos).
 - **Sin recorrido de bienvenida** propio.
 
 ## Lecciones aprendidas

@@ -13,14 +13,17 @@ Google Play (`com.norday.enfoque`).
   como salir.
 - **Terminar antes** cuenta con los minutos hechos si son 10 o más; si no, se
   descarta sin castigo. **Rendirse** la pierde.
-- **Minutos a un hábito**: una sesión puede ir a un hábito de minutos de
-  Norday Habits (cuenta compartida). Los minutos se suman al hábito y es el
-  hábito quien paga, con sus reglas. Sin hábito, la sesión cuenta para las
-  estadísticas, sin premio.
+- **Premio**: cada sesión que cuenta da monedas y XP para Nori (1 moneda por
+  minuto, 5 más si la completas, 1 XP cada 5 minutos), con un tope de 120
+  monedas al día. Tiene 21 logros propios. Nori se alegra con tus sesiones.
+- **Minutos a un hábito**, si quieres: una sesión puede ir también a un hábito
+  de minutos de Norday Habits (cuenta compartida). Los minutos se suman al
+  hábito, que paga además lo suyo, con sus reglas.
 - **Inicio**: minutos y sesiones de hoy, racha de enfoque, duración y destino
   («Leer · 20 / 30 min»).
-- **Resultado** de cada sesión: «+25 min a Leer (30 / 30)», las monedas del
-  hábito o el motivo si el hábito no los aceptó.
+- **Resultado** de cada sesión: «+30 monedas · +5 XP», y si llevaba hábito,
+  «+25 min a Leer (30 / 30)», las monedas del hábito o el motivo si el hábito
+  no los aceptó.
 - **Estadísticas**: minutos por día de la semana, totales de la semana y del
   mes, e historial (incluidas las sesiones pendientes de enviar).
 - **Sin conexión**: las sesiones acabadas se guardan en el móvil y se envían

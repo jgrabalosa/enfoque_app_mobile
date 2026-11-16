@@ -269,7 +269,24 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                     entrada(
                       LucideIcons.pawPrint,
                       l.menuNori,
-                      () => _abrir(MascotaScreen(usuarioId: _usuarioId)),
+                      () => _abrir(
+                        MascotaScreen(
+                          usuarioId: _usuarioId,
+                          // Los textos los pone la app: el ánimo y la XP de
+                          // Nori salen de Focus y de Norday Habits juntos
+                          // (backend V27, 16-nov-2026).
+                          ayudaAnimo: AyudaCampo(
+                            texto: l.mascotaAyudaAnimo,
+                            etiquetaSemantica: l.mascotaAyudaAnimoEtiqueta,
+                            superindice: true,
+                          ),
+                          ayudaXp: AyudaCampo(
+                            texto: l.mascotaAyudaXp,
+                            etiquetaSemantica: l.mascotaAyudaXpEtiqueta,
+                            superindice: true,
+                          ),
+                        ),
+                      ),
                     ),
                     entrada(
                       LucideIcons.store,

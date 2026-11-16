@@ -337,18 +337,68 @@ class SesionServidor {
   }
 }
 
-/// `201`/`200` de `POST /api/enfoque/sesiones`: `{sesion, aporte}`.
+/// El `premio` de la respuesta de `POST /api/enfoque/sesiones`: lo que paga
+/// la sesión por sí misma, tenga hábito o no (backend V27, 16-nov-2026). Es
+/// aparte del [Aporte], que es lo que paga el hábito destino; los dos se
+/// suman.
+class Premio {
+  /// Monedas de la sesión, ya recortadas por el tope del día.
+  final int monedas;
+
+  /// XP de Nori de la sesión.
+  final int xp;
+
+  /// Los logros que desbloqueó la sesión: los de Focus y los de fase de
+  /// Nori.
+  final List<String> logros;
+
+  /// Si con esta sesión el día llegó al tope de monedas de las sesiones.
+  final bool topeAlcanzado;
+
+  const Premio({
+    this.monedas = 0,
+    this.xp = 0,
+    this.logros = const [],
+    this.topeAlcanzado = false,
+  });
+
+  /// Sin premio: lo que se supone si el backend no lo manda (uno anterior a
+  /// V27).
+  static const Premio vacio = Premio();
+
+  factory Premio.fromJson(Object? json) {
+    final m = mapaDe(json);
+    if (m == null) return vacio;
+    return Premio(
+      monedas: enteroDe(m['monedas']) ?? 0,
+      xp: enteroDe(m['xp']) ?? 0,
+      logros: [
+        for (final l in listaDe(m['logros']))
+          if (l is String && l.isNotEmpty) l,
+      ],
+      topeAlcanzado: boolDe(m['topeAlcanzado']) ?? false,
+    );
+  }
+}
+
+/// `201`/`200` de `POST /api/enfoque/sesiones`: `{sesion, aporte, premio}`.
 class RespuestaSesion {
   final SesionServidor? sesion;
   final Aporte aporte;
+  final Premio premio;
 
-  const RespuestaSesion({this.sesion, this.aporte = Aporte.vacio});
+  const RespuestaSesion({
+    this.sesion,
+    this.aporte = Aporte.vacio,
+    this.premio = Premio.vacio,
+  });
 
   factory RespuestaSesion.fromJson(Object? json) {
     final m = mapaDe(json);
     return RespuestaSesion(
       sesion: SesionServidor.fromJson(m?['sesion'], aporte: m?['aporte']),
       aporte: Aporte.fromJson(m?['aporte']),
+      premio: Premio.fromJson(m?['premio']),
     );
   }
 }

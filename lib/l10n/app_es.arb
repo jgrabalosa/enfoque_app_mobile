@@ -111,7 +111,7 @@
   "@destinoSinHabito": {
     "description": "Opción de sesión sin destino"
   },
-  "destinoSinHabitoAyuda": "Cuenta para tus estadísticas, sin premio.",
+  "destinoSinHabitoAyuda": "Gana monedas y XP para Nori.",
   "@destinoSinHabitoAyuda": {
     "description": "Explicación bajo «Sin hábito»"
   },
@@ -131,7 +131,7 @@
   "@destinoCrearEnHabits": {
     "description": "Enlace cuando no hay hábitos de minutos: abre Norday Habits o su ficha de Play"
   },
-  "destinoSinHabitosMinutos": "No tienes hábitos de minutos para hoy.",
+  "destinoSinHabitosMinutos": "Si quieres, tus minutos también pueden sumar a un hábito de minutos.",
   "@destinoSinHabitosMinutos": {
     "description": "Texto cuando no hay destinos"
   },
@@ -514,5 +514,209 @@
         "type": "String"
       }
     }
+  },
+  "resultadoPremio": "{monedas, plural, =1{+1 moneda · +{xp} XP} other{+{monedas} monedas · +{xp} XP}}",
+  "@resultadoPremio": {
+    "description": "Lo que pagó la sesión por sí misma (monedas y XP de Nori), tenga hábito o no",
+    "placeholders": {
+      "monedas": {
+        "type": "int"
+      },
+      "xp": {
+        "type": "int"
+      }
+    }
+  },
+  "resultadoTopeAhora": "Has llegado al tope de hoy: las próximas sesiones cuentan, pero no dan monedas.",
+  "@resultadoTopeAhora": {
+    "description": "Con esta sesión se ha llegado al tope de monedas de las sesiones del día"
+  },
+  "resultadoTopeYa": "Hoy ya has ganado todo lo que dan las sesiones. Esta cuenta igual para tus estadísticas y tus logros.",
+  "@resultadoTopeYa": {
+    "description": "El tope del día ya estaba alcanzado: esta sesión no paga, pero cuenta"
+  },
+  "mascotaAyudaAnimoEtiqueta": "Ayuda sobre el ánimo de Nori",
+  "@mascotaAyudaAnimoEtiqueta": {
+    "description": "Lo que lee el lector de pantalla en la ayuda del ánimo"
+  },
+  "mascotaAyudaAnimo": "Nori se alegra en cuanto te concentras y está exultante cuando cumples todo lo de hoy: 50 minutos de concentración y, si usas Norday Habits, tus hábitos. Tras tres días sin nada, se pone triste.",
+  "@mascotaAyudaAnimo": {
+    "description": "Ayuda del ánimo de Nori en Norday Focus"
+  },
+  "mascotaAyudaXpEtiqueta": "Ayuda sobre la experiencia",
+  "@mascotaAyudaXpEtiqueta": {
+    "description": "Lo que lee el lector de pantalla en la ayuda de la XP"
+  },
+  "mascotaAyudaXp": "La experiencia de Nori. Sube con cada sesión (1 por cada 5 minutos, hasta 24 al día), con tus hábitos de Norday Habits y cuando le das de comer.",
+  "@mascotaAyudaXp": {
+    "description": "Ayuda de la XP de Nori en Norday Focus"
+  },
+  "logroPrimeraSesion": "Primer foco",
+  "logroPrimeraSesionDesc": "Termina tu primera sesión de concentración",
+  "@logroPrimeraSesion": {
+    "description": "Nombre del logro ENFOQUE_PRIMERA_SESION"
+  },
+  "@logroPrimeraSesionDesc": {
+    "description": "Descripción del logro ENFOQUE_PRIMERA_SESION"
+  },
+  "logroDia": "Día de enfoque",
+  "logroDiaDesc": "Llega a 50 minutos de concentración en un día",
+  "@logroDia": {
+    "description": "Nombre del logro ENFOQUE_DIA"
+  },
+  "@logroDiaDesc": {
+    "description": "Descripción del logro ENFOQUE_DIA"
+  },
+  "logroConDestino": "Minutos con destino",
+  "logroConDestinoDesc": "Envía una sesión a un hábito de Norday Habits",
+  "@logroConDestino": {
+    "description": "Nombre del logro ENFOQUE_CON_DESTINO"
+  },
+  "@logroConDestinoDesc": {
+    "description": "Descripción del logro ENFOQUE_CON_DESTINO"
+  },
+  "logroDias3": "Tres días",
+  "logroDias3Desc": "Concéntrate 3 días distintos",
+  "@logroDias3": {
+    "description": "Nombre del logro ENFOQUE_DIAS_3"
+  },
+  "@logroDias3Desc": {
+    "description": "Descripción del logro ENFOQUE_DIAS_3"
+  },
+  "logroDias7": "Una semana de foco",
+  "logroDias7Desc": "Concéntrate 7 días distintos",
+  "@logroDias7": {
+    "description": "Nombre del logro ENFOQUE_DIAS_7"
+  },
+  "@logroDias7Desc": {
+    "description": "Descripción del logro ENFOQUE_DIAS_7"
+  },
+  "logroDias30": "Un mes de foco",
+  "logroDias30Desc": "Concéntrate 30 días distintos",
+  "@logroDias30": {
+    "description": "Nombre del logro ENFOQUE_DIAS_30"
+  },
+  "@logroDias30Desc": {
+    "description": "Descripción del logro ENFOQUE_DIAS_30"
+  },
+  "logroDias100": "Cien días",
+  "logroDias100Desc": "Concéntrate 100 días distintos",
+  "@logroDias100": {
+    "description": "Nombre del logro ENFOQUE_DIAS_100"
+  },
+  "@logroDias100Desc": {
+    "description": "Descripción del logro ENFOQUE_DIAS_100"
+  },
+  "logroRacha3": "Tres seguidos",
+  "logroRacha3Desc": "Concéntrate 3 días seguidos",
+  "@logroRacha3": {
+    "description": "Nombre del logro ENFOQUE_RACHA_3"
+  },
+  "@logroRacha3Desc": {
+    "description": "Descripción del logro ENFOQUE_RACHA_3"
+  },
+  "logroRacha7": "Siete seguidos",
+  "logroRacha7Desc": "Concéntrate 7 días seguidos",
+  "@logroRacha7": {
+    "description": "Nombre del logro ENFOQUE_RACHA_7"
+  },
+  "@logroRacha7Desc": {
+    "description": "Descripción del logro ENFOQUE_RACHA_7"
+  },
+  "logroRacha30": "Treinta seguidos",
+  "logroRacha30Desc": "Concéntrate 30 días seguidos",
+  "@logroRacha30": {
+    "description": "Nombre del logro ENFOQUE_RACHA_30"
+  },
+  "@logroRacha30Desc": {
+    "description": "Descripción del logro ENFOQUE_RACHA_30"
+  },
+  "logroHoras5": "Cinco horas",
+  "logroHoras5Desc": "Suma 5 horas de concentración",
+  "@logroHoras5": {
+    "description": "Nombre del logro ENFOQUE_HORAS_5"
+  },
+  "@logroHoras5Desc": {
+    "description": "Descripción del logro ENFOQUE_HORAS_5"
+  },
+  "logroHoras25": "Veinticinco horas",
+  "logroHoras25Desc": "Suma 25 horas de concentración",
+  "@logroHoras25": {
+    "description": "Nombre del logro ENFOQUE_HORAS_25"
+  },
+  "@logroHoras25Desc": {
+    "description": "Descripción del logro ENFOQUE_HORAS_25"
+  },
+  "logroHoras100": "Cien horas",
+  "logroHoras100Desc": "Suma 100 horas de concentración",
+  "@logroHoras100": {
+    "description": "Nombre del logro ENFOQUE_HORAS_100"
+  },
+  "@logroHoras100Desc": {
+    "description": "Descripción del logro ENFOQUE_HORAS_100"
+  },
+  "logroHoras500": "Quinientas horas",
+  "logroHoras500Desc": "Suma 500 horas de concentración",
+  "@logroHoras500": {
+    "description": "Nombre del logro ENFOQUE_HORAS_500"
+  },
+  "@logroHoras500Desc": {
+    "description": "Descripción del logro ENFOQUE_HORAS_500"
+  },
+  "logroSesion60": "Una hora seguida",
+  "logroSesion60Desc": "Completa una sesión de 60 minutos o más",
+  "@logroSesion60": {
+    "description": "Nombre del logro ENFOQUE_SESION_60"
+  },
+  "@logroSesion60Desc": {
+    "description": "Descripción del logro ENFOQUE_SESION_60"
+  },
+  "logroSesion120": "Maratón",
+  "logroSesion120Desc": "Completa una sesión de 120 minutos",
+  "@logroSesion120": {
+    "description": "Nombre del logro ENFOQUE_SESION_120"
+  },
+  "@logroSesion120Desc": {
+    "description": "Descripción del logro ENFOQUE_SESION_120"
+  },
+  "logroCuatro": "Cuatro seguidas",
+  "logroCuatroDesc": "Completa 4 sesiones en un día",
+  "@logroCuatro": {
+    "description": "Nombre del logro ENFOQUE_CUATRO"
+  },
+  "@logroCuatroDesc": {
+    "description": "Descripción del logro ENFOQUE_CUATRO"
+  },
+  "logroSinRendirse": "Sin rendirse",
+  "logroSinRendirseDesc": "Haz 10 sesiones seguidas sin perder ninguna",
+  "@logroSinRendirse": {
+    "description": "Nombre del logro ENFOQUE_SIN_RENDIRSE"
+  },
+  "@logroSinRendirseDesc": {
+    "description": "Descripción del logro ENFOQUE_SIN_RENDIRSE"
+  },
+  "logroTope": "Al máximo",
+  "logroTopeDesc": "Llega al tope de monedas de las sesiones en un día",
+  "@logroTope": {
+    "description": "Nombre del logro ENFOQUE_TOPE"
+  },
+  "@logroTopeDesc": {
+    "description": "Descripción del logro ENFOQUE_TOPE"
+  },
+  "logroManana": "A primera hora",
+  "logroMananaDesc": "Empieza una sesión antes de las 8:00",
+  "@logroManana": {
+    "description": "Nombre del logro ENFOQUE_MANANA"
+  },
+  "@logroMananaDesc": {
+    "description": "Descripción del logro ENFOQUE_MANANA"
+  },
+  "logroNoche": "Turno de noche",
+  "logroNocheDesc": "Empieza una sesión a las 22:00 o más tarde",
+  "@logroNoche": {
+    "description": "Nombre del logro ENFOQUE_NOCHE"
+  },
+  "@logroNocheDesc": {
+    "description": "Descripción del logro ENFOQUE_NOCHE"
   }
 }
