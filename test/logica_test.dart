@@ -11,7 +11,6 @@ void main() {
   group('Duraciones', () {
     test('de 10 a 120, de 5 en 5, 25 por defecto', () {
       expect(Duraciones.porDefecto, 25);
-      expect(Duraciones.rapidas, [15, 25, 45, 60]);
       expect(Duraciones.subir(25), 30);
       expect(Duraciones.bajar(25), 20);
       expect(Duraciones.bajar(10), 10);
@@ -20,11 +19,33 @@ void main() {
       expect(Duraciones.ajustar(33), 30);
       expect(Duraciones.ajustar(500), 120);
     });
+  });
 
-    test('todos los chips cumplen las reglas del backend', () {
-      for (final m in Duraciones.rapidas) {
-        expect(Duraciones.ajustar(m), m);
+  group('Técnicas', () {
+    test('Pomodoro 25, Profundo 50 y Libre con sus minutos', () {
+      expect(Tecnica.pomodoro.minutos(90), 25);
+      expect(Tecnica.profundo.minutos(90), 50);
+      expect(Tecnica.libre.minutos(90), 90);
+    });
+
+    test('Libre, siempre dentro de las reglas del backend', () {
+      expect(Tecnica.libre.minutos(7), 10);
+      expect(Tecnica.libre.minutos(33), 30);
+      expect(Tecnica.libre.minutos(500), 120);
+    });
+
+    test('las fijas cumplen las reglas del backend', () {
+      for (final t in Tecnica.values) {
+        final m = t.minutosFijos;
+        if (m != null) expect(Duraciones.ajustar(m), m);
       }
+    });
+
+    test('la guardada, o Pomodoro si no hay o no se entiende', () {
+      expect(Tecnica.deClave('profundo'), Tecnica.profundo);
+      expect(Tecnica.deClave('libre'), Tecnica.libre);
+      expect(Tecnica.deClave(null), Tecnica.pomodoro);
+      expect(Tecnica.deClave('rara'), Tecnica.pomodoro);
     });
   });
 

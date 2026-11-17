@@ -129,11 +129,17 @@ void main() {
   );
 
   test(
-    'la cifra de hoy se llama «tiempo», no «minutos»: puede ir en horas',
+    'la técnica Profundo y la línea del destino, en los tres idiomas',
     () async {
-      expect((await l('es')).inicioTiempoHoy, 'Tiempo hoy');
-      expect((await l('en')).inicioTiempoHoy, 'Time today');
-      expect((await l('pt')).inicioTiempoHoy, 'Tempo hoje');
+      expect((await l('es')).inicioTecnicaProfundo, 'Profundo');
+      expect((await l('en')).inicioTecnicaProfundo, 'Deep');
+      expect((await l('pt')).inicioTecnicaProfundo, 'Profundo');
+      expect(
+        (await l('es')).inicioDestinoLinea('Sin hábito'),
+        'Para: Sin hábito',
+      );
+      expect((await l('en')).inicioDestinoLinea('No habit'), 'For: No habit');
+      expect((await l('pt')).inicioAroEtiqueta('25 min'), 'Sessão de 25 min');
     },
   );
 
@@ -145,8 +151,6 @@ void main() {
 
   test('plurales', () async {
     final es = await l('es');
-    expect(es.inicioRachaDias(1), '1 día');
-    expect(es.inicioRachaDias(3), '3 días');
     expect(es.resultadoMonedas(1), '+1 punto');
     expect(es.resultadoMonedas(10), '+10 puntos');
   });
