@@ -14,11 +14,12 @@ import '../services/servicios_enfoque.dart';
 import 'inicio_logica.dart';
 
 /// Inicio, de un solo gesto (diseño de Focus, 17-nov-2026): el aro con Nori
-/// y los minutos, la técnica (Pomodoro, Profundo o Libre), Empezar y, debajo,
-/// una línea con el destino que abre la lista.
+/// y los minutos, la técnica (Pomodoro, Profundo o Libre) con sus rondas,
+/// Empezar y, debajo, una línea con el destino que abre la lista.
 ///
-/// La técnica y los minutos de Libre se recuerdan ([claveTecnica],
-/// [claveMinutosLibre]): normalmente basta con pulsar Empezar.
+/// La técnica, las rondas y los minutos de Libre se recuerdan
+/// ([claveTecnica], [claveRondas], [claveMinutosLibre]): normalmente basta
+/// con pulsar Empezar.
 class InicioScreen extends StatefulWidget {
   const InicioScreen({
     super.key,
@@ -39,6 +40,7 @@ class _InicioScreenState extends State<InicioScreen> {
 
   Tecnica _tecnica = Tecnica.porDefecto;
   int _minutosLibre = Duraciones.porDefecto;
+  int _rondas = Rondas.porDefecto;
   DestinoDisponible? _elegido;
 
   List<DestinoDisponible> _destinos = const [];
@@ -56,6 +58,9 @@ class _InicioScreenState extends State<InicioScreen> {
   BuildContext? _contextoHoja;
 
   int get _minutos => _tecnica.minutos(_minutosLibre);
+
+  /// Las rondas que se van a hacer: en Libre, siempre una.
+  int get _rondasEfectivas => _tecnica.conRondas ? _rondas : 1;
 
   @override
   void didChangeDependencies() {
@@ -90,9 +95,13 @@ class _InicioScreenState extends State<InicioScreen> {
       final libre = Duraciones.ajustar(
         prefs.getInt(claveMinutosLibre) ?? Duraciones.porDefecto,
       );
+      final rondas = Rondas.ajustar(
+        prefs.getInt(claveRondas) ?? Rondas.porDefecto,
+      );
       _cambiar(() {
         _tecnica = tecnica;
         _minutosLibre = libre;
+        _rondas = rondas;
       });
     } catch (_) {
       // Sin preferencias, la de por defecto.
@@ -104,6 +113,7 @@ class _InicioScreenState extends State<InicioScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(claveTecnica, _tecnica.name);
       await prefs.setInt(claveMinutosLibre, _minutosLibre);
+      await prefs.setInt(claveRondas, _rondas);
     } catch (_) {
       // Si no se guarda, la próxima vez sale la de por defecto.
     }
@@ -111,6 +121,11 @@ class _InicioScreenState extends State<InicioScreen> {
 
   void _elegirTecnica(Tecnica t) {
     _cambiar(() => _tecnica = t);
+    unawaited(_guardarEleccion());
+  }
+
+  void _cambiarRondas(int r) {
+    _cambiar(() => _rondas = Rondas.ajustar(r));
     unawaited(_guardarEleccion());
   }
 
@@ -204,8 +219,10 @@ class _InicioScreenState extends State<InicioScreen> {
     setState(() => _empezando = true);
     try {
       await _pedirPermisoSiEsLaPrimera();
-      await _s.controlador.empezar(
-        duracion: Duration(minutes: _minutos),
+      await _s.tanda.empezar(
+        rondas: _rondasEfectivas,
+        minutos: _minutos,
+        descanso: _tecnica.minutosDescanso ?? 0,
         destino: _elegido,
       );
     } catch (_) {
@@ -288,22 +305,48 @@ class _InicioScreenState extends State<InicioScreen> {
                 const SizedBox.shrink(),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                  child: Center(
-                    child: Semantics(
-                      container: true,
-                      label: l.inicioAroEtiqueta(duracion),
-                      excludeSemantics: true,
-                      child: AroCuentaAtras(
-                        restante: Duration(minutes: _minutos),
-                        total: Duration(minutes: _minutos),
-                        tamano: 260,
-                        centro: MascotaAnimadaViva(
-                          fase: _mascota?.fase,
-                          estado: _mascota?.estado,
-                          tamano: 96,
+                  child: Column(
+                    children: [
+                      Center(
+                        child: Semantics(
+                          container: true,
+                          label: l.inicioAroEtiqueta(duracion),
+                          excludeSemantics: true,
+                          child: AroCuentaAtras(
+                            restante: Duration(minutes: _minutos),
+                            total: Duration(minutes: _minutos),
+                            tamano: 260,
+                            centro: MascotaAnimadaViva(
+                              fase: _mascota?.fase,
+                              estado: _mascota?.estado,
+                              tamano: 96,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      if (_rondasEfectivas > 1) ...[
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          l.inicioTandaResumen(
+                            _rondasEfectivas,
+                            _minutos,
+                            _tecnica.minutosDescanso!,
+                            duracionLegible(
+                              l,
+                              minutosTanda(
+                                rondas: _rondasEfectivas,
+                                minutos: _minutos,
+                                descanso: _tecnica.minutosDescanso!,
+                              ),
+                            ),
+                          ),
+                          textAlign: TextAlign.center,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(color: t.textMuted),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 Column(
@@ -325,13 +368,14 @@ class _InicioScreenState extends State<InicioScreen> {
                         ],
                       ],
                     ),
-                    if (_tecnica == Tecnica.libre) ...[
-                      const SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: AppSpacing.sm),
+                    if (_tecnica.conRondas)
+                      SelectorRondas(rondas: _rondas, alCambiar: _cambiarRondas)
+                    else
                       SelectorDuracion(
                         minutos: _minutosLibre,
                         alCambiar: _cambiarMinutosLibre,
                       ),
-                    ],
                     const SizedBox(height: AppSpacing.md),
                     ElevatedButton.icon(
                       onPressed: _empezando ? null : _empezar,
@@ -511,6 +555,61 @@ class _ChipTecnica extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Las rondas de Pomodoro y Profundo: de 1 a 4.
+class SelectorRondas extends StatelessWidget {
+  const SelectorRondas({
+    super.key,
+    required this.rondas,
+    required this.alCambiar,
+  });
+
+  final int rondas;
+  final ValueChanged<int> alCambiar;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    final t = tokens(context);
+    return Semantics(
+      container: true,
+      label: l.inicioRondas(rondas),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            onPressed: rondas > Rondas.minimo
+                ? () => alCambiar(rondas - 1)
+                : null,
+            icon: const Icon(LucideIcons.minus),
+            tooltip: l.inicioRondaMenos,
+            color: t.text,
+          ),
+          ExcludeSemantics(
+            child: SizedBox(
+              width: 120,
+              child: Text(
+                l.inicioRondas(rondas),
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: t.text),
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: rondas < Rondas.maximo
+                ? () => alCambiar(rondas + 1)
+                : null,
+            icon: const Icon(LucideIcons.plus),
+            tooltip: l.inicioRondaMas,
+            color: t.text,
+          ),
+        ],
       ),
     );
   }

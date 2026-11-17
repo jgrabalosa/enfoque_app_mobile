@@ -51,17 +51,24 @@ DestinoDisponible? elegidoTrasRecargar(
 /// Las técnicas de Inicio (diseño de Focus, 17-nov-2026): Pomodoro (25 min),
 /// Profundo (50 min) y Libre (los minutos los elige el usuario, de 10 a 120).
 ///
-/// Por ahora cada técnica es una sola sesión, sin descanso: las rondas y el
-/// descanso llegan después (F-2).
+/// Pomodoro y Profundo van por rondas (de 1 a [Rondas.maximo]), con un
+/// descanso entre una y otra: 5 minutos en Pomodoro y 10 en Profundo. Libre
+/// es siempre una sola sesión.
 enum Tecnica {
-  pomodoro(25),
-  profundo(50),
-  libre(null);
+  pomodoro(25, 5),
+  profundo(50, 10),
+  libre(null, null);
 
-  const Tecnica(this.minutosFijos);
+  const Tecnica(this.minutosFijos, this.minutosDescanso);
 
   /// Los minutos de la técnica, o `null` en Libre (los elige el usuario).
   final int? minutosFijos;
+
+  /// El descanso entre rondas, o `null` si no va por rondas (Libre).
+  final int? minutosDescanso;
+
+  /// Si se puede repetir en rondas.
+  bool get conRondas => minutosDescanso != null;
 
   /// La de la primera vez.
   static const Tecnica porDefecto = Tecnica.pomodoro;
@@ -86,3 +93,23 @@ const String claveTecnica = 'enfoque_tecnica';
 
 /// Dónde se recuerdan los últimos minutos de Libre.
 const String claveMinutosLibre = 'enfoque_minutos_libre';
+
+/// Las rondas de una tanda: de 1 a 4, 1 por defecto.
+abstract final class Rondas {
+  static const int minimo = 1;
+  static const int maximo = 4;
+  static const int porDefecto = 1;
+
+  static int ajustar(int rondas) => rondas.clamp(minimo, maximo);
+}
+
+/// Dónde se recuerdan las últimas rondas elegidas.
+const String claveRondas = 'enfoque_rondas';
+
+/// Los minutos de una tanda entera: las rondas y los descansos de en medio
+/// (después de la última no hay descanso).
+int minutosTanda({
+  required int rondas,
+  required int minutos,
+  required int descanso,
+}) => rondas * minutos + (rondas - 1) * descanso;

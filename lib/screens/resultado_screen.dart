@@ -31,6 +31,27 @@ import '../services/servicios_enfoque.dart';
   return (conocidos: conocidos, otros: otros);
 }
 
+/// Celebra los logros de [r] una sola vez ([celebrados] apunta las claves ya
+/// celebradas), cuando ya está enviada. Los de la sesión (Focus y la fase de
+/// Nori) y los del hábito, sin repetir: un logro de fase lo puede dar
+/// cualquiera de los dos.
+void celebrarResultado(
+  BuildContext context,
+  ResultadoSesion? r,
+  Set<String> celebrados,
+) {
+  if (r == null || r.envio != EnvioResultado.enviada) return;
+  if (!celebrados.add(r.clave)) return;
+  final logros = {
+    ...?r.respuesta?.premio.logros,
+    ...?r.respuesta?.aporte.logros,
+  }.toList();
+  final conocidos = separarLogros(context, logros).conocidos;
+  if (conocidos.isNotEmpty) {
+    unawaited(AmbitoEnfoque.de(context).celebrar(conocidos));
+  }
+}
+
 /// El resultado de la última sesión: los minutos, lo que pagó la sesión (el
 /// premio, tenga hábito o no), lo que pasó con los minutos en su hábito y el
 /// estado del envío.
@@ -71,19 +92,8 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
   }
 
   void _celebrar() {
-    final r = _ultimo;
-    if (!mounted || r == null || r.envio != EnvioResultado.enviada) return;
-    if (!_celebrados.add(r.clave)) return;
-    // Los de la sesión (Focus y la fase de Nori) y los del hábito, sin
-    // repetir: un logro de fase lo puede dar cualquiera de los dos.
-    final logros = {
-      ...?r.respuesta?.premio.logros,
-      ...?r.respuesta?.aporte.logros,
-    }.toList();
-    final conocidos = separarLogros(context, logros).conocidos;
-    if (conocidos.isNotEmpty) {
-      unawaited(AmbitoEnfoque.de(context).celebrar(conocidos));
-    }
+    if (!mounted) return;
+    celebrarResultado(context, _ultimo, _celebrados);
   }
 
   void _salir() {
@@ -134,6 +144,12 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 children: [
                   const SizedBox(height: AppSpacing.xl),
+                  if (rondaDeDatos(s.datosApp) case final ronda?)
+                    Text(
+                      l.sesionRonda(ronda.n, ronda.de),
+                      textAlign: TextAlign.center,
+                      style: tema.titleSmall?.copyWith(color: t.textMuted),
+                    ),
                   Semantics(
                     header: true,
                     child: Text(
@@ -156,7 +172,7 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
                       style: tema.bodyLarge?.copyWith(color: t.textMuted),
                     ),
                   const SizedBox(height: AppSpacing.lg),
-                  ..._envio(context, l, r),
+                  LineasResultado(resultado: r),
                   const SizedBox(height: AppSpacing.xl),
                   ElevatedButton(
                     onPressed: _salir,
@@ -170,6 +186,21 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
       ),
     );
   }
+}
+
+/// Lo que pasó con el envío de [resultado]: «Enviando…», pendiente, no
+/// aceptada o, enviada, lo que pagó la sesión y lo que pasó en su hábito. Lo
+/// usan el resultado y el descanso entre rondas.
+class LineasResultado extends StatelessWidget {
+  const LineasResultado({super.key, required this.resultado});
+
+  final ResultadoSesion resultado;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: _envio(context, AppLocalizations.of(context)!, resultado),
+  );
 
   List<Widget> _envio(
     BuildContext context,

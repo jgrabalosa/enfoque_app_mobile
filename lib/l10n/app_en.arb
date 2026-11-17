@@ -138,5 +138,20 @@
   "logroManana": "Early bird",
   "logroMananaDesc": "Start a session before 8:00",
   "logroNoche": "Night shift",
-  "logroNocheDesc": "Start a session at 22:00 or later"
+  "logroNocheDesc": "Start a session at 22:00 or later",
+  "inicioRondas": "{rondas, plural, =1{1 round} other{{rondas} rounds}}",
+  "inicioRondaMas": "One more round",
+  "inicioRondaMenos": "One round fewer",
+  "inicioTandaResumen": "{rondas} × {minutos} min, {descanso} min breaks · {total}",
+  "sesionRonda": "Round {n} of {de}",
+  "descansoTitulo": "Break",
+  "descansoRondaHecha": "Round {n} of {de} done",
+  "descansoCuerpo": "Stand up, drink some water. Nori will call you for the next round.",
+  "descansoListo": "Break's over. Start the next round whenever you like.",
+  "descansoEmpezarRonda": "Start round {n}",
+  "descansoTerminar": "Stop here",
+  "avisoDescansoTitulo": "Break's over",
+  "avisoDescansoCuerpo": "Nori is waiting for the next round.",
+  "canalDescansoNombre": "End of break",
+  "canalDescansoDescripcion": "Lets you know when the break between rounds ends."
 }

@@ -24,6 +24,7 @@ import 'services/controlador_enfoque.dart';
 import 'services/crashlytics_service.dart';
 import 'services/desfase_servidor.dart';
 import 'services/servicios_enfoque.dart';
+import 'services/tanda.dart';
 
 /// El usuario con la sesión abierta, o `null` (sin token no hay usuario).
 Future<int?> usuarioIdActual() async {
@@ -119,9 +120,15 @@ void main() async {
     usuarioActual: usuarioIdActual,
     desfase: desfase,
   );
+  final tanda = ControladorTanda(
+    controlador: controlador,
+    avisos: AvisosDescansoLocales(salida: salidaAvisos),
+  );
+  await tanda.cargar();
   final servicios = ServiciosEnfoque(
     api: api,
     controlador: controlador,
+    tanda: tanda,
     lanzador: const LanzadorSistema(),
     flavor: appFlavor,
     usuarioActual: usuarioIdActual,

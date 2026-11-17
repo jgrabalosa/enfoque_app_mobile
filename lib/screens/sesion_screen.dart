@@ -126,10 +126,19 @@ class _SesionScreenState extends State<SesionScreen> {
                 builder: (context, sesion, _) {
                   if (sesion == null) return const SizedBox.shrink();
                   final destino = destinoDeDatos(sesion.datosApp);
+                  final ronda = rondaDeDatos(sesion.datosApp);
                   return Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Column(
                       children: [
+                        if (ronda != null)
+                          Text(
+                            l.sesionRonda(ronda.n, ronda.de),
+                            textAlign: TextAlign.center,
+                            style: tema.titleSmall?.copyWith(
+                              color: t.textMuted,
+                            ),
+                          ),
                         const Spacer(),
                         ValueListenableBuilder<Duration>(
                           valueListenable: _motor.restante,

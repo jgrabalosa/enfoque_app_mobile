@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:enfoque_app_mobile/l10n/app_localizations.dart';
+import 'package:enfoque_app_mobile/screens/descanso_screen.dart';
 import 'package:enfoque_app_mobile/screens/home_shell.dart';
+import 'package:enfoque_app_mobile/screens/inicio_logica.dart';
 import 'package:enfoque_app_mobile/screens/resultado_screen.dart';
 import 'package:enfoque_app_mobile/screens/sesion_screen.dart';
 import 'package:flutter/material.dart';
@@ -85,5 +87,144 @@ void main() {
     await asentar(tester);
     expect(find.byType(ResultadoScreen), findsOneWidget);
     expect(find.text(l.resultadoPerdida), findsOneWidget);
+  });
+
+  group('Rondas', () {
+    Future<Montaje> montar(
+      WidgetTester tester, {
+      Map<String, Object> prefs = const {claveRondas: 2},
+    }) async {
+      tester.view.physicalSize = const Size(800, 2000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      SharedPreferences.setMockInitialValues(prefs);
+      final m = Montaje(tester);
+      await m.tanda.cargar();
+      await tester.pumpWidget(m.app(const HomeShell()));
+      await asentar(tester);
+      return m;
+    }
+
+    Future<void> acabarRonda(WidgetTester tester, Montaje m) async {
+      m.reloj.avanzar(const Duration(minutes: 25));
+      await tester.pump(const Duration(seconds: 1));
+      await asentar(tester);
+    }
+
+    testWidgets('dos rondas: la primera da paso al descanso; la segunda, al '
+        'resultado', (tester) async {
+      final m = await montar(tester);
+      expect(
+        find.text('2 × 25 min, con 5 min de descanso · 55 min'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      expect(find.byType(SesionScreen), findsOneWidget);
+      expect(find.text('Ronda 1 de 2'), findsOneWidget);
+
+      await acabarRonda(tester, m);
+      expect(find.byType(DescansoScreen), findsOneWidget);
+      expect(find.text(l.descansoTitulo), findsOneWidget);
+      expect(find.text('Ronda 1 de 2 hecha'), findsOneWidget);
+      expect(find.text(l.descansoCuerpo), findsOneWidget);
+      expect(m.api.enviadas, hasLength(1));
+      expect(
+        m.avisosDescanso.programados.single,
+        m.ahora.add(const Duration(minutes: 5)),
+      );
+
+      // El descanso acaba: no empieza sola la ronda, avisa y espera.
+      m.ahora = m.ahora.add(const Duration(minutes: 6));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text(l.descansoListo), findsOneWidget);
+      expect(find.byType(SesionScreen), findsNothing);
+
+      await tester.tap(find.text('Empezar la ronda 2'));
+      await asentar(tester);
+      expect(find.byType(DescansoScreen), findsNothing);
+      expect(find.byType(SesionScreen), findsOneWidget);
+      expect(find.text('Ronda 2 de 2'), findsOneWidget);
+      expect(m.avisosDescanso.cancelados, 1);
+
+      await acabarRonda(tester, m);
+      expect(find.byType(ResultadoScreen), findsOneWidget);
+      expect(find.text('Ronda 2 de 2'), findsOneWidget);
+      expect(m.api.enviadas, hasLength(2));
+      expect(m.tanda.tanda.value, isNull);
+
+      await tester.tap(find.text(l.resultadoVolver));
+      await asentar(tester);
+      expect(find.text(l.inicioEmpezar), findsOneWidget);
+    });
+
+    testWidgets('Terminar aquí deja la tanda y vuelve a Inicio', (
+      tester,
+    ) async {
+      final m = await montar(tester);
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      await acabarRonda(tester, m);
+      expect(find.byType(DescansoScreen), findsOneWidget);
+
+      await tester.tap(find.text(l.descansoTerminar));
+      await asentar(tester);
+      expect(find.byType(DescansoScreen), findsNothing);
+      expect(find.text(l.inicioEmpezar), findsOneWidget);
+      expect(m.tanda.tanda.value, isNull);
+      expect(m.avisosDescanso.cancelados, 1);
+      expect(m.api.enviadas, hasLength(1));
+    });
+
+    testWidgets('rendirse en una ronda acaba la tanda: resultado, sin '
+        'descanso', (tester) async {
+      final m = await montar(tester);
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      await m.motor.rendirse();
+      await asentar(tester);
+      expect(find.byType(DescansoScreen), findsNothing);
+      expect(find.byType(ResultadoScreen), findsOneWidget);
+      expect(m.tanda.tanda.value, isNull);
+      expect(m.avisosDescanso.programados, isEmpty);
+    });
+
+    testWidgets('si se mató la app en el descanso, al volver sigue el '
+        'descanso', (tester) async {
+      final m = await montar(
+        tester,
+        prefs: {
+          'enfoque_tanda': jsonEncode({
+            'rondas': 3,
+            'ronda': 1,
+            'minutos': 50,
+            'descanso': 10,
+            'finDescansoUtc': DateTime.utc(
+              2026,
+              11,
+              18,
+              9,
+              4,
+            ).toIso8601String(),
+            'claveRonda': 'ya-enviada',
+          }),
+        },
+      );
+      expect(find.byType(DescansoScreen), findsOneWidget);
+      expect(find.text('Ronda 1 de 3 hecha'), findsOneWidget);
+      expect(find.text('04:00'), findsOneWidget);
+
+      await tester.tap(find.text('Empezar la ronda 2'));
+      await asentar(tester);
+      expect(find.byType(SesionScreen), findsOneWidget);
+      expect(
+        m.motor.sesion.value!.duracionObjetivo,
+        const Duration(minutes: 50),
+      );
+      expect(find.text('Ronda 2 de 3'), findsOneWidget);
+      await m.motor.rendirse();
+      await asentar(tester);
+    });
   });
 }
