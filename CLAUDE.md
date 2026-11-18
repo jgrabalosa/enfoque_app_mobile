@@ -74,6 +74,62 @@ lista completa, en el `CLAUDE.md` del paquete.
   30 min», «+1 h 30 min a Leer (1 h 30 min / 2 h)»; ver «Duraciones»).
 - `widgets/` — `barras_semana.dart` y `barra_navegacion.dart` (copiado tal
   cual de `identidad_ui.dart` de Habits).
+- `mundos/` — **los mundos de Focus, en laboratorio** (MU-1 y MU-2 de
+  `encargos/focus-mundos.md`, en el proyecto). Aún no los ve ningún usuario:
+  solo se entra desde Estadísticas con el flavor `prueba` («Laboratorio de
+  mundos»), con piezas de mentira (`FuenteFalsa`).
+  - `pieza_mundo.dart`: la pieza (número, identidad, origen y fecha; sin
+    posición ni tamaño) y `FuenteMundo`.
+  - `vista_mundo.dart`: la cámara (centro y escala) y sus cuentas.
+  - `galaxia/`: la galaxia de Profundidad. `ColocadorGalaxia` calcula dónde
+    va cada estrella a partir del número y de la semilla (constelaciones de
+    10 en tres brazos; nada se guarda); `EscenaGalaxia` lo junta para un
+    número de piezas; `PintorGalaxia` es la interfaz de las formas de
+    dibujarla: `PintorCodigo` (shaders `shaders/cielo_galaxia.frag` para el
+    cielo y `shaders/nebulosa.frag` para las nebulosas, y estrellas
+    generadas por código, sin PNG; `TexturasGalaxia` deja todo a oscuras en
+    el borde de su imagen para que de lejos no se vean recuadros) y `PintorPrueba` (puntos y
+    líneas). `VistasGalaxia` da los tres niveles de zoom.
+  - `ciudad/`: la ciudad de Neotokyo+. `ColocadorCiudad` (manzanas de 10
+    en espiral cuadrada desde la plaza del centro, avenidas cada tres, un río
+    que se esquiva, hitos cada 4 manzanas) y `PintorCiudadCodigo`: el suelo
+    con `shaders/ciudad_noche.frag` (calles mojadas, farolas, avenidas de
+    neón y el río) y los edificios como cajas con perspectiva desde arriba,
+    con ventanas (`TexturasCiudad`) y borde de neón, en un solo
+    `drawVertices`; coches de luz y el foco de la torre.
+    `ciudad_isometrica.dart` es «Neotokyo+ 3D»: la misma ciudad en
+    isométrico (`Iso`: la cámara de Blender, u = (x+y)/√2, v = (x−y)/(2√2)),
+    con los edificios renderizados en Blender (`KitNeotokyo`, atlas en
+    `assets/mundos/neotokyo/`, se rehace con `tool/mundos/`) y dibujados de
+    atrás adelante con `drawAtlas`; el suelo es el mismo shader con
+    `uIso = 1`.
+  - `jardin/`: el jardín de Dulce, a lápiz de color. `ColocadorJardin`
+    (el árbol en el centro y parterres de 10 en espiral de girasol, con un
+    hito cada 4). El lápiz (`lapiz_realista.dart`) va en dos tiempos: los
+    trazos dejan presión (con puntas, temblor y rayado en el ángulo de la
+    mano) y `shaders/pigmento.frag` decide dónde agarra el pigmento según
+    el diente del papel. Las flores se hornean al preparar (cuatro atlas:
+    grafito, hojas, pétalos y centro); lo demás, al aparecer en pantalla
+    (`CacheDibujos`, dos por fotograma). Todo se mezcla con `multiply`,
+    como los lápices. El parterre que se llena va a grafito y se colorea al
+    completarse. **Para borrar lo que tapa un pétalo no se usa
+    `Path.combine`** (falla con pétalos que salen del mismo punto): se
+    pinta su forma con `BlendMode.clear` antes de dibujarlo.
+    `jardin_isometrico.dart` es «Dulce 3D», la aprobada: la misma colocación
+    en isométrico, con plantas, parterres, árbol, hitos y césped renderizados
+    en Blender y pasados a lápiz (`KitJardin`, atlas en `assets/mundos/dulce/`,
+    se rehace con `tool/mundos/kit_jardin*.py`). `PlantasJardin` pone las
+    especies altas detrás; el parterre que se llena va en boceto (grafito) y
+    se colorea al completarse.
+  - `escena_mundo.dart`: lo común a todos los mundos (`EscenaMundo`,
+    `PintorMundo`, los tres niveles de zoom y `MundoDeLaboratorio`), y
+    `azar.dart`, el azar que no cambia de un móvil a otro.
+  - `laboratorio/`: la pantalla (con «Mundo: …» para cambiar de mundo), la
+    lista de mundos (`mundos_del_laboratorio.dart`) y el medidor de
+    fotogramas (`addTimingsCallback`).
+  - **En los shaders, nunca `pow()` de un número que pueda ser negativo**:
+    GLSL no lo define y en algunos móviles sale cualquier cosa (`cuad()` en
+    `ciudad_noche.frag`).
 - `google_fonts/` — las mismas siete familias que Habits, con sus licencias
   OFL.
 

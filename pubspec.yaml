@@ -51,3 +51,16 @@ flutter:
     # el que las sirve la API de Google. Son las mismas que en Norday Habits.
     # Sin itálicas: ninguna identidad pide `FontStyle.italic`.
     - google_fonts/
+    # Los edificios de Neotokyo+ renderizados con Blender (un atlas y dónde
+    # está cada uno); los genera `tool/mundos/ciudad_blender.py kit`.
+    - assets/mundos/neotokyo/
+    # El jardín de Dulce en 3D a lápiz (`tool/mundos/kit_jardin.py`).
+    - assets/mundos/dulce/
+  # El cielo de la galaxia de Profundidad (los mundos de Focus, MU-1). Lo
+  # compila el SDK al construir; se carga con `FragmentProgram.fromAsset`.
+  shaders:
+    - shaders/cielo_galaxia.frag
+    - shaders/nebulosa.frag
+    - shaders/ciudad_noche.frag
+    - shaders/pigmento.frag
+    - shaders/papel.frag
