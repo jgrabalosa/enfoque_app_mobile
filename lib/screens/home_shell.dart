@@ -10,6 +10,7 @@ import '../services/al_volver.dart';
 import '../services/controlador_enfoque.dart';
 import '../services/servicios_enfoque.dart';
 import '../widgets/barra_navegacion.dart';
+import 'descanso_screen.dart';
 import 'estadisticas_screen.dart';
 import 'inicio_screen.dart';
 import 'resultado_screen.dart';
@@ -76,6 +77,9 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   /// Si la pantalla de sesión está encima.
   bool _sesionAbierta = false;
 
+  /// Si la pantalla de descanso entre rondas está encima.
+  bool _descansoAbierto = false;
+
   /// La clave del último resultado ya enseñado: no se enseña dos veces.
   String? _resultadoMostrado;
 
@@ -98,6 +102,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
   Future<void> _iniciarControlador() async {
     await _controlador.iniciar();
+    await _servicios!.tanda.limpiarSiHuerfana();
     if (mounted) _sincronizarRuta();
   }
 
@@ -148,18 +153,45 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
           .whenComplete(() => _sesionAbierta = false);
       return;
     }
+    final tanda = _servicios!.tanda;
     if (resultado != null && resultado.clave != _resultadoMostrado) {
       _resultadoMostrado = resultado.clave;
       // Lo que hubiera encima (la sesión) se va: el resultado la sustituye.
       // Hasta la ruta de este HomeShell, que no tiene por qué ser la primera.
       final propia = ModalRoute.of(context);
       navegador.popUntil((r) => r == propia || r.isFirst);
-      navegador.push(
-        MaterialPageRoute(
-          builder: (_) => ResultadoScreen(controlador: _controlador),
-        ),
-      );
+      // Una ronda completada que no es la última da paso al descanso; lo
+      // demás, al resultado de siempre.
+      if (tanda.alAcabar(resultado)) {
+        _abrirDescanso(navegador);
+      } else {
+        navegador.push(
+          MaterialPageRoute(
+            builder: (_) => ResultadoScreen(controlador: _controlador),
+          ),
+        );
+      }
+      return;
     }
+    // Se mató la app en el descanso: al volver, el descanso sigue.
+    if (resultado == null && (tanda.tanda.value?.enDescanso ?? false)) {
+      _abrirDescanso(navegador);
+    }
+  }
+
+  void _abrirDescanso(NavigatorState navegador) {
+    if (_descansoAbierto) return;
+    _descansoAbierto = true;
+    navegador
+        .push(
+          MaterialPageRoute(
+            builder: (_) => DescansoScreen(
+              controlador: _controlador,
+              tanda: _servicios!.tanda,
+            ),
+          ),
+        )
+        .whenComplete(() => _descansoAbierto = false);
   }
 
   void _irAPestana(int i) {

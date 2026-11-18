@@ -5,6 +5,7 @@ import '../models/enlace_entrada.dart';
 import 'api_service_enfoque.dart';
 import 'canal_sistema.dart';
 import 'controlador_enfoque.dart';
+import 'tanda.dart';
 
 /// Todo lo que las pantallas de esta app necesitan de fuera: la API, el
 /// controlador de sesiones, el lanzador del sistema y el destino que haya
@@ -14,6 +15,7 @@ class ServiciosEnfoque {
   ServiciosEnfoque({
     required this.api,
     required this.controlador,
+    required this.tanda,
     required this.lanzador,
     required this.flavor,
     required this.usuarioActual,
@@ -24,6 +26,9 @@ class ServiciosEnfoque {
 
   final ApiEnfoque api;
   final ControladorEnfoque controlador;
+
+  /// Las tandas de rondas y su descanso.
+  final ControladorTanda tanda;
   final Lanzador lanzador;
 
   /// El flavor con que se compiló (`appFlavor`): decide qué Norday Habits se

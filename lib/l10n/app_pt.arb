@@ -138,5 +138,20 @@
   "logroManana": "Logo de manhã",
   "logroMananaDesc": "Começa uma sessão antes das 8:00",
   "logroNoche": "Turno da noite",
-  "logroNocheDesc": "Começa uma sessão às 22:00 ou mais tarde"
+  "logroNocheDesc": "Começa uma sessão às 22:00 ou mais tarde",
+  "inicioRondas": "{rondas, plural, =1{1 ronda} other{{rondas} rondas}}",
+  "inicioRondaMas": "Mais uma ronda",
+  "inicioRondaMenos": "Menos uma ronda",
+  "inicioTandaResumen": "{rondas} × {minutos} min, com {descanso} min de pausa · {total}",
+  "sesionRonda": "Ronda {n} de {de}",
+  "descansoTitulo": "Pausa",
+  "descansoRondaHecha": "Ronda {n} de {de} feita",
+  "descansoCuerpo": "Levanta-te, bebe água. Nori avisa-te para a próxima ronda.",
+  "descansoListo": "Pausa feita. Começa a próxima ronda quando quiseres.",
+  "descansoEmpezarRonda": "Começar a ronda {n}",
+  "descansoTerminar": "Terminar aqui",
+  "avisoDescansoTitulo": "Acabou a pausa",
+  "avisoDescansoCuerpo": "Nori espera-te para a próxima ronda.",
+  "canalDescansoNombre": "Fim da pausa",
+  "canalDescansoDescripcion": "Avisa quando acaba a pausa entre rondas."
 }

@@ -41,6 +41,24 @@ void main() {
       }
     });
 
+    test('Pomodoro y Profundo van por rondas, con su descanso; Libre no', () {
+      expect(Tecnica.pomodoro.minutosDescanso, 5);
+      expect(Tecnica.profundo.minutosDescanso, 10);
+      expect(Tecnica.libre.minutosDescanso, isNull);
+      expect(Tecnica.libre.conRondas, isFalse);
+      expect(Tecnica.pomodoro.conRondas, isTrue);
+    });
+
+    test('rondas de 1 a 4, y los minutos de la tanda entera', () {
+      expect(Rondas.ajustar(0), 1);
+      expect(Rondas.ajustar(9), 4);
+      // Sin descanso después de la última ronda.
+      expect(minutosTanda(rondas: 1, minutos: 25, descanso: 5), 25);
+      expect(minutosTanda(rondas: 2, minutos: 25, descanso: 5), 55);
+      expect(minutosTanda(rondas: 2, minutos: 50, descanso: 10), 110);
+      expect(minutosTanda(rondas: 4, minutos: 25, descanso: 5), 115);
+    });
+
     test('la guardada, o Pomodoro si no hay o no se entiende', () {
       expect(Tecnica.deClave('profundo'), Tecnica.profundo);
       expect(Tecnica.deClave('libre'), Tecnica.libre);

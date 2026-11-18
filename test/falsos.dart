@@ -4,6 +4,7 @@ import 'package:enfoque_app_mobile/models/enfoque.dart';
 import 'package:enfoque_app_mobile/services/api_service_enfoque.dart';
 import 'package:enfoque_app_mobile/services/canal_sistema.dart';
 import 'package:enfoque_app_mobile/services/cola_envios.dart';
+import 'package:enfoque_app_mobile/services/tanda.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
 export 'datos_prueba.dart';
@@ -109,6 +110,18 @@ class LanzadorFalso implements Lanzador {
     llamadas.add((enlace: enlace, paquete: paquete));
     return abre(enlace: enlace, paquete: paquete);
   }
+}
+
+/// Los avisos del descanso, apuntados.
+class AvisosDescansoFalsos implements AvisosDescanso {
+  final List<DateTime> programados = [];
+  int cancelados = 0;
+
+  @override
+  Future<void> programarFin(DateTime finUtc) async => programados.add(finUtc);
+
+  @override
+  Future<void> cancelar() async => cancelados++;
 }
 
 /// Un temporizador que no corre: el test mira qué se programó.

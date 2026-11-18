@@ -4,6 +4,7 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../l10n/app_localizations.dart';
+import 'tanda.dart';
 
 /// Lo que los avisos necesitan del plugin. En la app, [SalidaAvisosPlugin];
 /// en los tests, un falso que apunta las llamadas.
@@ -186,4 +187,63 @@ class AvisosSesionLocales implements AvisosSesion {
 
   @override
   Future<void> cancelarFin() => salida.cancelar(idFin);
+}
+
+/// El aviso de que se acaba el descanso entre rondas, en su propio canal
+/// (`enfoque_descanso`) e id fijo (7103): programarlo otra vez lo sustituye.
+class AvisosDescansoLocales implements AvisosDescanso {
+  AvisosDescansoLocales({
+    required this.salida,
+    Locale Function()? idioma,
+    DateTime Function()? ahoraUtc,
+  }) : _idioma = idioma ?? (() => IdiomaService.localeNotifier.value),
+       _ahoraUtc = ahoraUtc ?? (() => DateTime.now().toUtc());
+
+  final SalidaAvisos salida;
+  final Locale Function() _idioma;
+  final DateTime Function() _ahoraUtc;
+
+  static const int idDescanso = 7103;
+  static const String canalDescanso = 'enfoque_descanso';
+
+  AppLocalizations get _app => lookupAppLocalizations(_idioma());
+
+  /// Como el de fin: normal, se queda hasta que el usuario lo toca.
+  static NotificationDetails detallesDescanso(AppLocalizations l) =>
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          canalDescanso,
+          l.canalDescansoNombre,
+          channelDescription: l.canalDescansoDescripcion,
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          category: AndroidNotificationCategory.reminder,
+        ),
+      );
+
+  @override
+  Future<void> programarFin(DateTime finUtc) {
+    final l = _app;
+    final detalles = detallesDescanso(l);
+    if (!finUtc.toUtc().isAfter(
+      _ahoraUtc().add(AvisosSesionLocales.margenInmediato),
+    )) {
+      return salida.mostrar(
+        idDescanso,
+        l.avisoDescansoTitulo,
+        l.avisoDescansoCuerpo,
+        detalles,
+      );
+    }
+    return salida.programar(
+      idDescanso,
+      l.avisoDescansoTitulo,
+      l.avisoDescansoCuerpo,
+      finUtc.toUtc(),
+      detalles,
+    );
+  }
+
+  @override
+  Future<void> cancelar() => salida.cancelar(idDescanso);
 }

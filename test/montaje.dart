@@ -4,6 +4,7 @@ import 'package:enfoque_app_mobile/l10n/app_localizations.dart';
 import 'package:enfoque_app_mobile/services/cola_envios.dart';
 import 'package:enfoque_app_mobile/services/controlador_enfoque.dart';
 import 'package:enfoque_app_mobile/services/servicios_enfoque.dart';
+import 'package:enfoque_app_mobile/services/tanda.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
@@ -35,9 +36,16 @@ class Montaje {
       cola: cola,
       usuarioActual: () async => usuarioId,
     );
+    tanda = ControladorTanda(
+      controlador: controlador,
+      avisos: avisosDescanso,
+      ahoraUtc: () => ahora,
+    );
+    addTearDown(tanda.dispose);
     servicios = ServiciosEnfoque(
       api: api,
       controlador: controlador,
+      tanda: tanda,
       lanzador: lanzador,
       flavor: 'prueba',
       usuarioActual: () async => usuarioId,
@@ -57,7 +65,12 @@ class Montaje {
   late final MotorSesion motor;
   late final ColaEnvios cola;
   late final ControladorEnfoque controlador;
+  late final ControladorTanda tanda;
   late final ServiciosEnfoque servicios;
+  final AvisosDescansoFalsos avisosDescanso = AvisosDescansoFalsos();
+
+  /// La hora de pared de la tanda (el descanso). Los tests la mueven.
+  DateTime ahora = DateTime.utc(2026, 11, 18, 9);
   final List<int> permisosPedidos = [];
 
   /// Si está puesta, el permiso no contesta hasta que se complete.

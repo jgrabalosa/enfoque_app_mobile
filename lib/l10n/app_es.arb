@@ -731,5 +731,105 @@
   },
   "@logroNocheDesc": {
     "description": "Descripción del logro ENFOQUE_NOCHE"
+  },
+  "inicioRondas": "{rondas, plural, =1{1 ronda} other{{rondas} rondas}}",
+  "@inicioRondas": {
+    "description": "Las rondas elegidas en Inicio",
+    "placeholders": {
+      "rondas": {
+        "type": "int"
+      }
+    }
+  },
+  "inicioRondaMas": "Una ronda más",
+  "@inicioRondaMas": {
+    "description": "Botón para subir las rondas, para el lector"
+  },
+  "inicioRondaMenos": "Una ronda menos",
+  "@inicioRondaMenos": {
+    "description": "Botón para bajar las rondas, para el lector"
+  },
+  "inicioTandaResumen": "{rondas} × {minutos} min, con {descanso} min de descanso · {total}",
+  "@inicioTandaResumen": {
+    "description": "Bajo el aro, con más de una ronda: «2 × 25 min, con 5 min de descanso · 55 min». {total} sale de duracionLegible",
+    "placeholders": {
+      "rondas": {
+        "type": "int"
+      },
+      "minutos": {
+        "type": "int"
+      },
+      "descanso": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "sesionRonda": "Ronda {n} de {de}",
+  "@sesionRonda": {
+    "description": "Arriba en la sesión y en el resultado, si la sesión es una ronda",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "de": {
+        "type": "int"
+      }
+    }
+  },
+  "descansoTitulo": "Descanso",
+  "@descansoTitulo": {
+    "description": "Título de la pantalla de descanso entre rondas"
+  },
+  "descansoRondaHecha": "Ronda {n} de {de} hecha",
+  "@descansoRondaHecha": {
+    "description": "Encima del título del descanso",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "de": {
+        "type": "int"
+      }
+    }
+  },
+  "descansoCuerpo": "Levántate, bebe agua. Nori te avisa para la siguiente ronda.",
+  "@descansoCuerpo": {
+    "description": "Durante el descanso"
+  },
+  "descansoListo": "Descanso hecho. Empieza la siguiente ronda cuando quieras.",
+  "@descansoListo": {
+    "description": "Cuando el descanso ya ha acabado"
+  },
+  "descansoEmpezarRonda": "Empezar la ronda {n}",
+  "@descansoEmpezarRonda": {
+    "description": "Botón del descanso",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "descansoTerminar": "Terminar aquí",
+  "@descansoTerminar": {
+    "description": "Botón del descanso: deja la tanda; lo hecho ya cuenta"
+  },
+  "avisoDescansoTitulo": "Se acabó el descanso",
+  "@avisoDescansoTitulo": {
+    "description": "Aviso al acabar el descanso"
+  },
+  "avisoDescansoCuerpo": "Nori te espera para la siguiente ronda.",
+  "@avisoDescansoCuerpo": {
+    "description": "Aviso al acabar el descanso"
+  },
+  "canalDescansoNombre": "Fin del descanso",
+  "@canalDescansoNombre": {
+    "description": "Nombre del canal de avisos del descanso (ajustes de Android)"
+  },
+  "canalDescansoDescripcion": "Avisa cuando acaba el descanso entre rondas.",
+  "@canalDescansoDescripcion": {
+    "description": "Descripción del canal de avisos del descanso"
   }
 }

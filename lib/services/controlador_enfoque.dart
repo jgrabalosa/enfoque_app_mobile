@@ -14,10 +14,35 @@ const String claveDatosDestino = 'destino';
 /// La clave de `datosApp` con el usuario que empezó la sesión: su dueño.
 const String claveDatosUsuario = 'usuarioId';
 
-/// Lo que se guarda con la sesión: el destino y el dueño, o nada.
-Map<String, Object?>? datosAppDe(DestinoDisponible? destino, {int? usuarioId}) {
-  if (destino == null && usuarioId == null) return null;
-  return {claveDatosDestino: ?destino?.toJson(), claveDatosUsuario: ?usuarioId};
+/// La clave de `datosApp` con la ronda de una tanda (`{n, de}`), si la
+/// sesión es una ronda.
+const String claveDatosRonda = 'ronda';
+
+/// Una ronda de una tanda: la [n] de [de].
+typedef Ronda = ({int n, int de});
+
+/// Lo que se guarda con la sesión: el destino, el dueño y la ronda, o nada.
+Map<String, Object?>? datosAppDe(
+  DestinoDisponible? destino, {
+  int? usuarioId,
+  Ronda? ronda,
+}) {
+  if (destino == null && usuarioId == null && ronda == null) return null;
+  return {
+    claveDatosDestino: ?destino?.toJson(),
+    claveDatosUsuario: ?usuarioId,
+    if (ronda != null) claveDatosRonda: {'n': ronda.n, 'de': ronda.de},
+  };
+}
+
+/// La ronda guardada con la sesión, o `null` si no es de una tanda.
+Ronda? rondaDeDatos(Map<String, Object?>? datosApp) {
+  final r = datosApp?[claveDatosRonda];
+  if (r is! Map) return null;
+  final n = enteroDe(r['n']);
+  final de = enteroDe(r['de']);
+  if (n == null || de == null || n < 1 || de < n) return null;
+  return (n: n, de: de);
 }
 
 /// El destino guardado con la sesión, o `null`.
@@ -179,13 +204,18 @@ class ControladorEnfoque {
   }
 
   /// Empieza una sesión de [duracion] con [destino] (o sin él), a nombre
-  /// del usuario conectado.
+  /// del usuario conectado. Si es una ronda de una tanda, con su [ronda].
   Future<SesionConcentracion> empezar({
     required Duration duracion,
     DestinoDisponible? destino,
+    Ronda? ronda,
   }) async => motor.empezar(
     duracionObjetivo: duracion,
-    datosApp: datosAppDe(destino, usuarioId: await usuarioActual()),
+    datosApp: datosAppDe(
+      destino,
+      usuarioId: await usuarioActual(),
+      ronda: ronda,
+    ),
   );
 
   /// Reintenta todo lo pendiente ya, sin esperar a su turno. Al arrancar y

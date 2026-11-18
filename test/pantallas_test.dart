@@ -140,6 +140,38 @@ void main() {
       await cerrarSesion(tester, m);
     });
 
+    testWidgets('las rondas, en Pomodoro y Profundo; Libre no tiene', (
+      tester,
+    ) async {
+      final m = Montaje(tester);
+      await tester.pumpWidget(inicio(m));
+      await asentar(tester);
+
+      expect(find.text('1 ronda'), findsOneWidget);
+      expect(find.textContaining('descanso'), findsNothing);
+      await tester.tap(find.byTooltip(l.inicioRondaMas));
+      await asentar(tester);
+      expect(find.text('2 rondas'), findsOneWidget);
+      expect(
+        find.text('2 × 25 min, con 5 min de descanso · 55 min'),
+        findsOneWidget,
+      );
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getInt(claveRondas), 2);
+
+      await tester.tap(find.text(l.inicioTecnicaProfundo));
+      await asentar(tester);
+      expect(
+        find.text('2 × 50 min, con 10 min de descanso · 1 h 50 min'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text(l.inicioTecnicaLibre));
+      await asentar(tester);
+      expect(find.byTooltip(l.inicioRondaMas), findsNothing);
+      expect(find.textContaining('descanso'), findsNothing);
+    });
+
     testWidgets('abre con la técnica y los minutos de la última vez', (
       tester,
     ) async {
