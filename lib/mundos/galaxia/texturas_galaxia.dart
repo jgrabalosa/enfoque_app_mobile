@@ -32,11 +32,13 @@ class TexturasGalaxia {
   /// Las 6 normales (0 a 5) y las 2 que cierran constelación (6 y 7), en fila.
   static const int estrellasEnAtlas = VariantesEstrella.normales + 2;
 
-  /// Los dos colores de cada nebulosa: el de fuera y el de las vetas.
+  /// Los dos colores de cada nebulosa: el de fuera y el de las vetas. Como
+  /// las regiones de formación de estrellas de las fotos (rosa y ámbar) y
+  /// cerca del amarillo de Profundidad; una, con algo de violeta oscuro.
   static const List<(Color, Color)> coloresNebulosa = [
-    (Color(0xFF7A4DDB), Color(0xFFE069A8)),
-    (Color(0xFF2FB3C2), Color(0xFF4A6FE0)),
-    (Color(0xFFD9578F), Color(0xFFFFA36B)),
+    (Color(0xFFB8456F), Color(0xFFFF9A5C)),
+    (Color(0xFF6A3F8F), Color(0xFFE0668E)),
+    (Color(0xFFC26A2E), Color(0xFFFFC266)),
   ];
 
   final Image estrellas;
@@ -76,14 +78,15 @@ class TexturasGalaxia {
     for (var i = 0; i < estrellasEnAtlas; i++) {
       final c = Offset(i * celda + celda / 2, celda / 2);
       final cierra = i >= VariantesEstrella.normales;
-      // El halo: grande, suave, y a cero justo en su borde.
+      // El halo, como el de una estrella en una foto: cae muy deprisa cerca
+      // del centro y deja una luz tenue y larga, a cero justo en su borde.
       _brillo(
         canvas,
         c,
         s / 2,
-        cierra ? 0.7 : 0.5,
-        const [0, 0.06, 0.16, 0.38, 1],
-        const [1, 0.55, 0.2, 0.05, 0],
+        cierra ? 0.55 : 0.38,
+        const [0, 0.04, 0.1, 0.24, 0.5, 1],
+        const [1, 0.5, 0.16, 0.05, 0.015, 0],
       );
       // El núcleo: pequeño y casi blanco del todo.
       if (i == 4) {
@@ -105,18 +108,19 @@ class TexturasGalaxia {
           const [1, 0.8, 0],
         );
       } else {
-        final r = cierra ? 11.0 : 7.5;
-        _brillo(canvas, c, r, 1, const [0, 0.45, 1], const [1, 0.85, 0]);
+        final r = cierra ? 9.0 : 6.0;
+        _brillo(canvas, c, r, 1, const [0, 0.35, 1], const [1, 0.75, 0]);
       }
       // Destellos de cuatro puntas: la variante 5 y las que cierran.
       if (i == 5 || cierra) {
-        final largo = s * (cierra ? 0.48 : 0.36);
-        final grosor = cierra ? 2.2 : 1.6;
-        _destello(canvas, c, largo, grosor, 0.75, 0);
-        _destello(canvas, c, largo, grosor, 0.75, math.pi / 2);
+        // Finos, como las aspas de difracción de un telescopio.
+        final largo = s * (cierra ? 0.48 : 0.34);
+        final grosor = cierra ? 1.5 : 1.1;
+        _destello(canvas, c, largo, grosor, 0.7, 0);
+        _destello(canvas, c, largo, grosor, 0.7, math.pi / 2);
         if (i == 7) {
-          _destello(canvas, c, largo * 0.55, 1.2, 0.4, math.pi / 4);
-          _destello(canvas, c, largo * 0.55, 1.2, 0.4, -math.pi / 4);
+          _destello(canvas, c, largo * 0.5, 0.9, 0.35, math.pi / 4);
+          _destello(canvas, c, largo * 0.5, 0.9, 0.35, -math.pi / 4);
         }
       }
     }
@@ -180,7 +184,8 @@ class TexturasGalaxia {
     final canvas = Canvas(grabadora);
     const c = Offset(lado / 2, lado / 2);
     final azar = math.Random(7919 * (i + 1));
-    const azul = Color(0xFF9DB6FF);
+    // Dorado: los cúmulos viejos, como el núcleo.
+    const dorado = Color(0xFFFFD58A);
     _brillo(
       canvas,
       c,
@@ -188,7 +193,7 @@ class TexturasGalaxia {
       0.35,
       const [0, 0.35, 1],
       const [1, 0.25, 0],
-      color: azul,
+      color: dorado,
     );
     for (var k = 0; k < 90; k++) {
       final d = (_gauss(azar).abs() * 0.09).clamp(0.0, 0.3) * lado;
@@ -201,7 +206,7 @@ class TexturasGalaxia {
         0.95,
         const [0, 0.5, 1],
         const [1, 0.7, 0],
-        color: k % 5 == 0 ? PaletaProfundidad.estrellas[2] : azul,
+        color: k % 5 == 0 ? PaletaProfundidad.estrellas[2] : dorado,
       );
     }
     return grabadora.endRecording().toImageSync(ladoHito, ladoHito);

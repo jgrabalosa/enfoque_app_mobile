@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 
+import '../azar.dart';
 import '../vista_mundo.dart';
 import 'colocador_galaxia.dart';
 import 'escena_galaxia.dart';
@@ -27,9 +28,10 @@ class PintorCodigo extends PintorGalaxia {
   /// El tamaño de una estrella en el mundo (la de cierre, el doble largo).
   static const double tamanoEstrella = 46;
 
-  /// Por debajo de esto, en píxeles, las estrellas no encogen más: de lejos
-  /// los brazos siguen brillando en vez de desaparecer.
-  static const double minimoPx = 9;
+  /// Por debajo de esto, en píxeles, las estrellas no encogen más. Pequeño:
+  /// de lejos tienen que fundirse con las estrellas de los brazos y no verse
+  /// como cuentas en un hilo (Quim, 18-nov).
+  static const double minimoPx = 4;
 
   @override
   String get nombre => 'Código';
@@ -148,7 +150,7 @@ class PintorCodigo extends PintorGalaxia {
     final pincel = Paint()
       ..blendMode = BlendMode.plus
       ..filterQuality = FilterQuality.medium
-      ..color = const Color(0xE6FFFFFF);
+      ..color = const Color(0x99FFFFFF);
     const lado = TexturasGalaxia.ladoHito * 1.0;
     const origen = Rect.fromLTWH(0, 0, lado, lado);
     for (final h in escena.hitos) {
@@ -185,10 +187,18 @@ class PintorCodigo extends PintorGalaxia {
     for (final e in escena.estrellas) {
       final union = e.unidaA;
       if (union == null || !visible.contains(e.posicion)) continue;
-      final a = vista.aPantalla(e.posicion, tamano);
+      var a = vista.aPantalla(e.posicion, tamano);
       var b = vista.aPantalla(escena.estrellas[union].posicion, tamano);
       // La línea de la estrella nueva crece con ella.
       if (e.numero == nueva) b = Offset.lerp(a, b, aparicion)!;
+      // Como en las cartas del cielo, la línea no toca las estrellas: deja
+      // un hueco a cada lado.
+      final largo = (b - a).distance;
+      if (largo < 1) continue;
+      final hueco = math.min(_huecoLinea * vista.escala, largo * 0.3);
+      final dir = (b - a) / largo;
+      a += dir * hueco;
+      b -= dir * hueco;
       final destino = e.constelacion == escena.deLaUltima ? deHoy : normales;
       destino.addAll([a.dx, a.dy, b.dx, b.dy]);
     }
@@ -220,9 +230,12 @@ class PintorCodigo extends PintorGalaxia {
       );
     }
 
-    trazar(normales, PaletaProfundidad.linea, 1.1, 0.3);
-    trazar(deHoy, PaletaProfundidad.amarillo, 1.4, 0.5);
+    trazar(normales, PaletaProfundidad.linea, 0.8, 0.28);
+    trazar(deHoy, PaletaProfundidad.amarillo, 1.1, 0.55);
   }
+
+  /// El hueco entre la línea y la estrella, en unidades del mundo.
+  static const double _huecoLinea = 5;
 
   void _pintarEstrellas(
     Canvas canvas,
@@ -251,7 +264,10 @@ class PintorCodigo extends PintorGalaxia {
       double giro,
     ) {
       final p = vista.aPantalla(e.posicion, tamano);
-      final px = math.max(tamanoEstrella * e.escala * vista.escala, minimoPx);
+      final px = math.max(
+        tamanoEstrella * e.escala * _magnitud(escena, e) * vista.escala,
+        minimoPx,
+      );
       transformaciones.add(
         RSTransform.fromComponents(
           rotation: giro,
@@ -274,7 +290,9 @@ class PintorCodigo extends PintorGalaxia {
           : e.variante;
       var factor = e.cierra ? 1.8 : 1.0;
       // Un parpadeo muy suave, distinto en cada estrella.
-      var brillo = 0.82 + 0.18 * math.sin(segundos * 1.7 + e.numero * 2.39);
+      var brillo =
+          (0.82 + 0.18 * math.sin(segundos * 1.7 + e.numero * 2.39)) *
+          (0.55 + 0.45 * _magnitud(escena, e));
       if (esHoy) {
         factor *= 1.25 + 0.12 * math.sin(segundos * 2 * math.pi / 2.4);
         brillo = 1;
@@ -311,6 +329,15 @@ class PintorCodigo extends PintorGalaxia {
         ..blendMode = BlendMode.plus
         ..filterQuality = FilterQuality.medium,
     );
+  }
+
+  /// Cuánto brilla cada estrella, de 0,6 a 1,4: casi todas modestas y unas
+  /// pocas grandes, como en el cielo. Así las 10 de una constelación no son
+  /// 10 puntos iguales (Quim, 18-nov). La que cierra, siempre de las grandes.
+  static double _magnitud(EscenaGalaxia escena, EstrellaColocada e) {
+    if (e.cierra) return 1.3;
+    final x = azarMundo(escena.colocador.semilla, e.numero, 14);
+    return 0.6 + 0.8 * x * x;
   }
 
   /// Crece un poco más de la cuenta y vuelve (0 → 1).
