@@ -10,6 +10,7 @@ import 'package:enfoque_app_mobile/mundos/galaxia/escena_galaxia.dart';
 import 'package:enfoque_app_mobile/mundos/galaxia/pintor_codigo.dart';
 import 'package:enfoque_app_mobile/mundos/galaxia/pintor_prueba.dart';
 import 'package:enfoque_app_mobile/mundos/laboratorio/laboratorio_mundos_screen.dart';
+import 'package:enfoque_app_mobile/mundos/laboratorio/mundos_del_laboratorio.dart';
 import 'package:enfoque_app_mobile/screens/estadisticas_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -108,6 +109,13 @@ void main() {
       await avanzar(tester);
       expect(tester.takeException(), isNull);
     });
+  });
+
+  test('el laboratorio trae solo los mundos elegidos (Quim, 18-nov)', () {
+    expect(
+      [for (final m in mundosDelLaboratorio()) m.nombre],
+      ['Profundidad', 'Neotokyo+ 3D', 'Dulce 3D'],
+    );
   });
 
   testWidgets('cambia de mundo a Neotokyo+ y vuelve', (tester) async {
