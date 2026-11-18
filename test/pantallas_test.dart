@@ -5,6 +5,7 @@ import 'package:enfoque_app_mobile/l10n/logros_enfoque.dart';
 import 'package:enfoque_app_mobile/models/enfoque.dart';
 import 'package:enfoque_app_mobile/models/enlace_entrada.dart';
 import 'package:enfoque_app_mobile/screens/estadisticas_screen.dart';
+import 'package:enfoque_app_mobile/screens/inicio_logica.dart';
 import 'package:enfoque_app_mobile/screens/inicio_screen.dart';
 import 'package:enfoque_app_mobile/screens/resultado_screen.dart';
 import 'package:enfoque_app_mobile/screens/sesion_screen.dart';
@@ -54,43 +55,38 @@ void main() {
   }
 
   group('Inicio', () {
-    final hoy = DateTime(2026, 11, 18);
+    Widget inicio(Montaje m) => m.app(
+      Scaffold(
+        body: InicioScreen(usuarioId: 7, cargarMascota: () async => null),
+      ),
+    );
 
-    Widget inicio(Montaje m) =>
-        m.app(Scaffold(body: InicioScreen(usuarioId: 7, hoy: () => hoy)));
+    /// La línea del destino que hay bajo Empezar.
+    Finder linea(String destino) => find.text(l.inicioDestinoLinea(destino));
 
-    testWidgets('cifras de hoy, duración, destinos y Empezar', (tester) async {
+    Future<void> abrirDestinos(WidgetTester tester, String destino) async {
+      await tester.tap(linea(destino));
+      await asentar(tester);
+      expect(find.text(l.inicioDestino), findsOneWidget);
+    }
+
+    testWidgets('Pomodoro por defecto: 25 en el aro, y Empezar con 25', (
+      tester,
+    ) async {
       final m = Montaje(tester);
-      m.api.listaDestinos = [destinoLeer];
-      m.api.resumenDado = ResumenEnfoque(
-        dias: [DiaResumen(dia: hoy, minutos: 40, sesiones: 2)],
-        totalMinutos: 40,
-        totalSesiones: 2,
-        rachaActual: 3,
-      );
       await m.controlador.iniciar();
       await tester.pumpWidget(inicio(m));
       await asentar(tester);
 
-      expect(m.api.resumenesPedidos.single, (hoy, hoy));
-      expect(find.text('40 min'), findsOneWidget);
-      expect(find.text('2'), findsOneWidget);
-      expect(find.text('3 días'), findsOneWidget);
-      expect(find.bySemanticsLabel('Tiempo hoy: 40 min'), findsOneWidget);
-      expect(find.text('Leer · 20 / 30 min'), findsOneWidget);
-      expect(find.text(l.destinoSinHabito), findsOneWidget);
-      // 25 por defecto: en el chip y en el selector.
-      expect(find.text('25 min'), findsNWidgets(2));
+      expect(find.text('25:00'), findsOneWidget);
+      expect(find.bySemanticsLabel('Sesión de 25 min'), findsOneWidget);
+      expect(find.bySemanticsLabel('Pomodoro: 25 min'), findsOneWidget);
+      expect(find.bySemanticsLabel('Profundo: 50 min'), findsOneWidget);
+      expect(find.bySemanticsLabel('Libre: A tu aire'), findsOneWidget);
+      // El selector de minutos solo sale con Libre.
+      expect(find.byTooltip(l.duracionMas), findsNothing);
+      expect(linea(l.destinoSinHabito), findsOneWidget);
 
-      await tester.tap(find.text('45 min'));
-      await tester.pump();
-      expect(find.text('45 min'), findsNWidgets(2));
-      await tester.tap(find.byTooltip(l.duracionMas));
-      await tester.pump();
-      expect(find.text('50 min'), findsOneWidget);
-
-      await tester.tap(find.text('Leer · 20 / 30 min'));
-      await tester.pump();
       await tester.tap(find.text(l.inicioEmpezar));
       await asentar(tester);
 
@@ -98,8 +94,8 @@ void main() {
       expect(m.permisosPedidos, [7]);
       final s = m.motor.sesion.value!;
       expect(s.estado, EstadoSesion.corriendo);
-      expect(s.duracionObjetivo, const Duration(minutes: 50));
-      expect(destinoDeDatos(s.datosApp)!.id, 16);
+      expect(s.duracionObjetivo, const Duration(minutes: 25));
+      expect(destinoDeDatos(s.datosApp), isNull);
 
       await cerrarSesion(tester, m);
       await m.controlador.motor.cerrar();
@@ -110,18 +106,76 @@ void main() {
       await cerrarSesion(tester, m);
     });
 
-    testWidgets('los minutos de hoy, desde una hora, en horas', (tester) async {
+    testWidgets('Profundo y Libre cambian los minutos, y se recuerdan', (
+      tester,
+    ) async {
       final m = Montaje(tester);
-      m.api.resumenDado = ResumenEnfoque(
-        dias: [DiaResumen(dia: hoy, minutos: 90, sesiones: 3)],
-        totalMinutos: 90,
-        totalSesiones: 3,
-      );
+      await m.controlador.iniciar();
       await tester.pumpWidget(inicio(m));
       await asentar(tester);
 
-      expect(find.text('1 h 30 min'), findsOneWidget);
-      expect(find.bySemanticsLabel('Tiempo hoy: 1 h 30 min'), findsOneWidget);
+      await tester.tap(find.text(l.inicioTecnicaProfundo));
+      await asentar(tester);
+      expect(find.text('50:00'), findsOneWidget);
+      var prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(claveTecnica), 'profundo');
+
+      await tester.tap(find.text(l.inicioTecnicaLibre));
+      await asentar(tester);
+      expect(find.text('25:00'), findsOneWidget);
+      await tester.tap(find.byTooltip(l.duracionMas));
+      await asentar(tester);
+      expect(find.text('30:00'), findsOneWidget);
+      expect(find.text('30 min'), findsOneWidget);
+      prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString(claveTecnica), 'libre');
+      expect(prefs.getInt(claveMinutosLibre), 30);
+
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      expect(
+        m.motor.sesion.value!.duracionObjetivo,
+        const Duration(minutes: 30),
+      );
+      await cerrarSesion(tester, m);
+    });
+
+    testWidgets('abre con la técnica y los minutos de la última vez', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        claveTecnica: 'libre',
+        claveMinutosLibre: 45,
+      });
+      final m = Montaje(tester);
+      await tester.pumpWidget(inicio(m));
+      await asentar(tester);
+
+      expect(find.text('45:00'), findsOneWidget);
+      expect(find.text('45 min'), findsOneWidget);
+      expect(find.byTooltip(l.duracionMenos), findsOneWidget);
+    });
+
+    testWidgets('la línea del destino abre la lista; elegir la cierra', (
+      tester,
+    ) async {
+      final m = Montaje(tester);
+      m.api.listaDestinos = [destinoLeer];
+      await m.controlador.iniciar();
+      await tester.pumpWidget(inicio(m));
+      await asentar(tester);
+
+      await abrirDestinos(tester, l.destinoSinHabito);
+      expect(find.text(l.destinoSinHabitoAyuda), findsOneWidget);
+      await tester.tap(find.text('Leer · 20 / 30 min'));
+      await asentar(tester);
+
+      expect(find.text(l.inicioDestino), findsNothing);
+      expect(linea('Leer · 20 / 30 min'), findsOneWidget);
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      expect(destinoDeDatos(m.motor.sesion.value!.datosApp)!.id, 16);
+      await cerrarSesion(tester, m);
     });
 
     testWidgets('un destino de una hora o más, en horas', (tester) async {
@@ -130,15 +184,13 @@ void main() {
       await tester.pumpWidget(inicio(m));
       await asentar(tester);
 
+      await abrirDestinos(tester, l.destinoSinHabito);
       expect(find.text('Leer · 1 h / 1 h 30 min'), findsOneWidget);
       expect(find.textContaining('60 / 90'), findsNothing);
     });
 
     testWidgets('el primer Empezar no espera al permiso ni al registro del '
         'aviso', (tester) async {
-      tester.view.physicalSize = const Size(800, 2000);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
       final m = Montaje(tester);
       m.puertaPermiso = Completer<bool>();
       await m.controlador.iniciar();
@@ -159,6 +211,7 @@ void main() {
       await tester.pumpWidget(inicio(m));
       await asentar(tester);
 
+      await abrirDestinos(tester, l.destinoSinHabito);
       expect(find.text(l.destinoSinHabitosMinutos), findsOneWidget);
       await tester.tap(find.text(l.destinoCrearEnHabits));
       await asentar(tester);
@@ -173,6 +226,7 @@ void main() {
       await tester.pumpWidget(inicio(m));
       await asentar(tester);
 
+      await abrirDestinos(tester, l.destinoSinHabito);
       await tester.tap(find.text(l.destinoCrearEnHabits));
       await asentar(tester);
       expect(m.lanzador.llamadas.single.paquete, 'com.norday.habitos.prueba');
@@ -186,6 +240,9 @@ void main() {
       await tester.pumpWidget(inicio(m));
       await asentar(tester);
 
+      expect(linea('Leer · 20 / 30 min'), findsOneWidget);
+      expect(m.servicios.destinoPedido.value, isNull);
+      await abrirDestinos(tester, 'Leer · 20 / 30 min');
       final opcion = find.widgetWithText(OpcionDestino, 'Leer · 20 / 30 min');
       expect(
         find.descendant(
@@ -194,7 +251,6 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(m.servicios.destinoPedido.value, isNull);
     });
 
     testWidgets('un enlace a un hábito que no está: aviso y «Sin hábito»', (
@@ -208,26 +264,17 @@ void main() {
       await asentar(tester);
 
       expect(find.text(l.destinoNoDisponible), findsOneWidget);
-      final sin = find.widgetWithText(OpcionDestino, l.destinoSinHabito);
-      expect(
-        find.descendant(
-          of: sin,
-          matching: find.byIcon(LucideIcons.circleCheck),
-        ),
-        findsOneWidget,
-      );
+      expect(linea(l.destinoSinHabito), findsOneWidget);
     });
 
-    testWidgets('error al cargar: raya en las cifras y reintentar', (
-      tester,
-    ) async {
+    testWidgets('error al cargar los destinos: aviso y reintentar, con la '
+        'lista abierta', (tester) async {
       final m = Montaje(tester);
       m.api.errorDestinos = const ApiException(TipoErrorApi.sinConexion);
-      m.api.errorResumen = const ApiException(TipoErrorApi.sinConexion);
       await tester.pumpWidget(inicio(m));
       await asentar(tester);
 
-      expect(find.text('—'), findsNWidgets(3));
+      await abrirDestinos(tester, l.destinoSinHabito);
       expect(find.text(l.destinosError), findsOneWidget);
       m.api.errorDestinos = null;
       m.api.listaDestinos = [destinoLeer];

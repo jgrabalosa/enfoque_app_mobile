@@ -40,43 +40,6 @@
   "@shellPulsaAtras": {
     "description": "Aviso del doble atrás para salir"
   },
-  "inicioTiempoHoy": "Tiempo hoy",
-  "@inicioTiempoHoy": {
-    "description": "Etiqueta de la cifra de tiempo de hoy en Inicio. Dice «tiempo» y no «minutos» porque la cifra puede ir en horas («1 h 30 min»)"
-  },
-  "inicioSesionesHoy": "Sesiones hoy",
-  "@inicioSesionesHoy": {
-    "description": "Etiqueta de la cifra de sesiones de hoy"
-  },
-  "inicioRacha": "Racha",
-  "@inicioRacha": {
-    "description": "Etiqueta de la racha de enfoque"
-  },
-  "inicioRachaDias": "{dias, plural, =1{1 día} other{{dias} días}}",
-  "@inicioRachaDias": {
-    "description": "Valor de la racha de enfoque",
-    "placeholders": {
-      "dias": {
-        "type": "int"
-      }
-    }
-  },
-  "inicioCifraEtiqueta": "{etiqueta}: {valor}",
-  "@inicioCifraEtiqueta": {
-    "description": "Lo que oye el lector de pantalla en cada cifra de Inicio",
-    "placeholders": {
-      "etiqueta": {
-        "type": "String"
-      },
-      "valor": {
-        "type": "String"
-      }
-    }
-  },
-  "inicioDuracion": "Duración",
-  "@inicioDuracion": {
-    "description": "Título del bloque de duración"
-  },
   "duracionMinutos": "{minutos} min",
   "@duracionMinutos": {
     "description": "Una duración en minutos (chips y selector)",
@@ -106,6 +69,56 @@
   "inicioDestino": "¿A dónde van los minutos?",
   "@inicioDestino": {
     "description": "Título del bloque de destino"
+  },
+  "inicioTecnicaPomodoro": "Pomodoro",
+  "@inicioTecnicaPomodoro": {
+    "description": "Técnica de Inicio: 25 minutos"
+  },
+  "inicioTecnicaProfundo": "Profundo",
+  "@inicioTecnicaProfundo": {
+    "description": "Técnica de Inicio: 50 minutos"
+  },
+  "inicioTecnicaLibre": "Libre",
+  "@inicioTecnicaLibre": {
+    "description": "Técnica de Inicio: los minutos los elige el usuario, de 10 a 120"
+  },
+  "inicioTecnicaLibreDetalle": "A tu aire",
+  "@inicioTecnicaLibreDetalle": {
+    "description": "Lo que va debajo de «Libre» en su botón"
+  },
+  "inicioTecnicaEtiqueta": "{tecnica}: {detalle}",
+  "@inicioTecnicaEtiqueta": {
+    "description": "Lo que oye el lector en cada botón de técnica: «Pomodoro: 25 min»",
+    "placeholders": {
+      "tecnica": {
+        "type": "String"
+      },
+      "detalle": {
+        "type": "String"
+      }
+    }
+  },
+  "inicioAroEtiqueta": "Sesión de {duracion}",
+  "@inicioAroEtiqueta": {
+    "description": "Lo que oye el lector en el aro de Inicio: «Sesión de 25 min». {duracion} sale de duracionLegible",
+    "placeholders": {
+      "duracion": {
+        "type": "String"
+      }
+    }
+  },
+  "inicioDestinoLinea": "Para: {destino}",
+  "@inicioDestinoLinea": {
+    "description": "La línea bajo Empezar que abre la lista de destinos: «Para: Sin hábito», «Para: Leer · 20 / 30 min»",
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      }
+    }
+  },
+  "inicioDestinoCambiar": "Cambiar a dónde van los minutos",
+  "@inicioDestinoCambiar": {
+    "description": "Pista del lector en la línea del destino"
   },
   "destinoSinHabito": "Sin hábito",
   "@destinoSinHabito": {

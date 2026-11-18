@@ -7,22 +7,7 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/formatos.dart';
 import '../services/controlador_enfoque.dart';
-
-/// Fase y ánimo de Nori, o `null` si no se pudo saber (entonces se pinta con
-/// los valores por defecto).
-typedef CargaMascota = Future<({String? fase, String? estado})?> Function();
-
-Future<({String? fase, String? estado})?> _mascotaDelBackend() async {
-  try {
-    final usuario = await ApiServiceCore.getUsuarioLocal();
-    final id = usuario?['usuarioId'];
-    if (id is! int) return null;
-    final datos = await ApiServiceCore.getMascota(id);
-    return (fase: datos['fase'] as String?, estado: animoDeMascota(datos));
-  } catch (_) {
-    return null;
-  }
-}
+import '../services/mascota_enfoque.dart';
 
 /// La sesión en curso: el aro con la cuenta atrás y Nori dentro, el destino,
 /// el aviso fijo de que salir la pierde, y Terminar y Rendirse.
@@ -33,7 +18,7 @@ class SesionScreen extends StatefulWidget {
   const SesionScreen({
     super.key,
     required this.controlador,
-    this.cargarMascota = _mascotaDelBackend,
+    this.cargarMascota = mascotaDelBackend,
   });
 
   final ControladorEnfoque controlador;

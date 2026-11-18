@@ -19,8 +19,8 @@ Google Play (`com.norday.enfoque`).
 - **Minutos a un hábito**, si quieres: una sesión puede ir también a un hábito
   de minutos de Norday Habits (cuenta compartida). Los minutos se suman al
   hábito, que paga además lo suyo, con sus reglas.
-- **Inicio**: minutos y sesiones de hoy, racha de enfoque, duración y destino
-  («Leer · 20 / 30 min»).
+- **Inicio**: el aro con Nori, tres técnicas (Pomodoro, Profundo y Libre),
+  Empezar y el destino en una línea («Para: Leer · 20 / 30 min»).
 - **Resultado** de cada sesión: «+30 monedas · +5 XP», y si llevaba hábito,
   «+25 min a Leer (30 / 30)», las monedas del hábito o el motivo si el hábito
   no los aceptó.

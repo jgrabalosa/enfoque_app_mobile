@@ -9,19 +9,25 @@ import '../l10n/app_localizations.dart';
 import '../l10n/formatos.dart';
 import '../models/enfoque.dart';
 import '../services/abrir_habits.dart';
+import '../services/mascota_enfoque.dart';
 import '../services/servicios_enfoque.dart';
 import 'inicio_logica.dart';
 
-/// Inicio: lo de hoy (minutos, sesiones y racha), la duración, el destino y
-/// Empezar.
+/// Inicio, de un solo gesto (diseño de Focus, 17-nov-2026): el aro con Nori
+/// y los minutos, la técnica (Pomodoro, Profundo o Libre), Empezar y, debajo,
+/// una línea con el destino que abre la lista.
+///
+/// La técnica y los minutos de Libre se recuerdan ([claveTecnica],
+/// [claveMinutosLibre]): normalmente basta con pulsar Empezar.
 class InicioScreen extends StatefulWidget {
-  const InicioScreen({super.key, required this.usuarioId, this.hoy});
+  const InicioScreen({
+    super.key,
+    required this.usuarioId,
+    this.cargarMascota = mascotaDelBackend,
+  });
 
   final int usuarioId;
-
-  /// El día de hoy. Sin él, el del móvil (ver la decisión en CLAUDE.md:
-  /// «Hoy es el día del móvil»).
-  final DateTime Function()? hoy;
+  final CargaMascota cargarMascota;
 
   @override
   State<InicioScreen> createState() => _InicioScreenState();
@@ -31,78 +37,111 @@ class _InicioScreenState extends State<InicioScreen> {
   ServiciosEnfoque? _servicios;
   ServiciosEnfoque get _s => _servicios!;
 
-  int _minutos = Duraciones.porDefecto;
+  Tecnica _tecnica = Tecnica.porDefecto;
+  int _minutosLibre = Duraciones.porDefecto;
   DestinoDisponible? _elegido;
 
   List<DestinoDisponible> _destinos = const [];
   bool _cargandoDestinos = true;
   bool _errorDestinos = false;
 
-  ResumenEnfoque? _resumenHoy;
-  bool _errorResumen = false;
+  ({String? fase, String? estado})? _mascota;
 
   bool _empezando = false;
+
+  /// Repinta la hoja de destinos si está abierta (la lista puede llegar o
+  /// fallar con la hoja ya a la vista). Con su contexto, para no repintarla
+  /// cuando ya se ha ido.
+  StateSetter? _repintarHoja;
+  BuildContext? _contextoHoja;
+
+  int get _minutos => _tecnica.minutos(_minutosLibre);
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_servicios != null) return;
     _servicios = AmbitoEnfoque.de(context);
-    _s.controlador.refrescos.addListener(_cargar);
+    _s.controlador.refrescos.addListener(_cargarDestinos);
     _s.destinoPedido.addListener(_aplicarPedido);
-    _cargar();
+    unawaited(_cargarEleccion());
+    unawaited(_cargarMascota());
+    _cargarDestinos();
   }
 
   @override
   void dispose() {
-    _s.controlador.refrescos.removeListener(_cargar);
+    _s.controlador.refrescos.removeListener(_cargarDestinos);
     _s.destinoPedido.removeListener(_aplicarPedido);
     super.dispose();
   }
 
-  DateTime get _hoy {
-    final h = (widget.hoy ?? DateTime.now)();
-    return DateTime(h.year, h.month, h.day);
+  void _cambiar(VoidCallback cambio) {
+    if (!mounted) return;
+    setState(cambio);
+    if (_contextoHoja?.mounted ?? false) _repintarHoja?.call(() {});
   }
 
-  Future<void> _cargar() async {
-    unawaited(_cargarResumen());
-    await _cargarDestinos();
+  /// La técnica y los minutos de Libre de la última vez.
+  Future<void> _cargarEleccion() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tecnica = Tecnica.deClave(prefs.getString(claveTecnica));
+      final libre = Duraciones.ajustar(
+        prefs.getInt(claveMinutosLibre) ?? Duraciones.porDefecto,
+      );
+      _cambiar(() {
+        _tecnica = tecnica;
+        _minutosLibre = libre;
+      });
+    } catch (_) {
+      // Sin preferencias, la de por defecto.
+    }
+  }
+
+  Future<void> _guardarEleccion() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(claveTecnica, _tecnica.name);
+      await prefs.setInt(claveMinutosLibre, _minutosLibre);
+    } catch (_) {
+      // Si no se guarda, la próxima vez sale la de por defecto.
+    }
+  }
+
+  void _elegirTecnica(Tecnica t) {
+    _cambiar(() => _tecnica = t);
+    unawaited(_guardarEleccion());
+  }
+
+  void _cambiarMinutosLibre(int m) {
+    _cambiar(() => _minutosLibre = m);
+    unawaited(_guardarEleccion());
+  }
+
+  Future<void> _cargarMascota() async {
+    final m = await widget.cargarMascota();
+    if (m != null) _cambiar(() => _mascota = m);
   }
 
   Future<void> _cargarDestinos() async {
-    setState(() {
+    _cambiar(() {
       _cargandoDestinos = true;
       _errorDestinos = false;
     });
     try {
       final destinos = await _s.api.destinos();
-      if (!mounted) return;
-      setState(() {
+      _cambiar(() {
         _destinos = destinos;
         _elegido = elegidoTrasRecargar(_elegido, destinos);
         _cargandoDestinos = false;
       });
       _aplicarPedido();
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
+      _cambiar(() {
         _cargandoDestinos = false;
         _errorDestinos = true;
       });
-    }
-  }
-
-  Future<void> _cargarResumen() async {
-    try {
-      final r = await _s.api.resumen(_hoy, _hoy);
-      if (!mounted) return;
-      setState(() {
-        _resumenHoy = r;
-        _errorResumen = false;
-      });
-    } catch (_) {
-      if (mounted) setState(() => _errorResumen = true);
     }
   }
 
@@ -114,7 +153,7 @@ class _InicioScreenState extends State<InicioScreen> {
     if (_errorDestinos) return; // Se aplicará al recargar.
     _s.soltarDestinoPedido();
     final destino = destinoPedidoEn(_destinos, pedido);
-    setState(() => _elegido = destino);
+    _cambiar(() => _elegido = destino);
     if (destino == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -182,52 +221,187 @@ class _InicioScreenState extends State<InicioScreen> {
     }
   }
 
+  Future<void> _abrirDestinos() async {
+    final l = AppLocalizations.of(context)!;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (hoja) => StatefulBuilder(
+        builder: (hoja, repintar) {
+          _repintarHoja = repintar;
+          _contextoHoja = hoja;
+          final t = tokens(hoja);
+          return SafeArea(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(hoja).size.height * 0.7,
+              ),
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  0,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                ),
+                children: [
+                  Text(
+                    l.inicioDestino,
+                    style: Theme.of(
+                      hoja,
+                    ).textTheme.titleMedium?.copyWith(color: t.text),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  ..._bloqueDestino(l, t, alElegir: () => Navigator.pop(hoja)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    _repintarHoja = null;
+    _contextoHoja = null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final t = tokens(context);
-    final titulo = Theme.of(
-      context,
-    ).textTheme.titleMedium?.copyWith(color: t.text);
+    final duracion = duracionLegible(l, _minutos);
 
-    return RefreshIndicator(
-      onRefresh: _cargar,
-      child: ListView(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        children: [
-          _CifrasHoy(resumen: _resumenHoy, error: _errorResumen, hoy: _hoy),
-          const SizedBox(height: AppSpacing.lg),
-          Text(l.inicioDuracion, style: titulo),
-          const SizedBox(height: AppSpacing.sm),
-          SelectorDuracion(
-            minutos: _minutos,
-            alCambiar: (m) => setState(() => _minutos = m),
+    return LayoutBuilder(
+      builder: (context, limites) => RefreshIndicator(
+        onRefresh: _cargarDestinos,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: limites.maxHeight - 2 * AppSpacing.md,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox.shrink(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                  child: Center(
+                    child: Semantics(
+                      container: true,
+                      label: l.inicioAroEtiqueta(duracion),
+                      excludeSemantics: true,
+                      child: AroCuentaAtras(
+                        restante: Duration(minutes: _minutos),
+                        total: Duration(minutes: _minutos),
+                        tamano: 260,
+                        centro: MascotaAnimadaViva(
+                          fase: _mascota?.fase,
+                          estado: _mascota?.estado,
+                          tamano: 96,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        for (final tec in Tecnica.values) ...[
+                          if (tec != Tecnica.values.first)
+                            const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: _ChipTecnica(
+                              nombre: _nombreTecnica(l, tec),
+                              detalle: _detalleTecnica(l, tec),
+                              elegida: tec == _tecnica,
+                              alPulsar: () => _elegirTecnica(tec),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (_tecnica == Tecnica.libre) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      SelectorDuracion(
+                        minutos: _minutosLibre,
+                        alCambiar: _cambiarMinutosLibre,
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.md),
+                    ElevatedButton.icon(
+                      onPressed: _empezando ? null : _empezar,
+                      icon: const Icon(LucideIcons.play),
+                      label: Text(l.inicioEmpezar),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Center(
+                      child: Semantics(
+                        hint: l.inicioDestinoCambiar,
+                        child: TextButton.icon(
+                          onPressed: _abrirDestinos,
+                          iconAlignment: IconAlignment.end,
+                          icon: Icon(
+                            LucideIcons.chevronRight,
+                            size: 18,
+                            color: t.textMuted,
+                          ),
+                          label: Text(
+                            l.inicioDestinoLinea(
+                              _elegido == null
+                                  ? l.destinoSinHabito
+                                  : textoDestino(l, _elegido!),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(l.inicioDestino, style: titulo),
-          const SizedBox(height: AppSpacing.sm),
-          ..._bloqueDestino(l, t),
-          const SizedBox(height: AppSpacing.lg),
-          ElevatedButton.icon(
-            onPressed: _empezando ? null : _empezar,
-            icon: const Icon(LucideIcons.play),
-            label: Text(l.inicioEmpezar),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-        ],
+        ),
       ),
     );
   }
 
-  List<Widget> _bloqueDestino(AppLocalizations l, TokensContextuales t) {
+  String _nombreTecnica(AppLocalizations l, Tecnica tec) => switch (tec) {
+    Tecnica.pomodoro => l.inicioTecnicaPomodoro,
+    Tecnica.profundo => l.inicioTecnicaProfundo,
+    Tecnica.libre => l.inicioTecnicaLibre,
+  };
+
+  String _detalleTecnica(AppLocalizations l, Tecnica tec) => switch (tec) {
+    Tecnica.libre => l.inicioTecnicaLibreDetalle,
+    _ => l.duracionMinutos(tec.minutosFijos!),
+  };
+
+  /// La lista de destinos de la hoja. [alElegir] la cierra al elegir uno.
+  List<Widget> _bloqueDestino(
+    AppLocalizations l,
+    TokensContextuales t, {
+    required VoidCallback alElegir,
+  }) {
     final cuerpo = Theme.of(
       context,
     ).textTheme.bodyMedium?.copyWith(color: t.textMuted);
+    void elegir(DestinoDisponible? d) {
+      _cambiar(() => _elegido = d);
+      alElegir();
+    }
+
     final sinHabito = OpcionDestino(
       titulo: l.destinoSinHabito,
       subtitulo: l.destinoSinHabitoAyuda,
       elegida: _elegido == null,
-      alPulsar: () => setState(() => _elegido = null),
+      alPulsar: () => elegir(null),
     );
     if (_cargandoDestinos) {
       return [
@@ -273,104 +447,67 @@ class _InicioScreenState extends State<InicioScreen> {
         OpcionDestino(
           titulo: textoDestino(l, d),
           elegida: _elegido?.esElMismo(d) ?? false,
-          alPulsar: () => setState(() => _elegido = d),
+          alPulsar: () => elegir(d),
         ),
       ],
     ];
   }
 }
 
-/// Tiempo hoy (con [duracionLegible]: «40 min», «1 h 30 min»), sesiones
-/// hoy y racha. Con error, una raya en vez de la cifra: un cero diría algo
-/// que no se sabe.
-class _CifrasHoy extends StatelessWidget {
-  const _CifrasHoy({
-    required this.resumen,
-    required this.error,
-    required this.hoy,
+/// Un botón de técnica: el nombre y, debajo, sus minutos («25 min») o «A tu
+/// aire».
+class _ChipTecnica extends StatelessWidget {
+  const _ChipTecnica({
+    required this.nombre,
+    required this.detalle,
+    required this.elegida,
+    required this.alPulsar,
   });
 
-  final ResumenEnfoque? resumen;
-  final bool error;
-  final DateTime hoy;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context)!;
-    final dia = resumen?.delDia(hoy);
-    String cifra(String Function() valor) =>
-        resumen == null || error ? '—' : valor();
-    return Row(
-      children: [
-        Expanded(
-          child: _Cifra(
-            etiqueta: l.inicioTiempoHoy,
-            valor: cifra(() => duracionLegible(l, dia!.minutos)),
-            icono: LucideIcons.timer,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: _Cifra(
-            etiqueta: l.inicioSesionesHoy,
-            valor: cifra(() => '${dia!.sesiones}'),
-            icono: LucideIcons.circleCheck,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: _Cifra(
-            etiqueta: l.inicioRacha,
-            valor: cifra(() => l.inicioRachaDias(resumen!.rachaActual)),
-            icono: LucideIcons.flame,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Cifra extends StatelessWidget {
-  const _Cifra({
-    required this.etiqueta,
-    required this.valor,
-    required this.icono,
-  });
-
-  final String etiqueta;
-  final String valor;
-  final IconData icono;
+  final String nombre;
+  final String detalle;
+  final bool elegida;
+  final VoidCallback alPulsar;
 
   @override
   Widget build(BuildContext context) {
     final t = tokens(context);
     final tema = Theme.of(context).textTheme;
     return Semantics(
-      container: true,
-      label: AppLocalizations.of(context)!.inicioCifraEtiqueta(etiqueta, valor),
+      button: true,
+      selected: elegida,
+      inMutuallyExclusiveGroup: true,
+      label: AppLocalizations.of(
+        context,
+      )!.inicioTecnicaEtiqueta(nombre, detalle),
       excludeSemantics: true,
       child: SuperficieIdentidad(
-        relleno: const EdgeInsets.all(AppSpacing.ms),
+        onTap: alPulsar,
+        relleno: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: AppSpacing.sm,
+        ),
+        filo: elegida ? BorderSide(color: t.primaryTrazo, width: 2) : null,
+        filoNeon: elegida ? FiloNeon.encendido : FiloNeon.fijo,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icono, size: 18, color: t.points),
-            const SizedBox(height: AppSpacing.xs),
-            // «1 h 30 min» no cabe entero en un tercio de pantalla: se
-            // encoge en vez de cortarse.
             FittedBox(
               fit: BoxFit.scaleDown,
-              alignment: AlignmentDirectional.centerStart,
               child: Text(
-                valor,
-                style: tema.titleLarge?.copyWith(color: t.text),
+                nombre,
                 maxLines: 1,
+                style: tema.labelLarge?.copyWith(
+                  color: elegida ? t.successText : t.text,
+                ),
               ),
             ),
-            Text(
-              etiqueta,
-              style: tema.labelMedium?.copyWith(color: t.textMuted),
-              maxLines: 2,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                detalle,
+                maxLines: 1,
+                style: tema.labelSmall?.copyWith(color: t.textMuted),
+              ),
             ),
           ],
         ),
@@ -379,7 +516,7 @@ class _Cifra extends StatelessWidget {
   }
 }
 
-/// Los chips de duración rápida y el selector de 10 a 120 de 5 en 5.
+/// El selector de minutos de Libre: de 10 a 120, de 5 en 5.
 class SelectorDuracion extends StatelessWidget {
   const SelectorDuracion({
     super.key,
@@ -394,96 +531,41 @@ class SelectorDuracion extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
     final t = tokens(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.sm,
-          children: [
-            for (final m in Duraciones.rapidas)
-              _ChipDuracion(
-                texto: l.duracionMinutos(m),
-                elegido: m == minutos,
-                alPulsar: () => alCambiar(m),
-              ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Semantics(
-          container: true,
-          label: l.duracionEtiqueta(minutos),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                onPressed: minutos > Duraciones.minima
-                    ? () => alCambiar(Duraciones.bajar(minutos))
-                    : null,
-                icon: const Icon(LucideIcons.minus),
-                tooltip: l.duracionMenos,
-                color: t.text,
-              ),
-              ExcludeSemantics(
-                child: SizedBox(
-                  width: 120,
-                  child: Text(
-                    l.duracionMinutos(minutos),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineSmall?.copyWith(color: t.text),
-                  ),
-                ),
-              ),
-              IconButton(
-                onPressed: minutos < Duraciones.maxima
-                    ? () => alCambiar(Duraciones.subir(minutos))
-                    : null,
-                icon: const Icon(LucideIcons.plus),
-                tooltip: l.duracionMas,
-                color: t.text,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ChipDuracion extends StatelessWidget {
-  const _ChipDuracion({
-    required this.texto,
-    required this.elegido,
-    required this.alPulsar,
-  });
-
-  final String texto;
-  final bool elegido;
-  final VoidCallback alPulsar;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = tokens(context);
     return Semantics(
-      button: true,
-      selected: elegido,
-      inMutuallyExclusiveGroup: true,
-      child: SuperficieIdentidad(
-        onTap: alPulsar,
-        relleno: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        filo: elegido ? BorderSide(color: t.primaryTrazo, width: 2) : null,
-        filoNeon: elegido ? FiloNeon.encendido : FiloNeon.fijo,
-        child: Text(
-          texto,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: elegido ? t.successText : t.text,
+      container: true,
+      label: l.duracionEtiqueta(minutos),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            onPressed: minutos > Duraciones.minima
+                ? () => alCambiar(Duraciones.bajar(minutos))
+                : null,
+            icon: const Icon(LucideIcons.minus),
+            tooltip: l.duracionMenos,
+            color: t.text,
           ),
-        ),
+          ExcludeSemantics(
+            child: SizedBox(
+              width: 120,
+              child: Text(
+                l.duracionMinutos(minutos),
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(color: t.text),
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: minutos < Duraciones.maxima
+                ? () => alCambiar(Duraciones.subir(minutos))
+                : null,
+            icon: const Icon(LucideIcons.plus),
+            tooltip: l.duracionMas,
+            color: t.text,
+          ),
+        ],
       ),
     );
   }

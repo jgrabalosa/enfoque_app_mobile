@@ -42,7 +42,7 @@ lista completa, en el `CLAUDE.md` del paquete.
 
 - `screens/` — `HomeShell` (Inicio, Estadísticas y el menú; y qué se pone
   encima: la sesión o su resultado), `InicioScreen` e `inicio_logica.dart`
-  (duraciones y destino pedido, sin widgets), `SesionScreen`,
+  (técnicas, duraciones y destino pedido, sin widgets), `SesionScreen`,
   `ResultadoScreen`, `EstadisticasScreen` y `estadisticas_logica.dart`
   (fechas de la semana y del mes).
 - `services/`:
@@ -201,7 +201,8 @@ equivocado. Por eso (decisión de la revisión del 15-nov-2026):
   (alguien cambia la hora del móvil), esas dos pueden solaparse.
 
 Claves en `SharedPreferences`: `enfoque_cola_envios`,
-`enfoque_envios_no_aceptados` y `enfoque_desfase_servidor_ms`. La sesión en curso la guarda el core en
+`enfoque_envios_no_aceptados`, `enfoque_desfase_servidor_ms`, y en Inicio
+`enfoque_tecnica` y `enfoque_minutos_libre` (la última elección). La sesión en curso la guarda el core en
 `sesion_concentracion_actual`.
 
 ### El premio de la sesión (backend V27, 16-nov-2026)
@@ -335,8 +336,8 @@ Una sola regla para todo lo que enseña minutos al usuario (decisión del
 `durHorasMinutos`). Es de la app, no del core. Se guarda y se envía siempre
 en minutos.
 
-- **Pasan por ella**: la cifra de minutos de hoy en Inicio, el progreso del
-  destino (Inicio y sesión), «Llevas…» al terminar, la cifra grande y el
+- **Pasan por ella**: lo que oye el lector en el aro de Inicio («Sesión de
+  25 min»), el progreso del destino (Inicio y sesión), «Llevas…» al terminar, la cifra grande y el
   aporte del Resultado, los totales de semana y mes, la cifra de encima de
   cada barra y lo que oye el lector en ella, y el historial.
 - **Pares** (lo hecho y su objetivo): si los dos son de menos de una hora,
@@ -344,14 +345,14 @@ en minutos.
   «(30 / 30)», «25 de 25 min · Leer»); si alguno llega a la hora, cada
   cifra con la regla («Leer · 45 min / 1 h 30 min», «1 h 30 min de 2 h ·
   Leer»). Lo deciden `progresoLegible`, `textoAporte` y `textoFilaSesion`.
-- **No pasan por ella**: los chips de duración (15/25/45/60), el selector
-  de 10 a 120 (`duracionMinutos`, `duracionEtiqueta`) y la cuenta atrás
-  `mm:ss` del core. Siguen en minutos.
+- **No pasan por ella**: los minutos de las técnicas de Inicio («25 min»,
+  «50 min»), el selector de Libre, de 10 a 120 (`duracionMinutos`,
+  `duracionEtiqueta`), y la cuenta atrás `mm:ss` del core, también la del
+  aro de Inicio. Siguen en minutos.
 - **Ninguna etiqueta dice «minutos» junto a una cifra que puede ir en
-  horas**: la de Inicio es «Tiempo hoy» (`inicioTiempoHoy`; en «Time
-  today», pt «Tempo hoje»). Los textos con «minutos» que quedan van con
+  horas**. Los textos con «minutos» que quedan van con
   cifras fijas («menos de 10 minutos») o sin cifra.
-- Donde el sitio es estrecho (la cifra de Inicio, encima de las barras) el
+- Donde el sitio es estrecho (los botones de técnica, encima de las barras) el
   texto se encoge con `FittedBox` en vez de cortarse.
 
 ## Tocar el paquete
@@ -455,6 +456,22 @@ Lo que el diseño no decía y se resolvió con la opción más conservadora.
   el 16-nov-2026, cuando el ánimo pasó a juntar las dos apps (antes no se
   pasaban: explicarlo era hablar solo de hábitos).
 - **Sin recorrido de bienvenida** propio.
+
+## Inicio de un solo gesto (17-nov-2026)
+
+Diseño de Focus con Quim (`encargos/focus-diseno.md` del proyecto).
+
+- **El aro de la sesión, ya en Inicio**: el mismo `AroCuentaAtras` (260) con
+  Nori (96) que la sesión, lleno y con los minutos de la técnica. Al
+  empezar no cambia de sitio.
+- **Tres técnicas** (`Tecnica` en `inicio_logica.dart`): Pomodoro (25),
+  Profundo (50) y Libre (de 10 a 120, con el selector). La primera vez,
+  Pomodoro. Se recuerdan la técnica y los minutos de Libre. Por ahora, una
+  sola sesión por técnica: las rondas y el descanso son F-2.
+- **El destino, en una línea bajo Empezar** («Para: Sin hábito»), que abre
+  la lista en una hoja. El enlace desde Habits sigue eligiendo el hábito.
+- **Sin las cifras de hoy** (tiempo, sesiones y racha): están en
+  Estadísticas.
 
 ## Lecciones aprendidas
 
