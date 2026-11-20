@@ -22,9 +22,14 @@ fuente de verdad del producto es el diseño de Norday Enfoque (v1, cerrado el
 Antes de escribir algo genérico aquí, para: probablemente va en el paquete.
 
 Esta app **no conoce los hábitos**: el backend le da «destinos» (`tipo`,
-`id`, `nombre`, minutos de hoy y objetivo) y ella los muestra y los manda. Lo
-único que nombra a Norday Habits es el texto «Crea hábitos en Norday Habits»
-y el paquete que abre.
+`id`, `nombre`, minutos de hoy y objetivo) y ella los muestra y los manda.
+Lo que nombra a Norday Habits (`app_*.arb`): «Crea hábitos en Norday Habits»
+(`destinoCrearEnHabits`), el aviso de que no se pudo abrir
+(`abrirHabitsError`), los logros nuevos «en Norday Habits»
+(`resultadoLogrosEnHabits`), las ayudas del ánimo y de la XP de Nori
+(`mascotaAyudaAnimo`, `mascotaAyudaXp`) y la descripción del logro con
+destino (`logroConDestinoDesc`). Y el paquete que abre: `com.norday.habitos`,
+o `com.norday.habitos.prueba` desde la Focus de prueba (`abrir_habits.dart`).
 
 ### Qué vive en el paquete
 
@@ -34,17 +39,19 @@ notificaciones (`ApiServiceCore`), el motor de la sesión con bloqueo suave
 `AvisosSesion`), `AroCuentaAtras`, los servicios genéricos (celebración,
 sonido, idioma, zona, permiso y token de avisos), el tema y las identidades,
 los fondos, las pantallas genéricas (login, recuperación, elección de
-identidad, tienda, mascota, logros, colección, perfil),
+identidad, tienda, mascota, logros, colección, perfil y actualización
+obligatoria, `ActualizacionObligatoriaScreen`), `VersionMinimaService`,
 `NordayCoreLocalizations` y los assets de animations, sounds y mascota. La
 lista completa, en el `CLAUDE.md` del paquete.
 
 ### Qué vive aquí
 
 - `screens/` — `HomeShell` (Inicio, Estadísticas y el menú; y qué se pone
-  encima: la sesión o su resultado), `InicioScreen` e `inicio_logica.dart`
-  (técnicas, duraciones y destino pedido, sin widgets), `SesionScreen`,
-  `ResultadoScreen`, `EstadisticasScreen` y `estadisticas_logica.dart`
-  (fechas de la semana y del mes).
+  encima: la sesión, el descanso o el resultado), `InicioScreen` e
+  `inicio_logica.dart` (técnicas, rondas, duraciones y destino pedido, sin
+  widgets), `SesionScreen`, `DescansoScreen` (`descanso_screen.dart`, el
+  descanso entre rondas), `ResultadoScreen`, `EstadisticasScreen` y
+  `estadisticas_logica.dart` (fechas de la semana y del mes).
 - `services/`:
   - `api_service_enfoque.dart` — `ApiEnfoque` (interfaz) y
     `ApiServiceEnfoque`: `/api/enfoque/destinos`, `sesiones` (POST y
@@ -57,6 +64,10 @@ lista completa, en el `CLAUDE.md` del paquete.
   - `controlador_enfoque.dart` — junta el motor del core y la cola:
     empieza sesiones con su destino, recoge cada sesión acabada, la encola,
     la envía y la cierra en el motor.
+  - `tanda.dart` — `ControladorTanda`: las rondas y el descanso (ver
+    «Rondas y descanso»).
+  - `mascota_enfoque.dart` — la fase y el ánimo de Nori, del backend, para
+    el aro de Inicio, de la sesión y del descanso.
   - `canal_sistema.dart` — el canal con `MainActivity.kt`: `RelojSistema`
     (`FuenteReloj`), `PantallaSistema` (`FuentePantalla`),
     `LanzadorSistema` y `EventosSistema` (desbloqueos y enlaces).
@@ -69,9 +80,9 @@ lista completa, en el `CLAUDE.md` del paquete.
     `crashlytics_service.dart` (copiado de Habits).
 - `models/enfoque.dart` — los modelos del contrato, con parseo tolerante.
   `models/enlace_entrada.dart` — el enlace `norday-enfoque://`.
-- `l10n/` — `AppLocalizations` (`app_*.arb`), `textos_enfoque.dart` y
-  `formatos.dart` (las duraciones y los textos con cifras: «Leer · 20 /
-  30 min», «+1 h 30 min a Leer (1 h 30 min / 2 h)»; ver «Duraciones»).
+- `l10n/` — `AppLocalizations` (`app_*.arb`), `textos_enfoque.dart`,
+  `logros_enfoque.dart` (los 21 logros de Focus) y `formatos.dart` (las
+  duraciones y los textos con cifras: «Leer · 20 / 30 min», «+1 h 30 min a Leer (1 h 30 min / 2 h)»; ver «Duraciones»).
 - `widgets/` — `barras_semana.dart` y `barra_navegacion.dart` (copiado tal
   cual de `identidad_ui.dart` de Habits).
 - `google_fonts/` — las mismas siete familias que Habits, con sus licencias
@@ -113,10 +124,15 @@ el backend saca el usuario del JWT.
     (`l10n/logros_enfoque.dart`) llama a
     `CatalogosCore.registrarLogrosDeDominio` con los 21 de Focus
     (`codigosLogrosEnfoque`, los mismos que siembra el backend con
-    `origen_app = enfoque`, V27). Si cambia uno allí, cambia aquí.
+    `origenApp = enfoque` en `LogrosEnfoqueInitializer`, no en una
+    migración). Si cambia uno allí, cambia aquí.
 11. **`MascotaScreen.ayudaAnimo` y `ayudaXp`** — desde el menú, con los
     textos de Focus (`mascotaAyudaAnimo`, `mascotaAyudaXp`): el ánimo y la XP
     de Nori salen de las dos apps juntas.
+12. **`VersionMinimaService`** — `vigilarAlVolver()` en `main()`; el splash
+    pregunta con `hayQueActualizar()` y, si toca, `bloquear()`, que abre
+    `ActualizacionObligatoriaScreen` del core (con el texto de
+    `TextosApp`).
 
 No se usan `publicarProgresoDia` ni el cierre del día.
 
@@ -200,21 +216,27 @@ equivocado. Por eso (decisión de la revisión del 15-nov-2026):
 - **Límite**: si el desfase cambia de verdad entre dos sesiones seguidas
   (alguien cambia la hora del móvil), esas dos pueden solaparse.
 
-Claves en `SharedPreferences`: `enfoque_cola_envios`,
-`enfoque_envios_no_aceptados`, `enfoque_desfase_servidor_ms`, y en Inicio
-`enfoque_tecnica` y `enfoque_minutos_libre` (la última elección). La sesión en curso la guarda el core en
-`sesion_concentracion_actual`.
+Claves en `SharedPreferences` (ocho `enfoque_*`): `enfoque_cola_envios`,
+`enfoque_envios_no_aceptados`, `enfoque_desfase_servidor_ms`, en Inicio
+`enfoque_tecnica`, `enfoque_minutos_libre` y `enfoque_rondas` (la última
+elección), `enfoque_tanda` (la tanda de rondas en marcha) y
+`enfoque_permiso_avisos_pedido`. `enfoque_gracia`, `enfoque_fin` y
+`enfoque_descanso` no son claves: son canales de avisos. La sesión en curso
+la guarda el core en `sesion_concentracion_actual`.
 
 ### El premio de la sesión (backend V27, 16-nov-2026)
 
 Cada sesión que cuenta paga lo suyo, tenga hábito o no: 1 moneda por minuto
 (+5 si se completa) y 1 XP de Nori por cada 5 minutos, con un tope de 120
-monedas al día. Si lleva hábito, el hábito paga además lo suyo. La respuesta
-los separa: `aporte` (el hábito) y `premio` (la sesión,
+monedas y 24 XP al día (`TOPE_MONEDAS_DIA` y `TOPE_XP_DIA`). Si lleva
+hábito, el hábito paga además lo suyo. La respuesta los separa: `aporte` (el hábito) y `premio` (la sesión,
 `{monedas, xp, logros, topeAlcanzado}`, modelo `Premio`). Un backend anterior
 a V27 no lo manda y se queda en `Premio.vacio`.
 
-El Resultado enseña «+30 monedas · +5 XP» para cualquier sesión que cuente y
+En pantalla las monedas se llaman **puntos**; en el código y en el backend
+siguen siendo `monedas`.
+
+El Resultado enseña «+30 puntos · +5 XP» para cualquier sesión que cuente y
 se haya enviado; si con ella se llega al tope, «Has llegado al tope de hoy…»;
 si el tope ya estaba, sin cifras, «Hoy ya has ganado todo lo que dan las
 sesiones…». Debajo, lo del hábito como siempre. Se celebran los logros de las
@@ -366,6 +388,9 @@ commitea (está en `.gitignore`).
 
 **Core fijado por `v0.55.0`** (15-nov-2026): `resolved-ref` `5861899d85e2933774c6349ad0e98844f3eb5965`. El `pubspec.lock` se versiona desde entonces.
 
+Con el core `v0.55.0`, Focus no ve las prendas de Nori (el backend se las da
+desde el core 0.56.0). Subirlo es una tarea aparte.
+
 ## Variantes: produccion y prueba
 
 - **`--flavor` siempre.** `produccion` es `com.norday.enfoque`, «Norday
@@ -409,7 +434,9 @@ toque un `.dart`, desde la raíz: `dart format lib test`.
 - Un paso a la vez, confirmar que compila antes de seguir.
 - Si algo admite varios diseños o no está claro, preguntar antes de
   decidir — no asumir.
-- Trabajo en ramas `wip`; nunca en `main`. Quim hace los merges y los tags.
+- La rama de integración es `wip` (la de por defecto en GitHub; este repo no
+  tiene `main`). Se trabaja en ramas `wip-<tema>` y se mergea a `wip` por
+  PR. Quim decide los merges y los tags.
 
 ## Decisiones tomadas al construir la app (15-nov-2026)
 
