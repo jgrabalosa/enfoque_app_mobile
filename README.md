@@ -6,29 +6,34 @@ Google Play (`com.norday.enfoque`).
 
 ## Qué hace
 
-- **Sesiones de concentración con bloqueo suave**: de 10 a 120 minutos, de 5
-  en 5 (25 por defecto), sin pausas. Si sales a otra app con la pantalla
+- **Sesiones de concentración con bloqueo suave**, con tres técnicas:
+  Pomodoro (25 min) y Profundo (50 min), de 1 a 4 rondas con 5 o 10 min de
+  descanso entre una y otra; y Libre, de 10 a 120 min de 5 en 5. Sin pausas. Si sales a otra app con la pantalla
   encendida, tienes 10 segundos para volver (con aviso, si hay permiso); si
   no vuelves, la sesión se pierde. Apagar o bloquear la pantalla no cuenta
   como salir.
 - **Terminar antes** cuenta con los minutos hechos si son 10 o más; si no, se
   descarta sin castigo. **Rendirse** la pierde.
-- **Premio**: cada sesión que cuenta da monedas y XP para Nori (1 moneda por
+- **Premio**: cada sesión que cuenta da puntos y XP para Nori (1 punto por
   minuto, 5 más si la completas, 1 XP cada 5 minutos), con un tope de 120
-  monedas al día. Tiene 21 logros propios. Nori se alegra con tus sesiones.
+  puntos y 24 XP al día. En el código y en el backend los puntos se llaman
+  `monedas`. Tiene 21 logros propios. Nori se alegra con tus sesiones.
 - **Minutos a un hábito**, si quieres: una sesión puede ir también a un hábito
   de minutos de Norday Habits (cuenta compartida). Los minutos se suman al
   hábito, que paga además lo suyo, con sus reglas.
-- **Inicio**: el aro con Nori, tres técnicas (Pomodoro, Profundo y Libre),
-  Empezar y el destino en una línea («Para: Leer · 20 / 30 min»).
-- **Resultado** de cada sesión: «+30 monedas · +5 XP», y si llevaba hábito,
-  «+25 min a Leer (30 / 30)», las monedas del hábito o el motivo si el hábito
+- **Inicio**: el aro con Nori, tres técnicas (Pomodoro 25 min y Profundo
+  50 min, de 1 a 4 rondas con 5 o 10 min de descanso; Libre, de 10 a 120 min
+  de 5 en 5), Empezar y el destino en una línea («Para: Leer · 20 / 30 min»).
+- **Descanso** entre rondas: no empieza sola la ronda siguiente; avisa y la
+  empieza el usuario.
+- **Resultado** de cada sesión: «+30 puntos · +5 XP», y si llevaba hábito,
+  «+25 min a Leer (30 / 30)», los puntos del hábito o el motivo si el hábito
   no los aceptó.
 - **Estadísticas**: minutos por día de la semana, totales de la semana y del
   mes, e historial (incluidas las sesiones pendientes de enviar).
 - **Sin conexión**: las sesiones acabadas se guardan en el móvil y se envían
   en cuanto hay red.
-- Comparte con Norday Habits la cuenta, las monedas, las tres identidades
+- Comparte con Norday Habits la cuenta, los puntos, las tres identidades
   visuales y a Nori. Menú con Nori, tienda, logros, colección y perfil.
 - En **español, inglés y portugués**.
 
@@ -142,10 +147,12 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
    `prueba`. En el móvil ya funcionan el login, Inicio y el enlace de
    entrada desde Habits. Los avisos de gracia y de fin están hechos, pero
    sin probar en el móvil. La release compila (ver «Toolchain de
-   Android»); probarla en el móvil va después de desplegar el backend
-   `wip-enfoque` en producción, porque el flavor `produccion` solo habla
-   con producción.
+   Android»); probarla en el móvil va después de que el backend con Focus
+   (`main` de `habitos-app`) esté en producción, porque el flavor
+   `produccion` solo habla con producción.
 5. **Tag del core**: hecho el 15-nov-2026. El core va fijado por `v0.55.0` y el `pubspec.lock` está versionado.
+   Con el core `v0.55.0`, Focus no ve las prendas de Nori (el backend se las
+   da desde el core 0.56.0). Subirlo es una tarea aparte.
 6. **Icono, splash y gráficos de Play**: Norday Focus no tiene aún ni icono
    ni símbolo. Hoy lleva el icono por defecto de Flutter y el splash pinta a
    Nori sobre Azul Noche. Cuando los haya, en `store/` y
@@ -156,9 +163,9 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
    (silueta blanca sobre transparente).
 7. **Política de privacidad y URL de borrado de cuenta**: la ficha de Play
    pide las dos. Son las de `norday.app` (`privacidad.html` y
-   `eliminar-cuenta.html`, en el backend), ampliadas a Norday Focus en
-   `wip-enfoque` el 15-nov-2026: valen en cuanto ese backend esté en
-   producción.
+   `eliminar-cuenta.html`, en el backend), ampliadas a Norday Focus el
+   15-nov-2026 y ya en `main` de `habitos-app`: valen en cuanto ese backend
+   esté en producción.
 8. **Prueba cerrada**: obligatoria. La cuenta de desarrollador es personal
    y de 2026: hacen falta 12 testers apuntados durante 14 días seguidos
    antes de pedir el acceso a Producción. La app existe en Play Console
@@ -169,8 +176,9 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
    salen a la vez): sin ella, el botón lleva a una ficha que no existe. En
    prueba cerrada solo vale si los testers de Habits también lo son de
    Focus.
-10. **Backend**: desplegar `wip-enfoque` (módulo `enfoque`, `AppNorday`
-    con `enfoque`, `version_app` V25) antes de que nadie use la app.
+10. **Backend**: `main` de `habitos-app` (módulo `enfoque`,
+    `AppNorday.ENFOQUE` y las migraciones V25–V27; PR #8 y #9), desplegado
+    antes de que nadie use la app.
 
 ## Documentación
 
