@@ -152,7 +152,8 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
    `produccion` solo habla con producción.
 5. **Tag del core**: el core va fijado por `v0.59.1` (21-nov-2026; antes,
    `v0.55.0` desde el 15-nov) y el `pubspec.lock` está versionado. Con él,
-   Focus ve las prendas de Nori en la tienda y en la pantalla de Nori, si el
+   Focus ve las prendas de Nori en la tienda y en la pantalla de Nori, y Nori
+   las lleva puestas en el aro de Inicio, de la sesión y del descanso, si el
    backend tiene V28 a V30.
 6. **Icono, splash y gráficos de Play**: Norday Focus no tiene aún ni icono
    ni símbolo. Hoy lleva el icono por defecto de Flutter y el splash pinta a

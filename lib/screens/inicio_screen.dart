@@ -320,6 +320,7 @@ class _InicioScreenState extends State<InicioScreen> {
                               fase: _mascota?.fase,
                               estado: _mascota?.estado,
                               tamano: 96,
+                              vestida: true,
                             ),
                           ),
                         ),

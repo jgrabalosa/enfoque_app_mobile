@@ -159,6 +159,28 @@ void main() {
       expect(find.text(l.inicioEmpezar), findsOneWidget);
     });
 
+    testWidgets('Nori va vestida en el aro de Inicio, de la sesión y del '
+        'descanso (D-53)', (tester) async {
+      final m = await montar(tester);
+      final nori = find.byType(MascotaAnimadaViva);
+      bool vestida() => tester.widget<MascotaAnimadaViva>(nori).vestida;
+
+      expect(nori, findsOneWidget);
+      expect(vestida(), isTrue, reason: 'Inicio');
+
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      expect(find.byType(SesionScreen), findsOneWidget);
+      expect(vestida(), isTrue, reason: 'Sesión');
+
+      await acabarRonda(tester, m);
+      expect(find.byType(DescansoScreen), findsOneWidget);
+      expect(vestida(), isTrue, reason: 'Descanso');
+
+      await tester.tap(find.text(l.descansoTerminar));
+      await asentar(tester);
+    });
+
     testWidgets('Terminar aquí deja la tanda y vuelve a Inicio', (
       tester,
     ) async {
