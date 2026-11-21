@@ -394,9 +394,13 @@ Lo que trae la subida de la 0.55.0 a la 0.59.1 (el CHANGELOG del core):
 
 - **Las prendas de Nori**: la sección «Nori» de la tienda y el vestidor de
   la pantalla de Nori. Son genéricas en el backend (`origenApp` nulo), así
-  que Focus las ve igual que Habits, con el backend en V28 a V30. Nori en el
-  aro de Inicio, de la sesión y del descanso va **sin vestir**
-  (`MascotaAnimadaViva`, `vestida` por defecto `false`).
+  que Focus las ve igual que Habits, con el backend en V28 a V30. **Nori va
+  vestida también en el aro** de Inicio, de la sesión y del descanso
+  (`MascotaAnimadaViva` con `vestida: true`, D-53 del 21-nov-2026): lo que
+  lleva puesto sale de `Equipamiento.cargarDeUsuarioSiSePuede`, que ya se
+  llama al arrancar, y `NoriVestida` pide el manifiesto del arte sola. Sin
+  prendas, o sin red, es el dibujo de siempre. Lo vigila un test de
+  `home_shell_test.dart`.
 - **El token de avisos se reenvía una vez** (T-019, clave
   `fcm_token_enviado_v2_<usuarioId>`) y **cerrar sesión lo quita** (T-004b,
   `POST /usuarios/{id}/fcm-token/quitar`). Hoy el backend no manda nada al
