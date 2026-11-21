@@ -161,6 +161,7 @@ class _DescansoScreenState extends State<DescansoScreen> {
                           // Nori descansa contigo.
                           estado: acabado ? _mascota?.estado : 'dormida',
                           tamano: 80,
+                          vestida: true,
                         ),
                       ),
                     ),
