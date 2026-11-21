@@ -386,10 +386,23 @@ allí, se cambia aquí el `ref:` al tag nuevo y se hace
 `pubspec_overrides.yaml` con `path: ../norday_flutter_core`, que no se
 commitea (está en `.gitignore`).
 
-**Core fijado por `v0.55.0`** (15-nov-2026): `resolved-ref` `5861899d85e2933774c6349ad0e98844f3eb5965`. El `pubspec.lock` se versiona desde entonces.
+**Core fijado por `v0.59.1`** (21-nov-2026): `resolved-ref`
+`c9cd3a503669f23b535bc1af2ccd42dbda9d9da0`. El `pubspec.lock` se versiona
+desde el 15-nov-2026 (entonces, `v0.55.0`).
 
-Con el core `v0.55.0`, Focus no ve las prendas de Nori (el backend se las da
-desde el core 0.56.0). Subirlo es una tarea aparte.
+Lo que trae la subida de la 0.55.0 a la 0.59.1 (el CHANGELOG del core):
+
+- **Las prendas de Nori**: la sección «Nori» de la tienda y el vestidor de
+  la pantalla de Nori. Son genéricas en el backend (`origenApp` nulo), así
+  que Focus las ve igual que Habits, con el backend en V28 a V30. Nori en el
+  aro de Inicio, de la sesión y del descanso va **sin vestir**
+  (`MascotaAnimadaViva`, `vestida` por defecto `false`).
+- **El token de avisos se reenvía una vez** (T-019, clave
+  `fcm_token_enviado_v2_<usuarioId>`) y **cerrar sesión lo quita** (T-004b,
+  `POST /usuarios/{id}/fcm-token/quitar`). Hoy el backend no manda nada al
+  token de `enfoque`: los avisos son de Habits.
+- Unos 3,5 MB más de imágenes de Nori y los sonidos de completar y de logro,
+  más bajos. Ninguna firma pública cambia.
 
 ## Variantes: produccion y prueba
 
