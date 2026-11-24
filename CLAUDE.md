@@ -386,27 +386,27 @@ allí, se cambia aquí el `ref:` al tag nuevo y se hace
 `pubspec_overrides.yaml` con `path: ../norday_flutter_core`, que no se
 commitea (está en `.gitignore`).
 
-**Core fijado por `v0.59.1`** (21-nov-2026): `resolved-ref`
-`c9cd3a503669f23b535bc1af2ccd42dbda9d9da0`. El `pubspec.lock` se versiona
-desde el 15-nov-2026 (entonces, `v0.55.0`).
+**Core fijado por `v0.62.0`** (24-nov-2026): `resolved-ref`
+`e8f8994774c91ae8e28dde574d37b4c04e7c0670`. El `pubspec.lock` se versiona
+desde el 15-nov-2026 (entonces, `v0.55.0`; el 21-nov, `v0.59.1`).
 
-Lo que trae la subida de la 0.55.0 a la 0.59.1 (el CHANGELOG del core):
+Lo que trae la subida de la 0.59.1 a la 0.62.0 (el CHANGELOG del core) y
+cómo le toca a Focus:
 
-- **Las prendas de Nori**: la sección «Nori» de la tienda y el vestidor de
-  la pantalla de Nori. Son genéricas en el backend (`origenApp` nulo), así
-  que Focus las ve igual que Habits, con el backend en V28 a V30. **Nori va
-  vestida también en el aro** de Inicio, de la sesión y del descanso
-  (`MascotaAnimadaViva` con `vestida: true`, D-53 del 21-nov-2026): lo que
-  lleva puesto sale de `Equipamiento.cargarDeUsuarioSiSePuede`, que ya se
-  llama al arrancar, y `NoriVestida` pide el manifiesto del arte sola. Sin
-  prendas, o sin red, es el dibujo de siempre. Lo vigila un test de
-  `home_shell_test.dart`.
-- **El token de avisos se reenvía una vez** (T-019, clave
-  `fcm_token_enviado_v2_<usuarioId>`) y **cerrar sesión lo quita** (T-004b,
-  `POST /usuarios/{id}/fcm-token/quitar`). Hoy el backend no manda nada al
-  token de `enfoque`: los avisos son de Habits.
-- Unos 3,5 MB más de imágenes de Nori y los sonidos de completar y de logro,
-  más bajos. Ninguna firma pública cambia.
+- **Lo que se ve en Focus:** tu Nori como avatar en Mi cuenta y en
+  Colección (T-032); en temporada, Nori del login con la prenda de la
+  temporada; en la pantalla de Nori, «Alimentar» y «Tienda» suben debajo de
+  Nori y Nori hace su gesto al comer (T-051); la primera vez que se abre la
+  tienda, una nota junto al saldo (T-052); la ayuda de la tienda nombra la
+  ropa.
+- **Lo que está en el core y Focus no usa:** el aviso de versión nueva de
+  Play y la «versión recomendada» (`AvisoActualizacion.comprobar`: Focus no
+  lo llama); el interruptor «Avisos de Norday» de Perfil (solo con
+  `mostrarAvisosApp: true`, que Focus no pasa); los datos del widget de Nori
+  (`WidgetNori`, que no escribe nada hasta que la app llame a `iniciar`); el
+  check vivo y la figura del día.
+- **Dependencia nueva, transitiva:** `home_widget` 0.10.0 (la trae
+  `WidgetNori`). Ninguna firma pública que use Focus cambia.
 
 ## Variantes: produccion y prueba
 
