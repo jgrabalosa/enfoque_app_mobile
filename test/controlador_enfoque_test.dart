@@ -45,6 +45,7 @@ void main() {
       usuarioActual: () async => usuario,
       programar: ProgramadorFalso().call,
       almacen: almacen,
+      ahora: reloj.ahoraUtc,
     );
     final c = ControladorEnfoque(
       motor: motor,

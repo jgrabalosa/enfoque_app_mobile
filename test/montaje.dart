@@ -30,6 +30,7 @@ class Montaje {
       api: api,
       usuarioActual: () async => usuarioId,
       programar: programador.call,
+      ahora: reloj.ahoraUtc,
     );
     controlador = ControladorEnfoque(
       motor: motor,
