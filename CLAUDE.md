@@ -44,267 +44,48 @@ obligatoria, `ActualizacionObligatoriaScreen`), `VersionMinimaService`,
 `NordayCoreLocalizations` y los assets de animations, sounds y mascota. La
 lista completa, en el `CLAUDE.md` del paquete.
 
-### Qué vive aquí
 
-- `screens/` — `HomeShell` (Inicio, Estadísticas y el menú; y qué se pone
-  encima: la sesión, el descanso o el resultado), `InicioScreen` e
-  `inicio_logica.dart` (técnicas, rondas, duraciones y destino pedido, sin
-  widgets), `SesionScreen`, `DescansoScreen` (`descanso_screen.dart`, el
-  descanso entre rondas), `ResultadoScreen`, `EstadisticasScreen` y
-  `estadisticas_logica.dart` (fechas de la semana y del mes).
-- `services/`:
-  - `api_service_enfoque.dart` — `ApiEnfoque` (interfaz) y
-    `ApiServiceEnfoque`: `/api/enfoque/destinos`, `sesiones` (POST y
-    historial) y `resumen`. Se apoya en la tubería del core
-    (`enviar`/`verificar`/`parsear`).
-  - `cola_envios.dart` — la cola persistente de sesiones acabadas y el
-    historial local de las no aceptadas.
-  - `desfase_servidor.dart` — cuánto va el reloj del servidor por delante
-    del móvil (cabecera `Date`), para corregir el inicio al encolar.
-  - `controlador_enfoque.dart` — junta el motor del core y la cola:
-    empieza sesiones con su destino, recoge cada sesión acabada, la encola,
-    la envía y la cierra en el motor.
-  - `tanda.dart` — `ControladorTanda`: las rondas y el descanso (ver
-    «Rondas y descanso»).
-  - `mascota_enfoque.dart` — la fase y el ánimo de Nori, del backend, para
-    el aro de Inicio, de la sesión y del descanso.
-  - `canal_sistema.dart` — el canal con `MainActivity.kt`: `RelojSistema`
-    (`FuenteReloj`), `PantallaSistema` (`FuentePantalla`),
-    `LanzadorSistema` y `EventosSistema` (desbloqueos y enlaces).
-  - `avisos_sesion_locales.dart` — `AvisosSesion` con
-    `flutter_local_notifications`.
-  - `abrir_habits.dart` — «Crea hábitos en Norday Habits».
-  - `servicios_enfoque.dart` — `ServiciosEnfoque` y `AmbitoEnfoque`: lo que
-    las pantallas necesitan de fuera, inyectable en los tests.
-  - `al_volver.dart`, `identidad_al_volver.dart` (copiado de Habits) y
-    `crashlytics_service.dart` (copiado de Habits).
-- `models/enfoque.dart` — los modelos del contrato, con parseo tolerante.
-  `models/enlace_entrada.dart` — el enlace `norday-enfoque://`.
-- `l10n/` — `AppLocalizations` (`app_*.arb`), `textos_enfoque.dart`,
-  `logros_enfoque.dart` (los 21 logros de Focus) y `formatos.dart` (las
-  duraciones y los textos con cifras: «Leer · 20 / 30 min», «+1 h 30 min a Leer (1 h 30 min / 2 h)»; ver «Duraciones»).
-- `widgets/` — `barras_semana.dart` y `barra_navegacion.dart` (copiado tal
-  cual de `identidad_ui.dart` de Habits).
-- `google_fonts/` — las mismas siete familias que Habits, con sus licencias
-  OFL.
+**Focus sale sola y tiene que funcionar perfectamente sin Norday Habits**
+(Quim, 24-nov-2026): es un producto mínimo independiente, con la misma
+cuenta, los mismos puntos y el mismo Nori. Más adelante se enlazan las dos
+apps (comparten backend y base de datos). Todo lo nuevo se prueba sin Habits
+instalada.
 
-### Lo que esta app le enchufa al paquete
+## Antes de tocar…, lee…
 
-La app fija `ApiServiceCore.appId = 'enfoque'` antes de `runApp`. Con eso el
-backend filtra los catálogos y guarda el token de avisos como de `enfoque`
-(`AppNorday.ENFOQUE` en el backend). Los endpoints de `/api/enfoque` no
-llevan `X-Norday-App`: el core solo la pone en los catálogos y en el token, y
-el backend saca el usuario del JWT.
+Lo que solo importa en una parte del código vive en `docs/`. Antes de tocar
+esa parte, léelo.
 
-1. **`destinoTrasLogin`** (en `home_shell.dart`) — a `LoginScreen` y a
-   `PerfilScreen`. No hay recorrido de bienvenida propio: el flag
-   `mostrarOnboarding` no cambia nada.
-2. **`nordayNavigatorKey`** — en el `MaterialApp`.
-3. **`EleccionIdentidadScreen.alElegir`** — a `HomeShell`.
-4. **`TextosApp.registrar`** — `registrarTextosEnfoque()` en `main()`:
-   nombre «Norday Focus» (igual en los tres idiomas), lema del login,
-   actualización obligatoria y borrado de cuenta.
-5. **La sesión** — `MotorSesion` con `RelojSistema`, `PantallaSistema` y
-   `AvisosSesionLocales`. `MotorSesion.avisarDesbloqueo()` desde el receptor
-   nativo de `ACTION_USER_PRESENT`. El destino y el dueño van en `datosApp`
-   (`{"destino": {tipo, id, nombre, minutosDia, minutosObjetivo},
-   "usuarioId": N}`).
-6. **`NotificacionesService`** — el permiso `POST_NOTIFICATIONS` se pide al
-   pulsar Empezar la primera vez (`pedirYRegistrar`, sin esperarlo: la
-   sesión empieza en el acto; se apunta en `enfoque_permiso_avisos_pedido` y
-   no se vuelve a pedir). El token se
-   registra al arrancar con sesión y al volver a primer plano, como en Habits.
-7. **`SplashGenerico`** — sin `rutaImagen`: pinta a Nori (no hay símbolo
-   propio todavía).
-8. **El grano de papel** — `envolverConGrano` en el `builder` del
-   `MaterialApp`, como en Habits.
-9. **`CelebracionService`** — solo para los logros que el core sabe nombrar
-   (ver «Logros que paga el hábito»).
-10. **Los logros propios de Focus** — `registrarLogrosEnfoque()` en `main()`
-    (`l10n/logros_enfoque.dart`) llama a
-    `CatalogosCore.registrarLogrosDeDominio` con los 21 de Focus
-    (`codigosLogrosEnfoque`, los mismos que siembra el backend con
-    `origenApp = enfoque` en `LogrosEnfoqueInitializer`, no en una
-    migración). Si cambia uno allí, cambia aquí.
-11. **`MascotaScreen.ayudaAnimo` y `ayudaXp`** — desde el menú, con los
-    textos de Focus (`mascotaAyudaAnimo`, `mascotaAyudaXp`): el ánimo y la XP
-    de Nori salen de las dos apps juntas.
-12. **`VersionMinimaService`** — `vigilarAlVolver()` en `main()`; el splash
-    pregunta con `hayQueActualizar()` y, si toca, `bloquear()`, que abre
-    `ActualizacionObligatoriaScreen` del core (con el texto de
-    `TextosApp`).
-
-No se usan `publicarProgresoDia` ni el cierre del día.
-
-## La sesión, de principio a fin
-
-1. Inicio → `ControladorEnfoque.empezar(duracion, destino)` →
-   `MotorSesion.empezar`. `HomeShell` ve la sesión activa y pone encima
-   `SesionScreen`.
-2. El motor hace el resto: ciclo de vida, gracia, avisos, persistencia y
-   recomposición tras matar la app.
-3. Cuando la sesión es final, el controlador la recoge:
-   - **descartada** (terminar antes de 10 min): no se envía; resultado
-     «descartada» y `MotorSesion.cerrar()`.
-   - **completada, terminada o perdida**: `peticionDeSesion` monta el
-     cuerpo y se mete en la cola con su dueño (el `usuarioId` de
-     `datosApp`). Si `encolar` dice que quedó guardada, se cierra en el
-     motor en el acto y el envío va después, sin bloquear. Si no se pudo
-     guardar, la sesión se queda en el motor y la recogida se reintenta en
-     el siguiente `iniciar()` o `enviarPendientes()` (al volver a primer
-     plano).
-4. `HomeShell` ve el resultado nuevo y sustituye la sesión por
-   `ResultadoScreen`, que se actualiza cuando llega la respuesta.
-
-`MotorSesion.iniciar()` se llama en `main()`, antes de `runApp`: el motor
-recompone y vigila la sesión aunque la app abra en el login. La recogida
-(`ControladorEnfoque.iniciar()`) la hace cada `HomeShell` al montarse.
-
-**Otra cuenta, o ninguna, al acabar**: la sesión se encola con su dueño
-igualmente y la cola solo la envía cuando ese usuario vuelva a estar
-conectado. Solo una sesión sin dueño guardado (anterior a guardarlo) y sin
-nadie conectado se queda en el motor hasta el siguiente login.
-
-### La cola y el contrato de reintento
-
-El contrato es el de `EnfoqueController` del backend:
-
-- **201/200** → enviada; sale de la cola. Un 2xx con un cuerpo que no se
-  entiende también cuenta como enviada (reintentar daría el mismo 200).
-- **400 y 409** → definitivos: salen de la cola y quedan en
-  `noAceptados` (historial local, los 50 últimos) con el `mensaje` del
-  backend. No se reintentan nunca.
-- **5xx, sin red, timeout, 401, 404, 429…** → se quedan. Reintento
-  automático con espera de 30 s × 2^(intentos − 1), hasta 30 min, y además
-  en cuanto se fuerza: al arrancar y al volver a primer plano.
-- **Siempre el mismo cuerpo con la misma clave**: se guarda la petición al
-  encolar y se reenvía tal cual. El backend devuelve el resultado original
-  sin sumar ni pagar dos veces.
-- Cada entrada lleva su `usuarioId` y **solo se envía con la sesión de ese
-  usuario abierta**, comprobado antes de cada envío (también a mitad de
-  pasada): si en el mismo móvil entra otra cuenta, no se mandan sesiones
-  ajenas con su token.
-- **`encolar` devuelve si quedó guardada** (el `bool` de `setString`; si
-  escribir lanza, relanza) y deshace la entrada en memoria si no. Si leer la
-  cola falla, no se da por cargada y no se escribe nada: el siguiente
-  guardado pisaría lo que hubiera. El almacén es inyectable (`AlmacenCola`).
-- Una sola pasada a la vez; lo que se pide durante una pasada se hace al
-  acabarla.
-- **Más de 7 días sin enviar**: al empezar cada pasada, las que empezaron
-  hace más de 7 días (de cualquier usuario) salen de la cola y quedan como
-  no enviadas por antigüedad (`antigua`, código 0): el backend las
-  rechazaría con un 400.
-
-### El reloj del móvil, desfasado
-
-El backend valida el inicio de cada sesión contra su reloj (que no acabe
-más de 2 minutos en el futuro, que no empezara hace más de 7 días, que no se
-solape) y saca de él el día. Un móvil que va mal de hora daría 400 o el día
-equivocado. Por eso (decisión de la revisión del 15-nov-2026):
-
-- `ApiServiceEnfoque` apunta en `DesfaseServidor` la cabecera `Date` de cada
-  respuesta del backend: desfase = servidor − móvil, guardado en
-  `enfoque_desfase_servidor_ms`.
-- El controlador corrige `inicioUtc` **una sola vez, al encolar**, con el
-  desfase conocido entonces. Después el cuerpo no cambia nunca: la misma
-  clave con otro cuerpo daría 409. Sin desfase conocido, la hora del móvil.
-- `Date` va en segundos y llega con la latencia: ±1 s de ruido. Una medida
-  solo sustituye a la guardada si se aparta más de 5 s (histéresis), y
-  desfases de menos de 5 s no se corrigen. Si no, dos sesiones seguidas
-  corregidas con medidas distintas podrían solaparse un segundo (409).
-- La duración no se toca: sale del reloj monótono.
-- **Límite**: si el desfase cambia de verdad entre dos sesiones seguidas
-  (alguien cambia la hora del móvil), esas dos pueden solaparse.
-
-Claves en `SharedPreferences` (ocho `enfoque_*`): `enfoque_cola_envios`,
-`enfoque_envios_no_aceptados`, `enfoque_desfase_servidor_ms`, en Inicio
-`enfoque_tecnica`, `enfoque_minutos_libre` y `enfoque_rondas` (la última
-elección), `enfoque_tanda` (la tanda de rondas en marcha) y
-`enfoque_permiso_avisos_pedido`. `enfoque_gracia`, `enfoque_fin` y
-`enfoque_descanso` no son claves: son canales de avisos. La sesión en curso
-la guarda el core en `sesion_concentracion_actual`.
-
-### El premio de la sesión (backend V27, 16-nov-2026)
-
-Cada sesión que cuenta paga lo suyo, tenga hábito o no: 1 moneda por minuto
-(+5 si se completa) y 1 XP de Nori por cada 5 minutos, con un tope de 120
-monedas y 24 XP al día (`TOPE_MONEDAS_DIA` y `TOPE_XP_DIA`). Si lleva
-hábito, el hábito paga además lo suyo. La respuesta los separa: `aporte` (el hábito) y `premio` (la sesión,
-`{monedas, xp, logros, topeAlcanzado}`, modelo `Premio`). Un backend anterior
-a V27 no lo manda y se queda en `Premio.vacio`.
-
-En pantalla las monedas se llaman **puntos**; en el código y en el backend
-siguen siendo `monedas`.
-
-El Resultado enseña «+30 puntos · +5 XP» para cualquier sesión que cuente y
-se haya enviado; si con ella se llega al tope, «Has llegado al tope de hoy…»;
-si el tope ya estaba, sin cifras, «Hoy ya has ganado todo lo que dan las
-sesiones…». Debajo, lo del hábito como siempre. Se celebran los logros de las
-dos partes, sin repetir. Las cifras y las reglas las decide el backend
-(`ParametrosPremioEnfoque` en `habitos-app`): aquí no se calcula nada.
-
-### Logros que paga el hábito
-
-El aporte devuelve los logros que desbloqueó el hábito. Focus no registra los
-logros de hábitos y el backend tampoco se los da en el catálogo
-(`X-Norday-App: enfoque` los filtra), así que celebrarlos aquí enseñaría el
-código crudo. `separarLogros` celebra solo los que `CatalogosCore` sabe
-nombrar (los genéricos del core, como `MASCOTA_CRIA`, y los de Focus) y de
-los demás dice «Tienes N logros nuevos en Norday Habits».
-
-## La parte nativa (`MainActivity.kt`)
-
-Un solo canal, `com.norday.enfoque/sistema`, en los dos sentidos:
-
-| Sentido | Método | Qué |
-|---|---|---|
-| Dart → Android | `monotonicoMs` | `SystemClock.elapsedRealtime()` |
-| Dart → Android | `encendidaYDesbloqueada` | `PowerManager.isInteractive && !KeyguardManager.isKeyguardLocked` |
-| Dart → Android | `abrir` | `{enlace?, paquete?}`: con enlace, `ACTION_VIEW` (+`setPackage`); sin enlace, `getLaunchIntentForPackage(paquete)`. `FLAG_ACTIVITY_NEW_TASK`. Devuelve si se abrió |
-| Dart → Android | `enlaceInicial` | el enlace de arranque, una sola vez |
-| Android → Dart | `desbloqueo` | `ACTION_USER_PRESENT` |
-| Android → Dart | `enlace` | un enlace con la app abierta (`onNewIntent`) |
-
-- **El receptor de `ACTION_USER_PRESENT` se registra en tiempo de ejecución**
-  (en `onCreate`, se suelta en `onDestroy`), no en el manifest: Android 8+
-  no entrega broadcasts implícitos a receptores de manifest y este no está
-  entre las excepciones. Va con `RECEIVER_EXPORTED` en Android 13+ (es un
-  broadcast protegido del sistema).
-- **El enlace de entrada** `norday-enfoque://sesion?destino=habito&id=N`:
-  intent-filter `VIEW`+`DEFAULT`+`BROWSABLE`, actividad `singleTop` y
-  exportada. `flutter_deeplinking_enabled = false`: si no, Flutter empujaría
-  la ruta del enlace en un Navigator sin rutas con nombre. El destino se
-  aplica en Inicio en cuanto hay lista; si no está en ella, aviso y «Sin
-  hábito». Si la app se abre desde Recientes
-  (`FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY`), el enlace del intent original se
-  ignora.
-- `<queries>` con `com.norday.habitos` y `com.norday.habitos.prueba`. La Focus
-  de prueba abre la Habits de prueba.
-
-Cada API va comentada en Kotlin con su URL de developer.android.com.
-
-## Avisos locales
-
-`flutter_local_notifications` 22.3.x (`">=22.3.3 <23.0.0"`), aquí y no en
-el core (decisión del core del 15-nov-2026: en el core rompería el build de
-Habits).
-
-- Gracia: canal `enfoque_gracia`, importancia alta, `timeoutAfter = quedan`
-  (caduca sola al vencer la gracia). Id fijo 7101.
-- Fin: canal `enfoque_fin`, programado en UTC con
-  `AndroidScheduleMode.inexactAllowWhileIdle`, sin alarmas exactas. Id fijo
-  7102. Si el fin ya ha llegado, se muestra en el acto (el plugin rechaza
-  fechas pasadas).
-- Sin `SCHEDULE_EXACT_ALARM`, sin `RECEIVE_BOOT_COMPLETED` ni el receptor de
-  arranque del plugin: tras un reinicio la sesión está perdida y no hay fin
-  que avisar. Sí `ScheduledNotificationReceiver`.
-- **El toolchain es el de Habits** (`compileSdk = flutter.compileSdkVersion`,
-  AGP 9.0.1, Gradle 9.1.0). Lo único que añade: desugaring con
-  `desugar_jdk_libs:2.1.4` y `multiDexEnabled`, que pide la 22.3.3 en su
-  README.
-- El icono pequeño es `res/drawable/ic_stat_enfoque.xml`: un aro con una
-  aguja, blanco sobre transparente, genérico y provisional. Protegido de R8
-  en `res/raw/keep.xml`. Se sustituye por el definitivo cuando haya icono.
+- Antes de tocar `screens/`, `services/`, `models/`, `widgets/` o lo que la
+  app enchufa al core (`destinoTrasLogin`, `TextosApp`, logros, ayudas de
+  Nori, `VersionMinimaService`…), lee
+  `docs/funcionamiento/estructura-de-la-app.md`.
+- Antes de tocar la sesión, `ControladorEnfoque`, la cola de envíos
+  (`cola_envios.dart`), el desfase del reloj o las claves `enfoque_*`, lee
+  `docs/funcionamiento/sesion-y-cola.md`.
+- Antes de tocar el resultado, el premio (`Premio`) o los logros que paga el
+  hábito (`separarLogros`), lee `docs/funcionamiento/premio-y-logros.md`.
+- Antes de tocar `MainActivity.kt`, el canal `com.norday.enfoque/sistema`,
+  el enlace `norday-enfoque://` o los avisos locales
+  (`flutter_local_notifications`), lee
+  `docs/funcionamiento/parte-nativa-y-avisos.md`.
+- Antes de tocar `l10n/`, un `.arb`, cualquier texto con minutos u horas
+  (`duracionLegible`) o lo que es «hoy», lee
+  `docs/funcionamiento/textos-idioma-y-duraciones.md`.
+- Antes de tocar Inicio (`inicio_logica.dart`, las técnicas), las rondas o
+  el descanso (`tanda.dart`, `DescansoScreen`), lee
+  `docs/funcionamiento/inicio-y-rondas.md`.
+- Antes de cambiar el `ref:` de `norday_flutter_core`, el `pubspec.lock` o
+  probar una rama del core, lee `docs/procedimientos/tocar-el-paquete.md`.
+- Antes de tocar flavors, `lib/entorno.dart`, la cinta «PRUEBA»,
+  `google-services.json` o `build.gradle.kts`, lee
+  `docs/procedimientos/variantes-y-entornos.md`.
+- Antes de cambiar una decisión de cómo se construyó la app (la versión de
+  `flutter_local_notifications`, qué es definitivo en la cola, el permiso de
+  avisos…), lee `docs/decisiones/2026-11-15-construir-la-app.md`.
+- Antes de escribir un test, lee `docs/lecciones/flutter-y-tests.md`; antes
+  de dar cifras, escribir un prompt o un script de PowerShell, lee
+  `docs/lecciones/metodo-de-trabajo.md`.
 
 ## Identidad de marca (aplicar siempre en UI nueva)
 
@@ -322,117 +103,32 @@ Habits).
   de letra** (roles de `Theme.of(context).textTheme`, nunca `fontSize` a
   mano): como en el resto del ecosistema.
 
-## Idioma, zona y «hoy»
-
-Idioma y zona son preferencias independientes, en el core
-(`IdiomaService`, `ZonaService`), como en Habits.
-
-**Hoy es el día del móvil.** Inicio y Estadísticas piden el resumen con la
-fecha local del dispositivo (`DateTime.now()`), porque Dart no da la zona
-IANA y el día de cada sesión lo calcula el backend con la zona del usuario.
-Si la zona del perfil no es la del móvil, cerca de medianoche «hoy» puede
-ser el día de al lado.
 
 ## Textos
 
-Ninguna pantalla lleva literales. Dos catálogos y dos clases, como en Habits:
+Ninguna pantalla lleva literales. Lo de enfoque, en `lib/l10n/app_*.arb`
+(`AppLocalizations.of(context)!`; `es` es la plantilla y `pt` es portugués
+europeo); lo genérico, en los `core_*.arb` del paquete, sin duplicar claves.
+Los `app_localizations*.dart` no se versionan: tras tocar un ARB,
+`flutter gen-l10n`. **En pantalla, «puntos»** (en el código y el backend,
+`monedas`); Nori es chico. Las duraciones, siempre con `duracionLegible`.
 
-- Lo de enfoque → `lib/l10n/app_*.arb`, con `AppLocalizations.of(context)!`.
-  `es` es la plantilla; `pt` es portugués europeo («tu», «ecrã»,
-  «telemóvel»).
-- Lo genérico → los `core_*.arb` del paquete. Se usan directamente las
-  claves del core que ya existen (`tiendaTitulo`, `logrosTitulo`,
-  `navColeccion`, `perfilTitulo`, `reintentar`, `sesionAvisoSalir`,
-  `sesionAviso*`): ninguna clave está duplicada.
+## Tocar el paquete y compilar
 
-Los `app_localizations*.dart` los genera `flutter gen-l10n` y **no** se
-versionan. Los textos que manda el backend (`motivoTexto`, `mensaje`) ya
-vienen traducidos al idioma del usuario y se enseñan tal cual.
-
-### Duraciones
-
-Una sola regla para todo lo que enseña minutos al usuario (decisión del
-15-nov-2026, la misma que Norday Habits): menos de 60, «{m} min»; desde
-60, «{h} h» si no sobran minutos y si no «{h} h {m} min». La aplica
-`duracionLegible` (`l10n/formatos.dart`, claves `durMinutos`, `durHoras` y
-`durHorasMinutos`). Es de la app, no del core. Se guarda y se envía siempre
-en minutos.
-
-- **Pasan por ella**: lo que oye el lector en el aro de Inicio («Sesión de
-  25 min»), el progreso del destino (Inicio y sesión), «Llevas…» al terminar, la cifra grande y el
-  aporte del Resultado, los totales de semana y mes, la cifra de encima de
-  cada barra y lo que oye el lector en ella, y el historial.
-- **Pares** (lo hecho y su objetivo): si los dos son de menos de una hora,
-  la unidad va una vez al final, como siempre («Leer · 20 / 30 min»,
-  «(30 / 30)», «25 de 25 min · Leer»); si alguno llega a la hora, cada
-  cifra con la regla («Leer · 45 min / 1 h 30 min», «1 h 30 min de 2 h ·
-  Leer»). Lo deciden `progresoLegible`, `textoAporte` y `textoFilaSesion`.
-- **No pasan por ella**: los minutos de las técnicas de Inicio («25 min»,
-  «50 min»), el selector de Libre, de 10 a 120 (`duracionMinutos`,
-  `duracionEtiqueta`), y la cuenta atrás `mm:ss` del core, también la del
-  aro de Inicio. Siguen en minutos.
-- **Ninguna etiqueta dice «minutos» junto a una cifra que puede ir en
-  horas**. Los textos con «minutos» que quedan van con
-  cifras fijas («menos de 10 minutos») o sin cifra.
-- Donde el sitio es estrecho (los botones de técnica, encima de las barras) el
-  texto se encoge con `FittedBox` en vez de cortarse.
-
-## Tocar el paquete
-
-Un cambio en `norday_flutter_core` no llega solo: se mergea y se tagea
-allí, se cambia aquí el `ref:` al tag nuevo y se hace
-`flutter pub upgrade norday_flutter_core`. Antes de probar, comprobar el
-`resolved-ref` del `pubspec.lock`. Para probar una rama del core sin tag,
-`pubspec_overrides.yaml` con `path: ../norday_flutter_core`, que no se
-commitea (está en `.gitignore`).
-
-**Core fijado por `v0.62.0`** (24-nov-2026): `resolved-ref`
-`e8f8994774c91ae8e28dde574d37b4c04e7c0670`. El `pubspec.lock` se versiona
-desde el 15-nov-2026 (entonces, `v0.55.0`; el 21-nov, `v0.59.1`).
-
-Lo que trae la subida de la 0.59.1 a la 0.62.0 (el CHANGELOG del core) y
-cómo le toca a Focus:
-
-- **Lo que se ve en Focus:** tu Nori como avatar en Mi cuenta y en
-  Colección (T-032); en temporada, Nori del login con la prenda de la
-  temporada; en la pantalla de Nori, «Alimentar» y «Tienda» suben debajo de
-  Nori y Nori hace su gesto al comer (T-051); la primera vez que se abre la
-  tienda, una nota junto al saldo (T-052); la ayuda de la tienda nombra la
-  ropa.
-- **Lo que está en el core y Focus no usa:** el aviso de versión nueva de
-  Play y la «versión recomendada» (`AvisoActualizacion.comprobar`: Focus no
-  lo llama); el interruptor «Avisos de Norday» de Perfil (solo con
-  `mostrarAvisosApp: true`, que Focus no pasa); los datos del widget de Nori
-  (`WidgetNori`, que no escribe nada hasta que la app llame a `iniciar`); el
-  check vivo y la figura del día.
-- **Dependencia nueva, transitiva:** `home_widget` 0.10.0 (la trae
-  `WidgetNori`). Ninguna firma pública que use Focus cambia.
-
-## Variantes: produccion y prueba
-
-- **`--flavor` siempre.** `produccion` es `com.norday.enfoque`, «Norday
-  Focus». `prueba` es `com.norday.enfoque.prueba`, «Norday Focus PRUEBA», y va
-  contra staging con
-  `--dart-define=NORDAY_API_URL=https://staging-api.norday.app/api`.
+- **Core fijado por `v0.62.0`** (`resolved-ref` en el `pubspec.lock`, que se
+  versiona). Cambiarlo es un procedimiento:
+  `docs/procedimientos/tocar-el-paquete.md`. `pubspec_overrides.yaml` (rama
+  del core sin tag) no se commitea.
+- **`--flavor` siempre.** `produccion` es `com.norday.enfoque`; `prueba` es
+  `com.norday.enfoque.prueba`, «Norday Focus PRUEBA», con cinta «PRUEBA» y
+  contra staging (`--dart-define=NORDAY_API_URL=https://staging-api.norday.app/api`).
 - **`lib/entorno.dart` para la app al arrancar** si el flavor y la URL no
   cuadran. No se quita ni se salta.
-- **La de prueba se ve: cinta «PRUEBA»** arriba a la derecha en todas las
-  pantallas, también en el login (`conCintaDeEntorno` de `lib/entorno.dart`,
-  en el `builder` del `MaterialApp`, con el flavor de `ServiciosEnfoque`).
-  Sin cinta, es la de producción. Se puso el 16-nov-2026: con varias apps de
-  prueba y de Play instaladas, Quim entró con una cuenta sin saber si era
-  staging o producción.
-- **La de prueba nunca abre Google Play.** Si falta Norday PRUEBA, «Crea
-  hábitos en Norday Habits» avisa (`AperturaHabits.faltaPrueba`) en vez de ir
-  a la ficha de Play, que lleva a la Habits de producción sin que se note el
-  cambio de entorno.
-- **El nombre visible sale de `manifestPlaceholders["appLabel"]`** en
-  `android/app/build.gradle.kts`, no del manifest.
-- **`google-services.json` tiene que llevar las dos apps**, en el mismo
-  proyecto de Firebase que Habits. No se versiona (`android/.gitignore`). El
-  que hay en la máquina de Quim es del 15-nov-2026 por la noche y lleva
-  las dos apps de Focus con sus clientes OAuth (README, puntos 2 y 3). Si
-  cambian las huellas o los clientes, volver a bajarlo.
+- **La de prueba nunca abre Google Play** (`AperturaHabits.faltaPrueba`).
+- **`flutter_local_notifications` por debajo de la 23** (`">=22.3.3 <23.0.0"`):
+  subirla es subir antes el toolchain de las dos apps.
+- El servidor del robot no compila Android: aquí se prueba con `analyze` y
+  `test`; la APK la compila Quim.
 
 ## Formato del código
 
@@ -446,155 +142,39 @@ toque un `.dart`, desde la raíz: `dart format lib test`.
 - Un cambio que sólo reformatea va en su propio commit.
 - Tras tocar un ARB, `flutter gen-l10n` antes de `flutter analyze`.
 
+
 ## Estilo de trabajo con el usuario
 
 - Un paso a la vez, confirmar que compila antes de seguir.
 - Si algo admite varios diseños o no está claro, preguntar antes de
   decidir — no asumir.
-- La rama de integración es `wip` (la de por defecto en GitHub; este repo no
-  tiene `main`). Se trabaja en ramas `wip-<tema>` y se mergea a `wip` por
-  PR. Quim decide los merges y los tags.
+- **Desde el 24-nov-2026 hay `main`**, la rama por defecto: todo entra por
+  PR (Claude en `wip-<tema>`, el robot en `robot/T-…`), y a `main` solo con
+  el sí de Quim. `wip` queda retirada.
+- **`CHANGELOG.md`**: lo que nota el usuario va en «Sin publicar», al final
+  del fichero (como Habits). Al publicar, Quim la renombra con la versión.
 
-## Decisiones tomadas al construir la app (15-nov-2026)
+## Git
 
-Lo que el diseño no decía y se resolvió con la opción más conservadora.
-
-- **CRÍTICA — `flutter_local_notifications` por debajo de la 23**
-  (`">=22.3.3 <23.0.0"`, decidido en la revisión del 15-nov-2026). La 23
-  pide `compileSdk` 37 y AGP 9.1.1; AGP 9.1.1 exige Gradle ≥ 9.3.1 (el
-  wrapper está en 9.1.0) y Flutter 3.44.4 no conoce el SDK 37. Con la 22.3.3
-  (mínimos: `compileSdk` 35 y AGP 8.11.1) la app usa exactamente el mismo
-  toolchain que Habits. La API que usa esta app (`initialize`, `show`,
-  `zonedSchedule`, `cancel`, `timeoutAfter`) es la misma en las dos. Subir a
-  la 23 es subir antes el toolchain de las dos apps a la vez.
-- **Compilado por primera vez el 15-nov-2026**, en debug y con el flavor
-  `prueba`, en la máquina de Quim. En el móvil, contra staging, funcionan el
-  login, Inicio y el enlace desde Norday Habits («Empezar sesión» abre Focus
-  con el hábito elegido). **Aún sin probar en el móvil**: los avisos de gracia
-  y de fin, una build de release (el primer AAB compila desde el
-  15-nov-2026, firmado con la clave de subida propia de Focus) y la prueba
-  a fondo de la sesión, que hará Quim.
-- **La sesión se cierra en el motor en cuanto `encolar` confirma que quedó
-  guardada**, antes de enviarla (revisión del 15-nov-2026): la cola guarda
-  el cuerpo exacto, y esperar al envío bloquearía empezar otra sesión sin
-  red.
-- **401 no es definitivo**: la sesión espera en la cola al siguiente login.
-  Tampoco lo son los 4xx que no son 400 ni 409.
-- **Las sesiones llevan su dueño desde que empiezan** (en `datosApp`) y se
-  encolan con él aunque al acabar haya otra cuenta; solo se envían con él.
-- **Perdida con destino**: se envía con su destino (el backend la guarda con
-  el aporte `RECHAZADO`); el resultado no dice nada del hábito.
-- **Logros del hábito**: solo se celebran los que el core sabe nombrar; los
-  demás se cuentan («en Norday Habits»).
-- **Enlace a un destino que no está en la lista**: aviso y «Sin hábito».
-- **Hoy es el día del móvil** (ver arriba).
-- **El inicio se corrige con el desfase del servidor** una sola vez, al
-  encolar (ver «El reloj del móvil, desfasado»).
-- **El permiso de avisos se pide una sola vez**, la primera vez que se pulsa
-  Empezar, aunque se deniegue.
-- **Atrás en la sesión pregunta si rendirse**; no la abandona.
-- **Sin icono ni símbolo**: icono por defecto de Flutter, splash con Nori,
-  arranque nativo en Azul Noche. Ni `store/` ni `assets/branding/` hasta que
-  haya gráficos.
-- **Ayudas de la pantalla de Nori** (`ayudaAnimo`, `ayudaXp`): se pasan desde
-  el 16-nov-2026, cuando el ánimo pasó a juntar las dos apps (antes no se
-  pasaban: explicarlo era hablar solo de hábitos).
-- **Sin recorrido de bienvenida** propio.
-
-## Inicio de un solo gesto (17-nov-2026)
-
-Diseño de Focus con Quim (`encargos/focus-diseno.md` del proyecto).
-
-- **El aro de la sesión, ya en Inicio**: el mismo `AroCuentaAtras` (260) con
-  Nori (96) que la sesión, lleno y con los minutos de la técnica. Al
-  empezar no cambia de sitio.
-- **Tres técnicas** (`Tecnica` en `inicio_logica.dart`): Pomodoro (25),
-  Profundo (50) y Libre (de 10 a 120, con el selector). La primera vez,
-  Pomodoro. Se recuerdan la técnica, las rondas y los minutos de Libre.
-- **El destino, en una línea bajo Empezar** («Para: Sin hábito»), que abre
-  la lista en una hoja. El enlace desde Habits sigue eligiendo el hábito.
-- **Sin las cifras de hoy** (tiempo, sesiones y racha): están en
-  Estadísticas.
-
-## Rondas y descanso (17-nov-2026)
-
-- **Pomodoro y Profundo van por rondas**, de 1 a 4, con descanso entre una
-  y otra (5 y 10 minutos; después de la última, ninguno). Libre, siempre
-  una. Bajo el aro, con más de una ronda: «2 × 25 min, con 5 min de
-  descanso · 55 min».
-- **Cada ronda es una sesión normal del motor**, con su premio: el core no
-  sabe nada de rondas. La ronda va en `datosApp` (`{"ronda": {n, de}}`,
-  `rondaDeDatos`), y la sesión y el resultado enseñan «Ronda 1 de 2».
-- **`ControladorTanda`** (`services/tanda.dart`) lleva la tanda y la guarda
-  en `enfoque_tanda`. Al acabar una ronda, `HomeShell` le pregunta
-  (`alAcabar`): si se completó y no era la última, `DescansoScreen`; si no
-  (terminada, perdida, rendida o la última), el resultado de siempre y la
-  tanda se acaba.
-- **El descanso no empieza sola la ronda siguiente**: en el descanso se
-  puede salir de la app, y una sesión que empieza con la app fuera se
-  perdería en el acto. Avisa (canal `enfoque_descanso`, id fijo 7103,
-  `AvisosDescansoLocales`) y la empieza el usuario. Se puede empezar antes
-  de que acabe. «Terminar aquí» (y Atrás) dejan la tanda: lo hecho ya
-  cuenta.
-- **Si se mata la app en el descanso**, al volver `HomeShell` lo abre otra
-  vez (sin las líneas del premio, que ya no están). Una tanda que no está en
-  descanso y no tiene sesión activa se deja (`limpiarSiHuerfana`).
-- **La hora del descanso es la de pared** (`DateTime.now`), no la del reloj
-  monótono: es un descanso, no hay nada que proteger.
+- **`git diff` y `git log` abren paginador**: `git --no-pager`.
+- **Antes de `git tag`, `git --no-pager log -1`.** Un tag anotado resuelve a
+  su commit: `git rev-parse <tag>^{commit}`.
 
 ## Lecciones aprendidas
 
-Errores que ya se cometieron una vez. No se vuelven a cometer.
+Errores que ya se cometieron una vez. No se vuelven a cometer. Las de red,
+Flutter y tests, en `docs/lecciones/flutter-y-tests.md`; las de método, en
+`docs/lecciones/metodo-de-trabajo.md`. Las que valen en cada sesión:
 
-### Red
-
-- **`Response.body` de `http` decodifica en latin1 si falta
-  `Content-Type: application/json`.** Un 409 con «sesión» llegaba como
-  «sesiÃ³n». Aquí se lee siempre `utf8.decode(r.bodyBytes)` (`cuerpoDe`).
-  Encontrado con un test en rojo antes del arreglo.
-
-### Flutter y tests
-
-- **En `testWidgets`, `ApiServiceCore.getUsuarioLocal()` no vuelve nunca**:
-  `flutter_secure_storage` no contesta y la pantalla se queda cargando. Por
-  eso `HomeShell` pide el usuario a `ServiciosEnfoque.usuarioActual`, que en
-  los tests es un falso.
-- **`SkeletonCard` del core necesita al menos 66 de alto** (14 de relleno y
-  dos barras): con 56 desborda.
-- **El fondo de la identidad y Nori se animan sin fin**: nada de
-  `pumpAndSettle` en pantallas que los llevan; `pump` con duración.
-- **Un `MotorSesion` en un test se desecha al acabar** (`addTearDown`), y la
-  sesión activa se termina antes, o quedan temporizadores vivos.
-- **El ciclo de vida en tests va paso a paso** (`inactive` → `hidden` →
-  `paused` y vuelta por `hidden` → `inactive` → `resumed`):
-  `AppLifecycleListener` rechaza saltos como `paused` → `resumed`.
-- **En `flutter test` Firebase no está inicializado**: acceder a
-  `FirebaseAnalytics.instance` lanza `[core/no-app]`.
-- **`MaterialApp` interpola el tema con `AnimatedTheme`**: en tests que
-  cambian de identidad, esperar a que acabe.
-- **Tras editar un ARB, `flutter analyze` no regenera las traducciones**:
-  `flutter gen-l10n` antes.
 - **Test en rojo antes del arreglo.** Si el test nuevo pasa contra el código
   sin arreglar, no demuestra nada: parar.
-
-### Método de trabajo (vale para los cinco repos)
-
-- **La primera línea de un prompt se comprueba, no se recuerda.** Son cinco
-  repos: cuatro están en `C:\Dev\Norday\` (`habitos-app`,
-  `habitos_app_mobile`, `norday_flutter_core` y este, `enfoque_app_mobile`)
-  y `conocimiento_app_mobile` está en `C:\Dev\Conocimiento\`.
-- **Un solo agente por repo a la vez.** Todo lo que haga otro agente se
-  revisa en el remoto antes de mergear.
+- **Ningún test depende de la fecha de hoy.** Lo que mira el reloj recibe uno
+  falso en los tests (la cola, `ahora: reloj.ahoraUtc`): el 23-nov-2026, 22
+  tests empezaron a fallar solos porque sus sesiones del 16-nov pasaron a
+  tener más de 7 días.
+- **El fondo de la identidad y Nori se animan sin fin**: nada de
+  `pumpAndSettle` en pantallas que los llevan; `pump` con duración.
 - **Las cifras de verificación se cuentan contra el repositorio**, nunca se
-  copian del roadmap. Y son cifras exactas, no adjetivos.
+  copian del roadmap. Cifras exactas, no adjetivos.
 - **Un filtro que no encuentra nada no es un resultado.** Ante una salida
   vacía, mirar la fuente completa antes de concluir.
-- **Al sustituir un bloque, incluir el comentario de encima.**
-- **Mirar dónde se pega cada bloque.** Un bloque para la máquina local,
-  lanzado en el VPS, llegó a `git push` y pidió credenciales.
-- **`git diff` y `git log` abren paginador**: `git --no-pager`.
-- **Antes de `git tag`, `git --no-pager log -1`.**
-- **Un tag anotado resuelve a su commit, no a sí mismo**:
-  `git rev-parse <tag>^{commit}`.
-- **PowerShell 5.1 lee los `.ps1` sin BOM como ANSI**: scripts sin acentos, o
-  guardados con BOM.
