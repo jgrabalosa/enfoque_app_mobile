@@ -150,8 +150,9 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
    Android»); probarla en el móvil va después de que el backend con Focus
    (`main` de `habitos-app`) esté en producción, porque el flavor
    `produccion` solo habla con producción.
-5. **Tag del core**: el core va fijado por `v0.59.1` (21-nov-2026; antes,
-   `v0.55.0` desde el 15-nov) y el `pubspec.lock` está versionado. Con él,
+5. **Tag del core**: el core va fijado por `v0.62.0` (24-nov-2026; antes,
+   `v0.59.1` desde el 21-nov y `v0.55.0` desde el 15-nov) y el
+   `pubspec.lock` está versionado. Con él,
    Focus ve las prendas de Nori en la tienda y en la pantalla de Nori, y Nori
    las lleva puestas en el aro de Inicio, de la sesión y del descanso, si el
    backend tiene V28 a V30.
