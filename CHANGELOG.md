@@ -11,3 +11,5 @@ renombra «Sin publicar» con la versión (como en Norday Habits).
   en la pantalla de Nori, «Alimentar» y «Tienda» debajo de Nori, y Nori
   reacciona al comer; la primera vez que se abre la tienda, una nota junto al
   saldo.
+- **Ayuda de la experiencia de Nori:** ahora dice que cada comida da 15 y que
+  Nori come como mucho 3 veces al día.

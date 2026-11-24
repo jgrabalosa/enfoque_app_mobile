@@ -560,7 +560,7 @@
   "@mascotaAyudaXpEtiqueta": {
     "description": "Lo que lee el lector de pantalla en la ayuda de la XP"
   },
-  "mascotaAyudaXp": "La experiencia de Nori. Sube con cada sesión (1 por cada 5 minutos, hasta 24 al día), con tus hábitos de Norday Habits y cuando le das de comer.",
+  "mascotaAyudaXp": "La experiencia de Nori. Sube con cada sesión (1 por cada 5 minutos, hasta 24 al día), con tus hábitos de Norday Habits y cuando le das de comer (15 cada vez, hasta 3 veces al día).",
   "@mascotaAyudaXp": {
     "description": "Ayuda de la XP de Nori en Norday Focus"
   },
