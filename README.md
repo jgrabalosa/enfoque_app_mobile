@@ -125,8 +125,8 @@ Norday Focus sale a la vez que la versión de Norday Habits con hábitos de
 minutos. La guía del despliegue conjunto está en `docs/despliegue.md` del
 backend (`habitos-app`); aquí, solo lo que toca a esta app.
 
-1. **GitHub**: hecho el 15-nov-2026 (`jgrabalosa/enfoque_app_mobile`, con
-   la rama `wip`).
+1. **GitHub**: hecho el 15-nov-2026 (`jgrabalosa/enfoque_app_mobile`). La
+   rama por defecto es `main` desde el 24-nov-2026 (antes, `wip`).
 2. **Firebase**: hecho el 15-nov-2026. En `habitos-app-5a054` están
    `com.norday.enfoque.prueba` (SHA-1 de depuración de la máquina de Quim)
    y `com.norday.enfoque`: depuración, clave de subida y las **tres claves
@@ -185,5 +185,7 @@ backend (`habitos-app`); aquí, solo lo que toca a esta app.
 
 ## Documentación
 
-- [`CLAUDE.md`](CLAUDE.md) — arquitectura, reglas obligatorias, decisiones y
-  lecciones aprendidas.
+- [`CLAUDE.md`](CLAUDE.md) — las reglas que valen siempre y qué leer antes
+  de tocar cada parte.
+- [`docs/`](docs/) — cómo funciona cada parte (`funcionamiento/`), los
+  procedimientos, las decisiones y las lecciones aprendidas.
