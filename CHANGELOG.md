@@ -16,3 +16,7 @@ renombra «Sin publicar» con la versión (como en Norday Habits).
 - **Sesión a pantalla completa:** durante la sesión se esconden la barra de
   estado y la de navegación (deslizando desde el borde se ven un momento); al
   acabar vuelven. La pantalla se apaga sola, como siempre.
+- **Dos entradas nuevas en el menú:** «Cómo funciona», con apartados que se
+  despliegan (la sesión, los descansos, los puntos, Nori y cómo escribirnos),
+  y «Escribir a Norday», que abre tu app de correo. Si no tienes ninguna, te
+  da la dirección.

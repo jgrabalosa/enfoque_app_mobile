@@ -9,7 +9,18 @@ _Sacado del `CLAUDE.md` el 24-nov-2026 para que no pase de 200 líneas (D-38 del
   `inicio_logica.dart` (técnicas, rondas, duraciones y destino pedido, sin
   widgets), `SesionScreen`, `DescansoScreen` (`descanso_screen.dart`, el
   descanso entre rondas), `ResultadoScreen`, `EstadisticasScreen` y
-  `estadisticas_logica.dart` (fechas de la semana y del mes).
+  `estadisticas_logica.dart` (fechas de la semana y del mes),
+  `ComoFuncionaScreen` (`como_funciona_screen.dart`, «Cómo funciona»: cinco
+  apartados desplegables en `SuperficieIdentidad` sobre `FondoIdentidad`; el
+  último lleva el botón «Escribir a Norday»). El menú tiene, entre Perfil y
+  Cerrar sesión, «Cómo funciona» y «Escribir a Norday»; las dos usan
+  `escribirANordayDesdeApp` (en ese fichero): llama a `escribirANorday` del
+  core con `hola@norday.app` y el asunto `correoAsunto`, y si devuelve
+  `false`, un `SnackBar` (`correoNoHayApp`). El core no exporta
+  `escribirANorday` en su barril: se importa
+  `package:norday_flutter_core/services/escribir_a_norday.dart`. Los textos
+  de los apartados no llevan cifras de puntos (las decide el backend). No se
+  importa nada de Habits.
 - `services/`:
   - `api_service_enfoque.dart` — `ApiEnfoque` (interfaz) y
     `ApiServiceEnfoque`: `/api/enfoque/destinos`, `sesiones` (POST y
