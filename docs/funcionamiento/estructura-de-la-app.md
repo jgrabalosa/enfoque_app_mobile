@@ -45,6 +45,26 @@ _Sacado del `CLAUDE.md` el 24-nov-2026 para que no pase de 200 líneas (D-38 del
   - `abrir_habits.dart` — «Crea hábitos en Norday Habits».
   - `servicios_enfoque.dart` — `ServiciosEnfoque` y `AmbitoEnfoque`: lo que
     las pantallas necesitan de fuera, inyectable en los tests.
+  - `postal_sesion.dart` — `PostalSesion` (T-086): «Compartir» del resultado
+    de una sesión que cuenta. Pinta `TarjetaSesion` (`widgets/`) fuera de
+    pantalla en un `OverlayEntry` (`RepaintBoundary` a la izquierda de la
+    pantalla), la captura a 1080 × 1350 (pixelRatio 1), cierra la entrada y
+    abre el menú con `share_plus` (`^13.3.1`, la misma que Habits) con la
+    frase `postalSesionTexto` y, debajo, `enlaceFichaFocus` (la ficha de Play
+    de `com.norday.enfoque`, también desde la de prueba: es solo texto). Mide
+    `sesion_compartida` (`identidad`, `minutos`) con `AnalyticsCore` solo si
+    el menú no se cancela, y nunca lanza (si falla, `false`). Seams de test
+    (`menu`, `medir`, `espera`) en el constructor, que `ResultadoScreen`
+    recibe como `postal`. Modelo: `postal_cierre.dart` de Habits, sin
+    importar nada de allí.
+    **La tarjeta** no lleva puntos, XP ni el nombre del hábito (privado):
+    fondo de la identidad equipada (`FondoIdentidad`), el aro lleno
+    (`AnilloIdentidad`, el dibujo de la sesión) de 640 con Nori vestido de
+    420 dentro, la duración (`duracionLegible`; en una tanda, el total, y
+    debajo `inicioRondas`) y la marca `postalSesionMarca`. La letra son los
+    roles del tema con `textScaler` ×3 fijo (la tarjeta mide 1080 de ancho),
+    sin `fontSize` a mano. El botón (`LucideIcons.share2`) sale debajo de
+    «Otra igual»/«Listo» solo si `estado.cuenta`.
   - `al_volver.dart`, `identidad_al_volver.dart` (copiado de Habits) y
     `crashlytics_service.dart` (copiado de Habits).
 - `models/enfoque.dart` — los modelos del contrato, con parseo tolerante.

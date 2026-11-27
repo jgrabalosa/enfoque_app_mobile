@@ -9,6 +9,7 @@ import '../l10n/formatos.dart';
 import '../models/enfoque.dart';
 import '../services/controlador_enfoque.dart';
 import '../services/mascota_enfoque.dart';
+import '../services/postal_sesion.dart';
 import '../services/servicios_enfoque.dart';
 import '../services/tanda.dart';
 
@@ -63,10 +64,14 @@ class ResultadoScreen extends StatefulWidget {
     super.key,
     required this.controlador,
     this.cargarMascota = mascotaDelBackend,
+    this.postal = const PostalSesion(),
   });
 
   final ControladorEnfoque controlador;
   final CargaMascota cargarMascota;
+
+  /// Compartir la postal; los tests le ponen el menú y la medición falsos.
+  final PostalSesion postal;
 
   @override
   State<ResultadoScreen> createState() => _ResultadoScreenState();
@@ -81,6 +86,7 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
   final Set<String> _celebrados = {};
   ({String? fase, String? estado})? _mascota;
   bool _saliendo = false;
+  bool _compartiendo = false;
 
   /// Cada aviso, una reacción de Nori.
   final ValueNotifier<int> _reaccion = ValueNotifier(0);
@@ -173,6 +179,25 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
       );
     } catch (_) {
       mensajero.showSnackBar(SnackBar(content: Text(aviso)));
+    }
+  }
+
+  /// «Compartir»: la postal de la sesión (o, al acabar una tanda, la de toda
+  /// la tanda: el total y sus rondas). Sin puntos, XP ni hábito.
+  Future<void> _compartir(ResultadoSesion r) async {
+    if (_compartiendo) return;
+    setState(() => _compartiendo = true);
+    final resumen = _resumenDe(r);
+    try {
+      await widget.postal.compartir(
+        context,
+        minutos: resumen?.minutos ?? r.sesion.minutos,
+        rondas: resumen?.rondasQueCuentan,
+        fase: _mascota?.fase,
+        estado: _mascota?.estado,
+      );
+    } finally {
+      if (mounted) setState(() => _compartiendo = false);
     }
   }
 
@@ -333,6 +358,15 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
                       onPressed: _salir,
                       child: Text(l.resultadoListo),
                     ),
+                  // Solo una sesión que cuenta se presume (T-086).
+                  if (s.estado.cuenta) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    TextButton.icon(
+                      onPressed: _compartiendo ? null : () => _compartir(r),
+                      icon: const Icon(LucideIcons.share2),
+                      label: Text(l.resultadoCompartir),
+                    ),
+                  ],
                 ],
               ),
             ),

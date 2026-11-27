@@ -173,5 +173,9 @@
   "resultadoTandaParcial": "{hechas} of {rondas} rounds · {duracion}",
   "resultadoTandaSinEnviar": "Some rounds haven't been sent yet: their points will arrive once they are.",
   "resultadoOtraIgual": "Same again",
-  "resultadoListo": "Done"
+  "resultadoListo": "Done",
+  "resultadoCompartir": "Share",
+  "postalSesionTexto": "I stayed focused for {duracion} with Nori on Norday Focus.",
+  "postalSesionMarca": "Norday Focus",
+  "postalSesionAsunto": "My focus session"
 }

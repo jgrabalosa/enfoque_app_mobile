@@ -26,3 +26,9 @@ renombra «Sin publicar» con la versión (como en Norday Habits).
   «1 de 3 rondas». Si alguna ronda aún no se ha enviado, lo dice. Nori,
   vestido, celebra al entrar si la sesión cuenta. En lugar de «Volver», dos
   botones: «Otra igual» (empieza otra tanda igual) y «Listo».
+- **Compartir tu sesión:** en el resultado de una sesión que cuenta, el botón
+  «Compartir» abre el menú del móvil con una postal (Nori vestido en el aro
+  sobre el fondo de tu identidad, el tiempo concentrado y «Norday Focus») y un
+  texto con el enlace de Norday Focus en Google Play. La postal no lleva
+  puntos, XP ni el nombre de tu hábito. En una tanda, lleva el total y las
+  rondas.
