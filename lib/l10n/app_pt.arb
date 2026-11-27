@@ -153,6 +153,8 @@
   "avisoDescansoCuerpo": "Nori espera-te para a próxima ronda.",
   "canalDescansoNombre": "Fim da pausa",
   "canalDescansoDescripcion": "Avisa quando acaba a pausa entre rondas.",
+  "canalEnCursoNombre": "Sessão em curso",
+  "canalEnCursoDescripcion": "Mostra o tempo que falta enquanto dura a sessão.",
   "menuComoFunciona": "Como funciona",
   "menuEscribirANorday": "Escrever à Norday",
   "comoFuncionaTitulo": "Como funciona",

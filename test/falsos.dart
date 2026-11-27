@@ -4,6 +4,7 @@ import 'package:enfoque_app_mobile/models/enfoque.dart';
 import 'package:enfoque_app_mobile/services/api_service_enfoque.dart';
 import 'package:enfoque_app_mobile/services/canal_sistema.dart';
 import 'package:enfoque_app_mobile/services/cola_envios.dart';
+import 'package:enfoque_app_mobile/services/controlador_enfoque.dart';
 import 'package:enfoque_app_mobile/services/tanda.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
@@ -122,6 +123,29 @@ class AvisosDescansoFalsos implements AvisosDescanso {
 
   @override
   Future<void> cancelar() async => cancelados++;
+}
+
+/// La notificación en curso, apuntada: `arrancar <fin> <ronda>` y `parar`.
+class AvisoEnCursoFalso implements AvisoEnCurso {
+  final List<String> llamadas = [];
+
+  /// Si está puesto, cada llamada lanza esto (el plugin que falla).
+  Object? error;
+
+  @override
+  Future<void> arrancar(DateTime finUtc, Ronda? ronda) async {
+    llamadas.add(
+      'arrancar ${finUtc.toIso8601String()} '
+      '${ronda == null ? '-' : '${ronda.n}/${ronda.de}'}',
+    );
+    if (error != null) throw error!;
+  }
+
+  @override
+  Future<void> parar() async {
+    llamadas.add('parar');
+    if (error != null) throw error!;
+  }
 }
 
 /// Un temporizador que no corre: el test mira qué se programó.

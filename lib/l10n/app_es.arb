@@ -828,6 +828,14 @@
   "@canalDescansoDescripcion": {
     "description": "Descripción del canal de avisos del descanso"
   },
+  "canalEnCursoNombre": "Sesión en curso",
+  "@canalEnCursoNombre": {
+    "description": "Nombre del canal de la notificación fija mientras hay sesión (ajustes de Android)"
+  },
+  "canalEnCursoDescripcion": "Muestra el tiempo que queda mientras dura la sesión.",
+  "@canalEnCursoDescripcion": {
+    "description": "Descripción del canal de la notificación fija mientras hay sesión"
+  },
   "menuComoFunciona": "Cómo funciona",
   "@menuComoFunciona": {
     "description": "Entrada del menú a la pantalla que explica la app"
