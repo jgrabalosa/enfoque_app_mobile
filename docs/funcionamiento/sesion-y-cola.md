@@ -86,6 +86,11 @@ Claves en `SharedPreferences` (ocho `enfoque_*`): `enfoque_cola_envios`,
 `enfoque_envios_no_aceptados`, `enfoque_desfase_servidor_ms`, en Inicio
 `enfoque_tecnica`, `enfoque_minutos_libre` y `enfoque_rondas` (la última
 elección), `enfoque_tanda` (la tanda de rondas en marcha) y
-`enfoque_permiso_avisos_pedido`. `enfoque_gracia`, `enfoque_fin` y
-`enfoque_descanso` no son claves: son canales de avisos. La sesión en curso
+`enfoque_permiso_avisos_pedido`. `enfoque_gracia`, `enfoque_fin`,
+`enfoque_descanso` y `enfoque_en_curso` no son claves: son canales de
+avisos.
+
+Mientras la sesión está activa hay una notificación fija (servicio en
+primer plano) que mueve `ControladorEnfoque.vigilarEnCurso()`: ver
+`parte-nativa-y-avisos.md`. La sesión en curso
 la guarda el core en `sesion_concentracion_actual`.

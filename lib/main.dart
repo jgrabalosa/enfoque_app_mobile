@@ -119,6 +119,7 @@ void main() async {
     cola: ColaEnvios(api: api, usuarioActual: usuarioIdActual),
     usuarioActual: usuarioIdActual,
     desfase: desfase,
+    enCurso: AvisoEnCursoLocal(salida: salidaAvisos),
   );
   final tanda = ControladorTanda(
     controlador: controlador,
@@ -145,6 +146,9 @@ void main() async {
   } catch (e, pila) {
     unawaited(CrashlyticsService.registrarError(e, pila));
   }
+  // La notificación fija mientras hay sesión, también con la app en el
+  // login. Sin sesión activa, la para por si quedó colgada.
+  controlador.vigilarEnCurso();
 
   // Lo que llega de Android sin pedirlo: el desbloqueo (para la sesión) y
   // los enlaces norday-enfoque:// con la app abierta.

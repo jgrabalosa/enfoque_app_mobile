@@ -153,6 +153,8 @@
   "avisoDescansoCuerpo": "Nori is waiting for the next round.",
   "canalDescansoNombre": "End of break",
   "canalDescansoDescripcion": "Lets you know when the break between rounds ends.",
+  "canalEnCursoNombre": "Session in progress",
+  "canalEnCursoDescripcion": "Shows the time left while the session lasts.",
   "menuComoFunciona": "How it works",
   "menuEscribirANorday": "Write to Norday",
   "comoFuncionaTitulo": "How it works",

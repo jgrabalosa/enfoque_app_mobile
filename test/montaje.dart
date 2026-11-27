@@ -36,6 +36,7 @@ class Montaje {
       motor: motor,
       cola: cola,
       usuarioActual: () async => usuarioId,
+      enCurso: enCurso,
     );
     tanda = ControladorTanda(
       controlador: controlador,
@@ -69,6 +70,7 @@ class Montaje {
   late final ControladorTanda tanda;
   late final ServiciosEnfoque servicios;
   final AvisosDescansoFalsos avisosDescanso = AvisosDescansoFalsos();
+  final AvisoEnCursoFalso enCurso = AvisoEnCursoFalso();
 
   /// La hora de pared de la tanda (el descanso). Los tests la mueven.
   DateTime ahora = DateTime.utc(2026, 11, 18, 9);

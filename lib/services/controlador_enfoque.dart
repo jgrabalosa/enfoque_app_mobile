@@ -84,6 +84,30 @@ PeticionSesion? peticionDeSesion(SesionConcentracion s) {
   );
 }
 
+/// La notificación fija mientras hay una sesión: un servicio en primer plano
+/// con la cuenta atrás hasta [arrancar]`(finUtc)` y la ronda. En la app,
+/// `AvisoEnCursoLocal`; en los tests, un falso que apunta las llamadas.
+///
+/// Las dos llamadas tienen que ser idempotentes: [arrancar] otra vez
+/// sustituye la notificación y [parar] sin nada arrancado no hace nada.
+abstract interface class AvisoEnCurso {
+  /// La sesión acaba a [finUtc]; [ronda], si es una ronda de una tanda.
+  Future<void> arrancar(DateTime finUtc, Ronda? ronda);
+
+  Future<void> parar();
+}
+
+/// Sin notificación en curso.
+class AvisoEnCursoNulo implements AvisoEnCurso {
+  const AvisoEnCursoNulo();
+
+  @override
+  Future<void> arrancar(DateTime finUtc, Ronda? ronda) async {}
+
+  @override
+  Future<void> parar() async {}
+}
+
 /// En qué punto está el envío de la última sesión acabada.
 enum EnvioResultado {
   /// No se envía: descartada (menos del mínimo).
@@ -161,6 +185,7 @@ class ControladorEnfoque {
     required this.cola,
     required this.usuarioActual,
     this.desfase,
+    this.enCurso = const AvisoEnCursoNulo(),
   });
 
   final MotorSesion motor;
@@ -171,10 +196,25 @@ class ControladorEnfoque {
   /// él (o sin desfase conocido), la hora del móvil.
   final DesfaseServidor? desfase;
 
+  /// La notificación fija mientras hay sesión. La mueve [vigilarEnCurso].
+  final AvisoEnCurso enCurso;
+
   final ValueNotifier<ResultadoSesion?> _resultado = ValueNotifier(null);
   final ValueNotifier<int> _refrescos = ValueNotifier(0);
   final Set<String> _recogiendo = {};
   bool _iniciado = false;
+
+  bool _vigilandoEnCurso = false;
+
+  /// La clave de la sesión con la notificación arrancada; `null` si está
+  /// parada, y [_sinSaber] hasta la primera vez (puede haber quedado una
+  /// colgada de otra ejecución).
+  String? _claveEnCurso = _sinSaber;
+  static const String _sinSaber = '?';
+
+  /// Las llamadas al plugin, una detrás de otra: un [AvisoEnCurso.parar] no
+  /// adelanta al [AvisoEnCurso.arrancar] de antes.
+  Future<void> _colaEnCurso = Future<void>.value();
 
   /// La última sesión acabada, hasta que la pantalla de resultado la suelta
   /// con [soltarResultado].
@@ -201,6 +241,53 @@ class ControladorEnfoque {
     await motor.iniciar();
     motor.sesion.addListener(_alCambiarSesion);
     _iniciado = true;
+    vigilarEnCurso();
+  }
+
+  /// Arranca la notificación en curso cuando empieza (o se recompone) una
+  /// sesión y la para en cuanto deja de estar activa: acabada, terminada,
+  /// rendida o perdida. Así también está parada en el descanso, que va
+  /// después de una ronda acabada. La primera vez, sin sesión activa, la para
+  /// igual: puede haber quedado colgada de una ejecución que murió.
+  ///
+  /// En `main()`, tras `MotorSesion.iniciar()`, porque el motor vigila la
+  /// sesión aunque la app abra en el login; [iniciar] también la llama.
+  /// Llamarla más de una vez no hace nada.
+  void vigilarEnCurso() {
+    if (_vigilandoEnCurso) return;
+    _vigilandoEnCurso = true;
+    motor.sesion.addListener(_sincronizarEnCurso);
+    _sincronizarEnCurso();
+  }
+
+  void _sincronizarEnCurso() {
+    final s = motor.sesion.value;
+    final inicio = s?.inicioUtc;
+    if (s != null && s.estado.activa && inicio != null) {
+      if (_claveEnCurso == s.clave) return;
+      _claveEnCurso = s.clave;
+      // La hora de pared del fin, que es la que cuenta el cronómetro de la
+      // notificación. Sin pausas: la gracia sigue contando.
+      final fin = inicio.add(s.duracionObjetivo);
+      final ronda = rondaDeDatos(s.datosApp);
+      _enCurso(() => enCurso.arrancar(fin, ronda));
+      return;
+    }
+    if (_claveEnCurso == null) return;
+    _claveEnCurso = null;
+    _enCurso(enCurso.parar);
+  }
+
+  /// Si el plugin falla (sin permiso de avisos, Android que no deja arrancar
+  /// el servicio…), la sesión sigue igual.
+  void _enCurso(Future<void> Function() llamada) {
+    _colaEnCurso = _colaEnCurso.then((_) async {
+      try {
+        await llamada();
+      } catch (e) {
+        debugPrint('ControladorEnfoque: notificación en curso fallida: $e');
+      }
+    });
   }
 
   /// Empieza una sesión de [duracion] con [destino] (o sin él), a nombre
@@ -307,6 +394,7 @@ class ControladorEnfoque {
 
   void dispose() {
     if (_iniciado) motor.sesion.removeListener(_alCambiarSesion);
+    if (_vigilandoEnCurso) motor.sesion.removeListener(_sincronizarEnCurso);
     _resultado.dispose();
     _refrescos.dispose();
   }

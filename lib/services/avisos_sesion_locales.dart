@@ -4,6 +4,7 @@ import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../l10n/app_localizations.dart';
+import 'controlador_enfoque.dart';
 import 'tanda.dart';
 
 /// Lo que los avisos necesitan del plugin. En la app, [SalidaAvisosPlugin];
@@ -27,8 +28,21 @@ abstract interface class SalidaAvisos {
   Future<void> cancelar(int id);
 }
 
-/// [SalidaAvisos] con `flutter_local_notifications`.
-class SalidaAvisosPlugin implements SalidaAvisos {
+/// Lo que la notificación en curso necesita del plugin: el servicio en primer
+/// plano. En la app, [SalidaAvisosPlugin]; en los tests, un falso.
+abstract interface class SalidaEnCurso {
+  Future<void> arrancarServicio(
+    int id,
+    String titulo,
+    String? cuerpo,
+    AndroidNotificationDetails detalles,
+  );
+
+  Future<void> pararServicio();
+}
+
+/// [SalidaAvisos] y [SalidaEnCurso] con `flutter_local_notifications`.
+class SalidaAvisosPlugin implements SalidaAvisos, SalidaEnCurso {
   SalidaAvisosPlugin([FlutterLocalNotificationsPlugin? plugin])
     : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
@@ -77,6 +91,45 @@ class SalidaAvisosPlugin implements SalidaAvisos {
 
   @override
   Future<void> cancelar(int id) => _plugin.cancel(id: id);
+
+  AndroidFlutterLocalNotificationsPlugin? get _android => _plugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
+
+  /// El `ForegroundService` del plugin, declarado en el manifiesto con
+  /// `foregroundServiceType="specialUse"`: el tipo que se pide aquí tiene que
+  /// estar entre los del manifiesto
+  /// (https://developer.android.com/develop/background-work/services/fgs/service-types#special-use).
+  ///
+  /// `START_NOT_STICKY`: si Android mata el proceso, que no recree el
+  /// servicio. Sin la app no hay sesión que contar, y el `ForegroundService`
+  /// de la 22.3.3 lee su intent sin mirar si es nulo, que es como lo recrea
+  /// un `START_STICKY`
+  /// (https://developer.android.com/reference/android/app/Service#START_NOT_STICKY).
+  @override
+  Future<void> arrancarServicio(
+    int id,
+    String titulo,
+    String? cuerpo,
+    AndroidNotificationDetails detalles,
+  ) async {
+    await _android?.startForegroundService(
+      id: id,
+      title: titulo,
+      body: cuerpo,
+      notificationDetails: detalles,
+      startType: AndroidServiceStartType.startNotSticky,
+      foregroundServiceTypes: const {
+        AndroidServiceForegroundType.foregroundServiceTypeSpecialUse,
+      },
+    );
+  }
+
+  @override
+  Future<void> pararServicio() async {
+    await _android?.stopForegroundService();
+  }
 }
 
 /// El icono pequeño de los avisos: `res/drawable/ic_stat_enfoque.xml`, una
@@ -187,6 +240,70 @@ class AvisosSesionLocales implements AvisosSesion {
 
   @override
   Future<void> cancelarFin() => salida.cancelar(idFin);
+}
+
+/// La notificación fija mientras hay una sesión: el servicio en primer plano
+/// del plugin, en su propio canal (`enfoque_en_curso`) e id fijo (7104).
+/// Arrancarla otra vez la sustituye; pararla quita el servicio y la
+/// notificación.
+///
+/// Los textos, como los del descanso, de esta app: el título es el nombre
+/// de la app (`appNombre`) y el texto, la ronda (`sesionRonda`) si la hay. El
+/// destino no sale nunca: la notificación se ve con el móvil bloqueado. La
+/// cuenta atrás la lleva el cronómetro de Android, sin despertar la app.
+class AvisoEnCursoLocal implements AvisoEnCurso {
+  AvisoEnCursoLocal({required this.salida, Locale Function()? idioma})
+    : _idioma = idioma ?? (() => IdiomaService.localeNotifier.value);
+
+  final SalidaEnCurso salida;
+  final Locale Function() _idioma;
+
+  static const int idEnCurso = 7104;
+  static const String canalEnCurso = 'enfoque_en_curso';
+
+  AppLocalizations get _app => lookupAppLocalizations(_idioma());
+
+  /// Importancia baja (sin sonido, sin vibración y sin asomar encima), fija
+  /// (`ongoing`) y con el cronómetro hacia atrás hasta [finUtc]
+  /// (https://developer.android.com/reference/androidx/core/app/NotificationCompat.Builder#setUsesChronometer(boolean),
+  /// https://developer.android.com/reference/androidx/core/app/NotificationCompat.Builder#setChronometerCountDown(boolean)).
+  /// Pública en la pantalla bloqueada: no lleva nada privado.
+  static AndroidNotificationDetails detallesEnCurso(
+    DateTime finUtc,
+    AppLocalizations l,
+  ) => AndroidNotificationDetails(
+    canalEnCurso,
+    l.canalEnCursoNombre,
+    channelDescription: l.canalEnCursoDescripcion,
+    icon: iconoAvisos,
+    importance: Importance.low,
+    priority: Priority.low,
+    playSound: false,
+    enableVibration: false,
+    category: AndroidNotificationCategory.stopwatch,
+    visibility: NotificationVisibility.public,
+    ongoing: true,
+    autoCancel: false,
+    onlyAlertOnce: true,
+    showWhen: true,
+    when: finUtc.toUtc().millisecondsSinceEpoch,
+    usesChronometer: true,
+    chronometerCountDown: true,
+  );
+
+  @override
+  Future<void> arrancar(DateTime finUtc, Ronda? ronda) {
+    final l = _app;
+    return salida.arrancarServicio(
+      idEnCurso,
+      l.appNombre,
+      ronda == null ? null : l.sesionRonda(ronda.n, ronda.de),
+      detallesEnCurso(finUtc, l),
+    );
+  }
+
+  @override
+  Future<void> parar() => salida.pararServicio();
 }
 
 /// El aviso de que se acaba el descanso entre rondas, en su propio canal

@@ -8,6 +8,17 @@
          RECEIVE_BOOT_COMPLETED: tras un reinicio la sesión está perdida, así
          que no hay aviso de fin que reprogramar. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- La notificación fija mientras hay sesión es un servicio en primer
+         plano (el ForegroundService de flutter_local_notifications, abajo).
+         Arrancar uno pide FOREGROUND_SERVICE (Android 9+):
+         https://developer.android.com/develop/background-work/services/fgs/declare
+         y, en Android 14+, el permiso de su tipo, aquí specialUse:
+         https://developer.android.com/develop/background-work/services/fgs/service-types#special-use
+         Sin POST_NOTIFICATIONS concedido el servicio arranca igual; solo la
+         notificación no se ve en el cajón (sí en el gestor de tareas):
+         https://developer.android.com/develop/ui/views/notifications/notification-permission -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <application
         android:label="${appLabel}"
         android:name="${applicationName}"
@@ -70,6 +81,28 @@
         <receiver
             android:exported="false"
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <!-- La notificación en curso: el servicio en primer plano del plugin
+             (su README, «Foreground services»; el nombre tiene que ser
+             exactamente este). Tipo specialUse y no mediaPlayback: es un
+             temporizador visible, no reproduce nada
+             (docs/decisiones/2026-11-27-notificacion-en-curso.md). El tipo
+             specialUse obliga a explicar el uso con la propiedad
+             PROPERTY_SPECIAL_USE_FGS_SUBTYPE, que Play revisa:
+             https://developer.android.com/develop/background-work/services/fgs/service-types#special-use
+             https://developer.android.com/reference/android/content/pm/PackageManager#PROPERTY_SPECIAL_USE_FGS_SUBTYPE
+             stopWithTask: quitar la app de Recientes pierde la sesión (el
+             motor sale y la gracia no se cumple), así que el servicio y su
+             notificación se van con ella:
+             https://developer.android.com/reference/android/R.attr#stopWithTask -->
+        <service
+            android:name="com.dexterous.flutterlocalnotifications.ForegroundService"
+            android:exported="false"
+            android:stopWithTask="true"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Focus timer: while the user runs a concentration session they started, an ongoing notification shows the countdown to its end and the current round, and keeps the timer running with the screen off. Tapping it returns to the session. It stops when the session ends."/>
+        </service>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
