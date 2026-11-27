@@ -12,6 +12,7 @@ import 'package:enfoque_app_mobile/screens/sesion_screen.dart';
 import 'package:enfoque_app_mobile/services/abrir_habits.dart';
 import 'package:enfoque_app_mobile/services/api_service_enfoque.dart';
 import 'package:enfoque_app_mobile/services/controlador_enfoque.dart';
+import 'package:enfoque_app_mobile/services/postal_sesion.dart';
 import 'package:enfoque_app_mobile/widgets/barras_semana.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -840,6 +841,152 @@ void main() {
       expect(find.text(l.resultadoDescartada), findsOneWidget);
       expect(find.text(l.resultadoDescartadaCuerpo), findsOneWidget);
       expect(m.api.enviadas, isEmpty);
+    });
+
+    group('Compartir la postal (T-086)', () {
+      Future<void> pantalla(
+        WidgetTester tester,
+        Montaje m,
+        PostalSesion postal,
+      ) async {
+        await tester.pumpWidget(
+          m.app(
+            ResultadoScreen(
+              controlador: m.controlador,
+              cargarMascota: () async => null,
+              postal: postal,
+            ),
+          ),
+        );
+        await asentar(tester);
+      }
+
+      /// Toca «Compartir» y deja correr la captura (imágenes reales, fuera
+      /// del reloj falso) hasta que [hecho] diga que ya acabó.
+      Future<void> tocarCompartir(
+        WidgetTester tester,
+        bool Function() hecho,
+      ) async {
+        await tester.tap(find.text(l.resultadoCompartir));
+        for (var i = 0; i < 100 && !hecho(); i++) {
+          await tester.pump(const Duration(milliseconds: 20));
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 20)),
+          );
+        }
+        await asentar(tester);
+      }
+
+      testWidgets('sale con una sesión que cuenta', (tester) async {
+        await acabar(tester);
+        expect(find.text(l.resultadoCompartir), findsOneWidget);
+        expect(find.byIcon(LucideIcons.share2), findsOneWidget);
+      });
+
+      testWidgets('con una sesión terminada con el mínimo, también', (
+        tester,
+      ) async {
+        await acabar(tester, hecho: const Duration(minutes: 12));
+        expect(find.text(l.resultadoTerminada), findsOneWidget);
+        expect(find.text(l.resultadoCompartir), findsOneWidget);
+      });
+
+      testWidgets('no sale con una sesión perdida', (tester) async {
+        final m = Montaje(tester);
+        await m.controlador.iniciar();
+        await m.controlador.empezar(
+          duracion: const Duration(minutes: 25),
+          destino: destinoLeer,
+        );
+        await m.motor.rendirse();
+        await asentar(tester);
+        await pantalla(tester, m, const PostalSesion());
+        expect(find.text(l.resultadoPerdida), findsOneWidget);
+        expect(find.text(l.resultadoCompartir), findsNothing);
+      });
+
+      testWidgets('no sale con una descartada', (tester) async {
+        await acabar(tester, hecho: const Duration(minutes: 4));
+        expect(find.text(l.resultadoCompartir), findsNothing);
+      });
+
+      testWidgets('al tocarlo, el menú recibe un PNG y el texto con el '
+          'enlace, y se mide', (tester) async {
+        final m = await acabar(tester);
+        Uint8List? png;
+        String? texto;
+        final medidos = <(String, Map<String, Object>)>[];
+        await pantalla(
+          tester,
+          m,
+          PostalSesion(
+            espera: Duration.zero,
+            menu: (t, _, p) async {
+              texto = t;
+              png = p;
+              return true;
+            },
+            medir: (e, p) async => medidos.add((e, p)),
+          ),
+        );
+        await tocarCompartir(tester, () => png != null);
+
+        expect(png, isNotNull);
+        // La firma de un PNG.
+        expect(png!.sublist(0, 4), [0x89, 0x50, 0x4E, 0x47]);
+        expect(texto, contains('25 min'));
+        expect(texto, contains('Norday Focus'));
+        expect(texto, endsWith(enlaceFichaFocus));
+        expect(enlaceFichaFocus, contains('id=com.norday.enfoque'));
+        // Sin puntos ni nombre del hábito.
+        expect(texto, isNot(contains('Leer')));
+        expect(medidos.length, 1);
+        expect(medidos.single.$1, 'sesion_compartida');
+        expect(medidos.single.$2['minutos'], 25);
+        expect(medidos.single.$2['identidad'], isA<String>());
+      });
+
+      testWidgets('con el menú cancelado, no se mide', (tester) async {
+        final m = await acabar(tester);
+        var abierto = false;
+        final medidos = <String>[];
+        await pantalla(
+          tester,
+          m,
+          PostalSesion(
+            espera: Duration.zero,
+            menu: (_, _, _) async {
+              abierto = true;
+              return false;
+            },
+            medir: (e, _) async => medidos.add(e),
+          ),
+        );
+        await tocarCompartir(tester, () => abierto);
+        expect(abierto, isTrue);
+        expect(medidos, isEmpty);
+      });
+
+      testWidgets('si el menú falla, no lanza ni mide', (tester) async {
+        final m = await acabar(tester);
+        var abierto = false;
+        final medidos = <String>[];
+        await pantalla(
+          tester,
+          m,
+          PostalSesion(
+            espera: Duration.zero,
+            menu: (_, _, _) async {
+              abierto = true;
+              throw StateError('sin menú');
+            },
+            medir: (e, _) async => medidos.add(e),
+          ),
+        );
+        await tocarCompartir(tester, () => abierto);
+        expect(tester.takeException(), isNull);
+        expect(medidos, isEmpty);
+      });
     });
   });
 

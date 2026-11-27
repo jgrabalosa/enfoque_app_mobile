@@ -930,5 +930,26 @@
   "resultadoListo": "Listo",
   "@resultadoListo": {
     "description": "Botón secundario del resultado: vuelve a Inicio"
+  },
+  "resultadoCompartir": "Compartir",
+  "@resultadoCompartir": {
+    "description": "Botón del resultado de una sesión que cuenta: abre el menú del móvil para compartir la postal de la sesión"
+  },
+  "postalSesionTexto": "He estado concentrado {duracion} con Nori en Norday Focus.",
+  "@postalSesionTexto": {
+    "description": "Texto que acompaña a la postal de la sesión al compartirla (la app añade debajo el enlace de Google Play). La duración, con duracionLegible",
+    "placeholders": {
+      "duracion": {
+        "type": "String"
+      }
+    }
+  },
+  "postalSesionMarca": "Norday Focus",
+  "@postalSesionMarca": {
+    "description": "La marca, al pie de la postal de la sesión"
+  },
+  "postalSesionAsunto": "Mi sesión de concentración",
+  "@postalSesionAsunto": {
+    "description": "Asunto del menú de compartir de la postal de la sesión"
   }
 }
