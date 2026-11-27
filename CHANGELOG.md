@@ -13,3 +13,6 @@ renombra «Sin publicar» con la versión (como en Norday Habits).
   saldo.
 - **Ayuda de la experiencia de Nori:** ahora dice que cada comida da 15 y que
   Nori come como mucho 3 veces al día.
+- **Sesión a pantalla completa:** durante la sesión se esconden la barra de
+  estado y la de navegación (deslizando desde el borde se ven un momento); al
+  acabar vuelven. La pantalla se apaga sola, como siempre.
