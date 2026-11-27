@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 
@@ -37,7 +38,18 @@ class _SesionScreenState extends State<SesionScreen> {
   @override
   void initState() {
     super.initState();
+    // Sin nada que distraiga durante la sesión; al salir vuelve el modo de
+    // borde a borde del resto de la app. La pantalla se apaga sola.
+    unawaited(
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky),
+    );
     unawaited(_cargarMascota());
+  }
+
+  @override
+  void dispose() {
+    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    super.dispose();
   }
 
   Future<void> _cargarMascota() async {

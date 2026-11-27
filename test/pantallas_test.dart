@@ -14,6 +14,7 @@ import 'package:enfoque_app_mobile/services/api_service_enfoque.dart';
 import 'package:enfoque_app_mobile/services/controlador_enfoque.dart';
 import 'package:enfoque_app_mobile/widgets/barras_semana.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -368,6 +369,47 @@ void main() {
         m.controlador.resultado.value!.sesion.estado,
         EstadoSesion.perdida,
       );
+    });
+
+    testWidgets('modo inmersivo al montar y borde a borde al desmontar', (
+      tester,
+    ) async {
+      final modos = <Object?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'SystemChrome.setEnabledSystemUIMode') {
+            modos.add(call.arguments);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      final m = Montaje(tester);
+      await m.controlador.iniciar();
+      await m.controlador.empezar(duracion: const Duration(minutes: 25));
+      await tester.pumpWidget(
+        m.app(
+          SesionScreen(
+            controlador: m.controlador,
+            cargarMascota: () async => null,
+          ),
+        ),
+      );
+      await asentar(tester);
+      expect(modos, ['SystemUiMode.immersiveSticky']);
+
+      await tester.pumpWidget(const SizedBox());
+      expect(modos, [
+        'SystemUiMode.immersiveSticky',
+        'SystemUiMode.edgeToEdge',
+      ]);
+      await cerrarSesion(tester, m);
     });
 
     testWidgets('el destino de una hora o más va en horas', (tester) async {
