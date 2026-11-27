@@ -10,6 +10,7 @@ import '../services/al_volver.dart';
 import '../services/controlador_enfoque.dart';
 import '../services/servicios_enfoque.dart';
 import '../widgets/barra_navegacion.dart';
+import 'como_funciona_screen.dart';
 import 'descanso_screen.dart';
 import 'estadisticas_screen.dart';
 import 'inicio_screen.dart';
@@ -344,6 +345,16 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
                           destinoTrasLogin: destinoTrasLogin,
                         ),
                       ),
+                    ),
+                    entrada(
+                      LucideIcons.circleQuestionMark,
+                      l.menuComoFunciona,
+                      () => _abrir(const ComoFuncionaScreen()),
+                    ),
+                    entrada(
+                      LucideIcons.mail,
+                      l.menuEscribirANorday,
+                      () => escribirANordayDesdeApp(context),
                     ),
                     entrada(LucideIcons.logOut, l.shellCerrarSesion, _logout),
                   ],

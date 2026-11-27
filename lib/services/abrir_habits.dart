@@ -41,7 +41,7 @@ enum AperturaHabits { app, fichaPlay, fichaWeb, faltaPrueba, nada }
 /// desarrolla (la Focus de prueba), por eso no se traduce, como
 /// `PantallaEntornoIncorrecto`.
 const String textoFaltaHabitsPrueba =
-    'Instala Norday PRUEBA: la app de prueba no abre Google Play, que lleva '
+    'Instala Habits PRUEBA: la app de prueba no abre Google Play, que lleva '
     'a la de producción.';
 
 /// Abre Norday Habits; si no está, su ficha de Google Play, y si tampoco hay
