@@ -66,6 +66,10 @@ void main() {
     expect(l.llamadas, [(enlace: null, paquete: 'com.norday.habitos.prueba')]);
   });
 
+  test('el aviso de que falta la de prueba nombra «Habits PRUEBA»', () {
+    expect(textoFaltaHabitsPrueba, startsWith('Instala Habits PRUEBA'));
+  });
+
   test('nada que abra nada', () async {
     final l = _Lanzador(({enlace, paquete}) => false);
     expect(await abrirHabits(flavor: null, lanzador: l), AperturaHabits.nada);
