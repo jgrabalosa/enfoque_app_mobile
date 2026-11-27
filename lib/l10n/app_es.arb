@@ -831,5 +831,69 @@
   "canalDescansoDescripcion": "Avisa cuando acaba el descanso entre rondas.",
   "@canalDescansoDescripcion": {
     "description": "Descripción del canal de avisos del descanso"
+  },
+  "menuComoFunciona": "Cómo funciona",
+  "@menuComoFunciona": {
+    "description": "Entrada del menú a la pantalla que explica la app"
+  },
+  "menuEscribirANorday": "Escribir a Norday",
+  "@menuEscribirANorday": {
+    "description": "Entrada del menú que abre la app de correo para escribir a Norday"
+  },
+  "comoFuncionaTitulo": "Cómo funciona",
+  "@comoFuncionaTitulo": {
+    "description": "Título de la pantalla que explica la app"
+  },
+  "comoFuncionaSesionTitulo": "La sesión",
+  "@comoFuncionaSesionTitulo": {
+    "description": "Apartado de Cómo funciona: la sesión (título)"
+  },
+  "comoFuncionaSesionCuerpo": "Eliges Pomodoro (25 min y 5 de descanso), Profundo (50 y 10) o Libre, y de 1 a 4 rondas. Si sales de la app, tienes 10 segundos para volver o la sesión se pierde. Con la pantalla apagada, la sesión sigue.",
+  "@comoFuncionaSesionCuerpo": {
+    "description": "Apartado de Cómo funciona: la sesión (cuerpo). Las cifras son las de las técnicas y el margen del bloqueo suave"
+  },
+  "comoFuncionaDescansosTitulo": "Los descansos",
+  "@comoFuncionaDescansosTitulo": {
+    "description": "Apartado de Cómo funciona: los descansos (título)"
+  },
+  "comoFuncionaDescansosCuerpo": "Hay descanso entre una ronda y la siguiente. Al acabar, te avisa; la siguiente ronda la empiezas tú.",
+  "@comoFuncionaDescansosCuerpo": {
+    "description": "Apartado de Cómo funciona: los descansos (cuerpo)"
+  },
+  "comoFuncionaPuntosTitulo": "Los puntos",
+  "@comoFuncionaPuntosTitulo": {
+    "description": "Apartado de Cómo funciona: los puntos (título)"
+  },
+  "comoFuncionaPuntosCuerpo": "Cada sesión que cuenta te da puntos y experiencia para Nori, con un tope al día.",
+  "@comoFuncionaPuntosCuerpo": {
+    "description": "Apartado de Cómo funciona: los puntos (cuerpo). Sin cifras: las decide el backend"
+  },
+  "comoFuncionaNoriTitulo": "Nori",
+  "@comoFuncionaNoriTitulo": {
+    "description": "Apartado de Cómo funciona: Nori (título, nombre propio)"
+  },
+  "comoFuncionaNoriCuerpo": "Nori crece con tus sesiones. Puedes darle de comer y vestirlo en la tienda.",
+  "@comoFuncionaNoriCuerpo": {
+    "description": "Apartado de Cómo funciona: Nori (cuerpo). Nori es chico"
+  },
+  "comoFuncionaEscribenosTitulo": "Escríbenos",
+  "@comoFuncionaEscribenosTitulo": {
+    "description": "Apartado de Cómo funciona: contacto (título)"
+  },
+  "comoFuncionaEscribenosCuerpo": "¿Una duda, una idea o algo que no va bien? Cuéntanoslo.",
+  "@comoFuncionaEscribenosCuerpo": {
+    "description": "Apartado de Cómo funciona: contacto (cuerpo)"
+  },
+  "comoFuncionaEscribirBoton": "Escribir a Norday",
+  "@comoFuncionaEscribirBoton": {
+    "description": "Botón del apartado de contacto: abre la app de correo"
+  },
+  "correoAsunto": "Norday Focus",
+  "@correoAsunto": {
+    "description": "Asunto del correo a Norday (nombre de la app, igual en todos los idiomas)"
+  },
+  "correoNoHayApp": "No hay ninguna app de correo. Escríbenos a hola@norday.app",
+  "@correoNoHayApp": {
+    "description": "Aviso si el móvil no tiene app de correo"
   }
 }

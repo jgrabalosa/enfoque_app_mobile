@@ -13,3 +13,7 @@ renombra «Sin publicar» con la versión (como en Norday Habits).
   saldo.
 - **Ayuda de la experiencia de Nori:** ahora dice que cada comida da 15 y que
   Nori come como mucho 3 veces al día.
+- **Dos entradas nuevas en el menú:** «Cómo funciona», con apartados que se
+  despliegan (la sesión, los descansos, los puntos, Nori y cómo escribirnos),
+  y «Escribir a Norday», que abre tu app de correo. Si no tienes ninguna, te
+  da la dirección.

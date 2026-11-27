@@ -153,5 +153,21 @@
   "avisoDescansoTitulo": "Acabou a pausa",
   "avisoDescansoCuerpo": "Nori espera-te para a próxima ronda.",
   "canalDescansoNombre": "Fim da pausa",
-  "canalDescansoDescripcion": "Avisa quando acaba a pausa entre rondas."
+  "canalDescansoDescripcion": "Avisa quando acaba a pausa entre rondas.",
+  "menuComoFunciona": "Como funciona",
+  "menuEscribirANorday": "Escrever à Norday",
+  "comoFuncionaTitulo": "Como funciona",
+  "comoFuncionaSesionTitulo": "A sessão",
+  "comoFuncionaSesionCuerpo": "Escolhes Pomodoro (25 min com 5 de pausa), Profundo (50 e 10) ou Livre, e de 1 a 4 rondas. Se saíres da app, tens 10 segundos para voltar ou a sessão perde-se. Com o ecrã desligado, a sessão continua.",
+  "comoFuncionaDescansosTitulo": "As pausas",
+  "comoFuncionaDescansosCuerpo": "Há uma pausa entre uma ronda e a seguinte. Quando acaba, és avisado; a ronda seguinte começas tu.",
+  "comoFuncionaPuntosTitulo": "Os pontos",
+  "comoFuncionaPuntosCuerpo": "Cada sessão que conta dá-te pontos e experiência para o Nori, com um limite por dia.",
+  "comoFuncionaNoriTitulo": "Nori",
+  "comoFuncionaNoriCuerpo": "O Nori cresce com as tuas sessões. Podes dar-lhe de comer e vesti-lo na loja.",
+  "comoFuncionaEscribenosTitulo": "Escreve-nos",
+  "comoFuncionaEscribenosCuerpo": "Uma dúvida, uma ideia ou algo que não está a funcionar? Conta-nos.",
+  "comoFuncionaEscribirBoton": "Escrever à Norday",
+  "correoAsunto": "Norday Focus",
+  "correoNoHayApp": "Não há nenhuma app de e-mail. Escreve-nos para hola@norday.app"
 }
