@@ -8,7 +8,9 @@ import '../l10n/app_localizations.dart';
 import '../l10n/formatos.dart';
 import '../models/enfoque.dart';
 import '../services/controlador_enfoque.dart';
+import '../services/mascota_enfoque.dart';
 import '../services/servicios_enfoque.dart';
+import '../services/tanda.dart';
 
 /// Los logros que esta app sabe nombrar (los genéricos del core y los propios
 /// de Focus, que registra `registrarLogrosEnfoque`) y cuántos no. Norday Focus
@@ -52,13 +54,19 @@ void celebrarResultado(
   }
 }
 
-/// El resultado de la última sesión: los minutos, lo que pagó la sesión (el
-/// premio, tenga hábito o no), lo que pasó con los minutos en su hábito y el
-/// estado del envío.
+/// El resultado de la última sesión: Nori, los minutos, lo que pagó la sesión
+/// (el premio, tenga hábito o no), lo que pasó con los minutos en su hábito y
+/// el estado del envío. Al acabar la última ronda de una tanda, arriba lo de
+/// toda la tanda y, debajo y más pequeño, lo de esa ronda (T-085).
 class ResultadoScreen extends StatefulWidget {
-  const ResultadoScreen({super.key, required this.controlador});
+  const ResultadoScreen({
+    super.key,
+    required this.controlador,
+    this.cargarMascota = mascotaDelBackend,
+  });
 
   final ControladorEnfoque controlador;
+  final CargaMascota cargarMascota;
 
   @override
   State<ResultadoScreen> createState() => _ResultadoScreenState();
@@ -66,22 +74,54 @@ class ResultadoScreen extends StatefulWidget {
 
 class _ResultadoScreenState extends State<ResultadoScreen> {
   /// Lo último que se pintó: al soltar el resultado al salir, la pantalla
-  /// sigue enseñándolo mientras se va.
+  /// sigue enseñándolo mientras se va. Igual con el resumen de la tanda.
   ResultadoSesion? _ultimo;
+  ResumenTanda? _resumen;
+  ControladorTanda? _tanda;
   final Set<String> _celebrados = {};
+  ({String? fase, String? estado})? _mascota;
+  bool _saliendo = false;
+
+  /// Cada aviso, una reacción de Nori.
+  final ValueNotifier<int> _reaccion = ValueNotifier(0);
 
   @override
   void initState() {
     super.initState();
     widget.controlador.resultado.addListener(_alCambiar);
     _ultimo = widget.controlador.resultado.value;
-    WidgetsBinding.instance.addPostFrameCallback((_) => _celebrar());
+    unawaited(_cargarMascota());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _celebrar();
+      // Nori celebra al entrar una sesión que cuenta; una perdida o
+      // descartada, no.
+      if (mounted && (_ultimo?.sesion.estado.cuenta ?? false)) {
+        _reaccion.value++;
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_tanda != null) return;
+    final tanda = AmbitoEnfoque.de(context).tanda;
+    _tanda = tanda;
+    _resumen = tanda.resumen.value;
+    tanda.resumen.addListener(_alCambiarResumen);
   }
 
   @override
   void dispose() {
     widget.controlador.resultado.removeListener(_alCambiar);
+    _tanda?.resumen.removeListener(_alCambiarResumen);
+    _reaccion.dispose();
     super.dispose();
+  }
+
+  Future<void> _cargarMascota() async {
+    final m = await widget.cargarMascota();
+    if (mounted && m != null) setState(() => _mascota = m);
   }
 
   void _alCambiar() {
@@ -91,14 +131,60 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
     _celebrar();
   }
 
+  void _alCambiarResumen() {
+    final r = _tanda?.resumen.value;
+    if (r == null || !mounted) return;
+    setState(() => _resumen = r);
+  }
+
   void _celebrar() {
     if (!mounted) return;
     celebrarResultado(context, _ultimo, _celebrados);
   }
 
+  /// «Listo»: vuelve a Inicio.
   void _salir() {
+    if (_saliendo) return;
+    _saliendo = true;
     widget.controlador.soltarResultado();
     Navigator.of(context).maybePop();
+  }
+
+  /// «Otra igual»: suelta el resultado y empieza otra tanda con la misma
+  /// configuración, como Empezar en Inicio (la sesión la pone encima
+  /// HomeShell). Si no se puede, el aviso de Inicio.
+  Future<void> _otraIgual() async {
+    final tanda = _tanda;
+    final c = tanda?.ultimaConfiguracion;
+    if (_saliendo || tanda == null || c == null) return;
+    _saliendo = true;
+    final mensajero = ScaffoldMessenger.of(context);
+    final aviso = AppLocalizations.of(context)!.inicioNoSePudoEmpezar;
+    widget.controlador.soltarResultado();
+    // Esta se va antes de que llegue la sesión nueva: si no, se quitaría la
+    // de la sesión en su lugar.
+    await Navigator.of(context).maybePop();
+    try {
+      await tanda.empezar(
+        rondas: c.rondas,
+        minutos: c.minutos,
+        descanso: c.descanso,
+        destino: c.destino,
+      );
+    } catch (_) {
+      mensajero.showSnackBar(SnackBar(content: Text(aviso)));
+    }
+  }
+
+  /// El resumen de la tanda, si [r] es la última ronda de una tanda de la
+  /// que se hizo más de una ronda. Si no, `null`: se ve como una sesión
+  /// suelta.
+  ResumenTanda? _resumenDe(ResultadoSesion r) {
+    final res = _resumen;
+    if (res == null || res.hechas.length < 2 || !res.contiene(r.clave)) {
+      return null;
+    }
+    return res;
   }
 
   String _titulo(AppLocalizations l, EstadoSesion e) => switch (e) {
@@ -128,6 +214,9 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
     if (r == null) return const Scaffold(body: SizedBox.shrink());
     final s = r.sesion;
     final explicacion = _explicacion(l, s);
+    final resumen = _resumenDe(r);
+    final ronda = rondaDeDatos(s.datosApp);
+    final otraIgual = _tanda?.ultimaConfiguracion != null;
 
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
@@ -143,8 +232,20 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 children: [
-                  const SizedBox(height: AppSpacing.xl),
-                  if (rondaDeDatos(s.datosApp) case final ronda?)
+                  const SizedBox(height: AppSpacing.md),
+                  Center(
+                    child: ExcludeSemantics(
+                      child: MascotaAnimadaViva(
+                        fase: _mascota?.fase,
+                        estado: _mascota?.estado,
+                        tamano: 96,
+                        vestida: true,
+                        reaccion: _reaccion,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  if (resumen == null && ronda != null)
                     Text(
                       l.sesionRonda(ronda.n, ronda.de),
                       textAlign: TextAlign.center,
@@ -159,7 +260,22 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  if (s.estado.cuenta)
+                  if (resumen != null)
+                    Text(
+                      resumen.entera
+                          ? l.resultadoTandaTotal(
+                              resumen.rondasQueCuentan,
+                              duracionLegible(l, resumen.minutos),
+                            )
+                          : l.resultadoTandaParcial(
+                              resumen.rondasQueCuentan,
+                              resumen.rondas,
+                              duracionLegible(l, resumen.minutos),
+                            ),
+                      textAlign: TextAlign.center,
+                      style: tema.headlineSmall?.copyWith(color: t.successText),
+                    )
+                  else if (s.estado.cuenta)
                     Text(
                       duracionLegible(l, s.minutos),
                       textAlign: TextAlign.center,
@@ -172,12 +288,51 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
                       style: tema.bodyLarge?.copyWith(color: t.textMuted),
                     ),
                   const SizedBox(height: AppSpacing.lg),
-                  LineasResultado(resultado: r),
+                  if (resumen != null) ...[
+                    if (resumen.monedas > 0 || resumen.xp > 0)
+                      _Linea(
+                        icono: LucideIcons.coins,
+                        texto: resumen.xp > 0
+                            ? l.resultadoPremio(resumen.monedas, resumen.xp)
+                            : l.resultadoMonedas(resumen.monedas),
+                        color: t.pointsText,
+                      ),
+                    if (resumen.algunaSinEnviar)
+                      _Linea(
+                        icono: LucideIcons.cloudOff,
+                        texto: l.resultadoTandaSinEnviar,
+                      ),
+                    const SizedBox(height: AppSpacing.lg),
+                    // Lo de la última ronda, debajo y más pequeño.
+                    Text(
+                      l.sesionRonda(ronda!.n, ronda.de),
+                      style: tema.titleSmall?.copyWith(color: t.textMuted),
+                    ),
+                    if (s.estado.cuenta)
+                      Text(
+                        duracionLegible(l, s.minutos),
+                        style: tema.titleMedium?.copyWith(color: t.text),
+                      ),
+                    const SizedBox(height: AppSpacing.sm),
+                    LineasResultado(resultado: r, compacta: true),
+                  ] else
+                    LineasResultado(resultado: r),
                   const SizedBox(height: AppSpacing.xl),
-                  ElevatedButton(
-                    onPressed: _salir,
-                    child: Text(l.resultadoVolver),
-                  ),
+                  if (otraIgual) ...[
+                    ElevatedButton(
+                      onPressed: _otraIgual,
+                      child: Text(l.resultadoOtraIgual),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    TextButton(
+                      onPressed: _salir,
+                      child: Text(l.resultadoListo),
+                    ),
+                  ] else
+                    ElevatedButton(
+                      onPressed: _salir,
+                      child: Text(l.resultadoListo),
+                    ),
                 ],
               ),
             ),
@@ -192,9 +347,16 @@ class _ResultadoScreenState extends State<ResultadoScreen> {
 /// aceptada o, enviada, lo que pagó la sesión y lo que pasó en su hábito. Lo
 /// usan el resultado y el descanso entre rondas.
 class LineasResultado extends StatelessWidget {
-  const LineasResultado({super.key, required this.resultado});
+  const LineasResultado({
+    super.key,
+    required this.resultado,
+    this.compacta = false,
+  });
 
   final ResultadoSesion resultado;
+
+  /// Más pequeña: la última ronda bajo el resumen de la tanda.
+  final bool compacta;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -209,19 +371,8 @@ class LineasResultado extends StatelessWidget {
   ) {
     final t = tokens(context);
     final tema = Theme.of(context).textTheme;
-    Widget linea(IconData icono, String texto, {Color? color}) => Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icono, size: 20, color: color ?? t.textMuted),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(texto, style: tema.bodyLarge?.copyWith(color: t.text)),
-          ),
-        ],
-      ),
-    );
+    Widget linea(IconData icono, String texto, {Color? color}) =>
+        _Linea(icono: icono, texto: texto, color: color, compacta: compacta);
 
     switch (r.envio) {
       case EnvioResultado.noSeEnvia:
@@ -349,5 +500,40 @@ class LineasResultado extends StatelessWidget {
       // que esta versión no conoce: no se promete nada.
       _ => const [],
     };
+  }
+}
+
+/// Una línea del resultado: un icono y su texto.
+class _Linea extends StatelessWidget {
+  const _Linea({
+    required this.icono,
+    required this.texto,
+    this.color,
+    this.compacta = false,
+  });
+
+  final IconData icono;
+  final String texto;
+  final Color? color;
+  final bool compacta;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tokens(context);
+    final tema = Theme.of(context).textTheme;
+    final estilo = compacta ? tema.bodyMedium : tema.bodyLarge;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icono, size: compacta ? 16 : 20, color: color ?? t.textMuted),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(texto, style: estilo?.copyWith(color: t.text)),
+          ),
+        ],
+      ),
+    );
   }
 }

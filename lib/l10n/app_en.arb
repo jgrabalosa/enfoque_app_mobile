@@ -60,7 +60,6 @@
   "resultadoPendiente": "Waiting to be sent. It will go as soon as there's a connection.",
   "resultadoNoAceptada": "The session couldn't be saved.",
   "resultadoLogrosEnHabits": "{n, plural, =1{You have a new achievement in Norday Habits} other{You have {n} new achievements in Norday Habits}}",
-  "resultadoVolver": "Back to home",
   "estSemana": "This week",
   "estMes": "This month",
   "estBarraEtiqueta": "{dia}: {duracion}",
@@ -169,5 +168,10 @@
   "comoFuncionaEscribenosCuerpo": "A question, an idea or something that isn't working? Tell us.",
   "comoFuncionaEscribirBoton": "Write to Norday",
   "correoAsunto": "Norday Focus",
-  "correoNoHayApp": "There's no email app. Write to us at hola@norday.app"
+  "correoNoHayApp": "There's no email app. Write to us at hola@norday.app",
+  "resultadoTandaTotal": "{rondas} rounds · {duracion}",
+  "resultadoTandaParcial": "{hechas} of {rondas} rounds · {duracion}",
+  "resultadoTandaSinEnviar": "Some rounds haven't been sent yet: their points will arrive once they are.",
+  "resultadoOtraIgual": "Same again",
+  "resultadoListo": "Done"
 }

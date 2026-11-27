@@ -20,3 +20,9 @@ renombra «Sin publicar» con la versión (como en Norday Habits).
   despliegan (la sesión, los descansos, los puntos, Nori y cómo escribirnos),
   y «Escribir a Norday», que abre tu app de correo. Si no tienes ninguna, te
   da la dirección.
+- **El final de una tanda:** al acabar la última ronda, el resultado enseña
+  lo de toda la tanda («2 rondas · 50 min», con los puntos y la XP de todas)
+  y, debajo y más pequeño, lo de la última ronda. Si la tanda se corta,
+  «1 de 3 rondas». Si alguna ronda aún no se ha enviado, lo dice. Nori,
+  vestido, celebra al entrar si la sesión cuenta. En lugar de «Volver», dos
+  botones: «Otra igual» (empieza otra tanda igual) y «Listo».

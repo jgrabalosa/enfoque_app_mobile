@@ -60,7 +60,6 @@
   "resultadoPendiente": "Por enviar. Será enviada assim que houver ligação.",
   "resultadoNoAceptada": "Não foi possível guardar a sessão.",
   "resultadoLogrosEnHabits": "{n, plural, =1{Tens uma conquista nova no Norday Habits} other{Tens {n} conquistas novas no Norday Habits}}",
-  "resultadoVolver": "Voltar ao início",
   "estSemana": "Esta semana",
   "estMes": "Este mês",
   "estBarraEtiqueta": "{dia}: {duracion}",
@@ -169,5 +168,10 @@
   "comoFuncionaEscribenosCuerpo": "Uma dúvida, uma ideia ou algo que não está a funcionar? Conta-nos.",
   "comoFuncionaEscribirBoton": "Escrever à Norday",
   "correoAsunto": "Norday Focus",
-  "correoNoHayApp": "Não há nenhuma app de e-mail. Escreve-nos para hola@norday.app"
+  "correoNoHayApp": "Não há nenhuma app de e-mail. Escreve-nos para hola@norday.app",
+  "resultadoTandaTotal": "{rondas} rondas · {duracion}",
+  "resultadoTandaParcial": "{hechas} de {rondas} rondas · {duracion}",
+  "resultadoTandaSinEnviar": "Alguma ronda ainda não foi enviada: os pontos chegam quando for enviada.",
+  "resultadoOtraIgual": "Outra igual",
+  "resultadoListo": "Feito"
 }
