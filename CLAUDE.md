@@ -120,7 +120,7 @@ Los `app_localizations*.dart` no se versionan: tras tocar un ARB,
   `docs/procedimientos/tocar-el-paquete.md`. `pubspec_overrides.yaml` (rama
   del core sin tag) no se commitea.
 - **`--flavor` siempre.** `produccion` es `com.norday.enfoque`; `prueba` es
-  `com.norday.enfoque.prueba`, «Norday Focus PRUEBA», con cinta «PRUEBA» y
+  `com.norday.enfoque.prueba`, «Focus PRUEBA», con cinta «PRUEBA» y
   contra staging (`--dart-define=NORDAY_API_URL=https://staging-api.norday.app/api`).
 - **`lib/entorno.dart` para la app al arrancar** si el flavor y la URL no
   cuadran. No se quita ni se salta.
