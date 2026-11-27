@@ -26,3 +26,9 @@ renombra «Sin publicar» con la versión (como en Norday Habits).
   «1 de 3 rondas». Si alguna ronda aún no se ha enviado, lo dice. Nori,
   vestido, celebra al entrar si la sesión cuenta. En lugar de «Volver», dos
   botones: «Otra igual» (empieza otra tanda igual) y «Listo».
+- **Notificación fija durante la sesión:** mientras dura, una notificación
+  callada con lo que queda («Norday Focus», la cuenta atrás y, en una tanda,
+  «Ronda 1 de 2»). Tocarla vuelve a la sesión; se va sola al acabar, al
+  terminar, al rendirte o al perderla, y en el descanso no está. No dice a
+  qué dedicas la sesión, porque se ve con el móvil bloqueado. Además, Android
+  ya no congela la sesión con la pantalla apagada.

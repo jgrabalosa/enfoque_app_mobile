@@ -45,6 +45,28 @@ Habits).
   `AndroidScheduleMode.inexactAllowWhileIdle`, sin alarmas exactas. Id fijo
   7102. Si el fin ya ha llegado, se muestra en el acto (el plugin rechaza
   fechas pasadas).
+- Descanso: canal `enfoque_descanso`, como el de fin. Id fijo 7103.
+- **En curso** (T-090): mientras hay sesión, el servicio en primer plano del
+  plugin (`startForegroundService` / `stopForegroundService`). Canal
+  `enfoque_en_curso`, importancia baja (sin sonido ni vibración), `ongoing`,
+  `onlyAlertOnce`, pública en la pantalla bloqueada, con el cronómetro hacia
+  atrás hasta el fin (`usesChronometer`, `chronometerCountDown`, `when`).
+  Id fijo 7104. Título `appNombre`, texto `sesionRonda` si es una ronda; el
+  destino nunca. Tocarla abre la actividad `singleTop` (el intent de
+  lanzamiento del plugin, sin enlace: `MainActivity` no hace nada más).
+  - Quién: `AvisoEnCursoLocal` detrás de la interfaz `AvisoEnCurso`, movida
+    por `ControladorEnfoque.vigilarEnCurso()` (en `main()`, tras
+    `MotorSesion.iniciar()`): se arranca cuando la sesión pasa a activa y se
+    para cuando deja de estarlo, así que en el descanso está parada. Al
+    arrancar sin sesión activa, se para por si quedó colgada.
+  - Manifiesto: `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE` y el
+    `<service>` `com.dexterous.flutterlocalnotifications.ForegroundService`
+    con `foregroundServiceType="specialUse"`, `stopWithTask="true"` y la
+    `<property>` `PROPERTY_SPECIAL_USE_FGS_SUBTYPE`. Se arranca con
+    `START_NOT_STICKY` y el tipo `specialUse`.
+  - Si el plugin falla (sin permiso de avisos, Android que no deja arrancar
+    el servicio), la sesión sigue igual. Por qué `specialUse`:
+    `docs/decisiones/2026-11-27-notificacion-en-curso.md`.
 - Sin `SCHEDULE_EXACT_ALARM`, sin `RECEIVE_BOOT_COMPLETED` ni el receptor de
   arranque del plugin: tras un reinicio la sesión está perdida y no hay fin
   que avisar. Sí `ScheduledNotificationReceiver`.

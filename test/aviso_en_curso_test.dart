@@ -1,6 +1,5 @@
 import 'dart:ui' show AppLifecycleState;
 
-import 'package:enfoque_app_mobile/services/controlador_enfoque.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:norday_flutter_core/norday_flutter_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
