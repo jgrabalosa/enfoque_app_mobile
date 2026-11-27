@@ -54,7 +54,7 @@ android {
         create("prueba") {
             dimension = "entorno"
             applicationIdSuffix = ".prueba"
-            manifestPlaceholders["appLabel"] = "Norday Focus PRUEBA"
+            manifestPlaceholders["appLabel"] = "Focus PRUEBA"
         }
     }
 
