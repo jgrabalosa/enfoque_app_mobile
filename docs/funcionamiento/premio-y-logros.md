@@ -21,6 +21,16 @@ sesiones…». Debajo, lo del hábito como siempre. Se celebran los logros de la
 dos partes, sin repetir. Las cifras y las reglas las decide el backend
 (`ParametrosPremioEnfoque` en `habitos-app`): aquí no se calcula nada.
 
+### El premio de una tanda (T-085)
+
+Al acabar la última ronda de una tanda, el Resultado suma lo que pagaron
+las rondas **ya enviadas**: los puntos (los de la sesión y los del hábito)
+y la XP de Nori, en una línea («+60 puntos · +10 XP»). Una ronda pendiente
+o enviándose no entra en la suma, y se avisa: «Alguna ronda aún no se ha
+enviado: sus puntos llegarán al enviarse». Debajo, lo de la última ronda,
+como siempre. Los logros se celebran ronda a ronda, como hasta ahora. El
+detalle de la cuenta, en `inicio-y-rondas.md`.
+
 ### Logros que paga el hábito
 
 El aporte devuelve los logros que desbloqueó el hábito. Focus no registra los

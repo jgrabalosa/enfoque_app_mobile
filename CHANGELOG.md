@@ -13,3 +13,9 @@ renombra «Sin publicar» con la versión (como en Norday Habits).
   saldo.
 - **Ayuda de la experiencia de Nori:** ahora dice que cada comida da 15 y que
   Nori come como mucho 3 veces al día.
+- **El final de una tanda:** al acabar la última ronda, el resultado enseña
+  lo de toda la tanda («2 rondas · 50 min», con los puntos y la XP de todas)
+  y, debajo y más pequeño, lo de la última ronda. Si la tanda se corta,
+  «1 de 3 rondas». Si alguna ronda aún no se ha enviado, lo dice. Nori,
+  vestido, celebra al entrar si la sesión cuenta. En lugar de «Volver», dos
+  botones: «Otra igual» (empieza otra tanda igual) y «Listo».

@@ -6,6 +6,7 @@ import 'package:enfoque_app_mobile/screens/home_shell.dart';
 import 'package:enfoque_app_mobile/screens/inicio_logica.dart';
 import 'package:enfoque_app_mobile/screens/resultado_screen.dart';
 import 'package:enfoque_app_mobile/screens/sesion_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -35,7 +36,7 @@ void main() {
     }
   }
 
-  testWidgets('Empezar abre la sesión; al acabar, el resultado; Volver, a '
+  testWidgets('Empezar abre la sesión; al acabar, el resultado; Listo, a '
       'Inicio', (tester) async {
     // Alto de sobra: Inicio es una lista y Empezar va al final.
     tester.view.physicalSize = const Size(800, 2000);
@@ -59,7 +60,7 @@ void main() {
     expect(find.text(l.resultadoCompletada), findsOneWidget);
     expect(m.api.enviadas.single.duracionSeg, 1500);
 
-    await tester.tap(find.text(l.resultadoVolver));
+    await tester.tap(find.text(l.resultadoListo));
     await asentar(tester);
     expect(find.byType(ResultadoScreen), findsNothing);
     expect(find.text(l.inicioEmpezar), findsOneWidget);
@@ -151,12 +152,83 @@ void main() {
       await acabarRonda(tester, m);
       expect(find.byType(ResultadoScreen), findsOneWidget);
       expect(find.text('Ronda 2 de 2'), findsOneWidget);
+      expect(find.text('2 rondas · 50 min'), findsOneWidget);
       expect(m.api.enviadas, hasLength(2));
       expect(m.tanda.tanda.value, isNull);
 
-      await tester.tap(find.text(l.resultadoVolver));
+      await tester.tap(find.text(l.resultadoListo));
       await asentar(tester);
       expect(find.text(l.inicioEmpezar), findsOneWidget);
+      expect(m.tanda.resumen.value, isNull);
+    });
+
+    testWidgets('«Otra igual» empieza otra tanda como la que acaba de '
+        'terminar', (tester) async {
+      final m = await montar(tester);
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      await acabarRonda(tester, m);
+      await tester.tap(find.text('Empezar la ronda 2'));
+      await asentar(tester);
+      await acabarRonda(tester, m);
+      expect(find.byType(ResultadoScreen), findsOneWidget);
+
+      await tester.tap(find.text(l.resultadoOtraIgual));
+      await asentar(tester);
+      expect(find.byType(ResultadoScreen), findsNothing);
+      expect(find.byType(SesionScreen), findsOneWidget);
+      expect(find.text('Ronda 1 de 2'), findsOneWidget);
+      final s = m.motor.sesion.value!;
+      expect(s.duracionObjetivo, const Duration(minutes: 25));
+      expect(m.tanda.tanda.value!.rondas, 2);
+      expect(m.tanda.tanda.value!.descanso, 5);
+      expect(m.controlador.resultado.value, isNull);
+      await m.motor.rendirse();
+      await asentar(tester);
+    });
+
+    testWidgets('Nori va vestido en el resultado y celebra al entrar', (
+      tester,
+    ) async {
+      final m = await montar(tester, prefs: const {claveRondas: 1});
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      await acabarRonda(tester, m);
+      expect(find.byType(ResultadoScreen), findsOneWidget);
+      final nori = tester.widget<MascotaAnimadaViva>(
+        find.byType(MascotaAnimadaViva),
+      );
+      expect(nori.vestida, isTrue);
+      expect((nori.reaccion! as ValueListenable<int>).value, 1);
+    });
+
+    testWidgets('perdida: Nori sin reacción', (tester) async {
+      final m = await montar(tester, prefs: const {claveRondas: 1});
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      await m.motor.rendirse();
+      await asentar(tester);
+      expect(find.text(l.resultadoPerdida), findsOneWidget);
+      final nori = tester.widget<MascotaAnimadaViva>(
+        find.byType(MascotaAnimadaViva),
+      );
+      expect((nori.reaccion! as ValueListenable<int>).value, 0);
+    });
+
+    testWidgets('rendirse en la ronda 2 de 3: «1 de 3 rondas»', (tester) async {
+      final m = await montar(tester, prefs: const {claveRondas: 3});
+      await tester.tap(find.text(l.inicioEmpezar));
+      await asentar(tester);
+      await acabarRonda(tester, m);
+      await tester.tap(find.text('Empezar la ronda 2'));
+      await asentar(tester);
+      m.reloj.avanzar(const Duration(minutes: 3));
+      await m.motor.rendirse();
+      await asentar(tester);
+      expect(find.byType(ResultadoScreen), findsOneWidget);
+      expect(find.text(l.resultadoPerdida), findsOneWidget);
+      expect(find.text('1 de 3 rondas · 25 min'), findsOneWidget);
+      expect(find.text('Ronda 2 de 3'), findsOneWidget);
     });
 
     testWidgets('Nori va vestida en el aro de Inicio, de la sesión y del '

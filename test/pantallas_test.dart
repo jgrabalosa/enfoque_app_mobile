@@ -467,11 +467,128 @@ void main() {
       await m.motor.terminar();
       await asentar(tester);
       await tester.pumpWidget(
-        m.app(ResultadoScreen(controlador: m.controlador)),
+        m.app(
+          ResultadoScreen(
+            controlador: m.controlador,
+            cargarMascota: () async => null,
+          ),
+        ),
       );
       await asentar(tester);
       return m;
     }
+
+    /// Una tanda de dos rondas de 25 min, las dos completadas, y su
+    /// resultado. Cada envío contesta [envio].
+    Future<Montaje> tandaDeDos(
+      WidgetTester tester,
+      ResultadoEnvio Function(PeticionSesion p) envio,
+    ) async {
+      final m = Montaje(tester);
+      m.api.envioPorDefecto = envio;
+      await m.controlador.iniciar();
+      await m.tanda.empezar(rondas: 2, minutos: 25, descanso: 5);
+      for (var i = 0; i < 2; i++) {
+        m.reloj.avanzar(const Duration(minutes: 25));
+        await m.motor.terminar();
+        await asentar(tester);
+        // Lo que hacen HomeShell y el descanso.
+        if (m.tanda.alAcabar(m.controlador.resultado.value!)) {
+          final siguiente = m.tanda.siguienteRonda();
+          m.controlador.soltarResultado();
+          await siguiente;
+        }
+      }
+      await tester.pumpWidget(
+        m.app(
+          ResultadoScreen(
+            controlador: m.controlador,
+            cargarMascota: () async => null,
+          ),
+        ),
+      );
+      await asentar(tester);
+      return m;
+    }
+
+    const conPremio = EnvioAceptado(
+      RespuestaSesion(
+        aporte: Aporte(estado: EstadoAporte.sinDestino),
+        premio: Premio(monedas: 30, xp: 5),
+      ),
+      nueva: true,
+    );
+
+    testWidgets('tanda de 2 rondas: el total y la suma de puntos y XP, y '
+        'debajo la última ronda', (tester) async {
+      await tandaDeDos(tester, (_) => conPremio);
+      expect(find.text(l.resultadoCompletada), findsOneWidget);
+      expect(find.text('2 rondas · 50 min'), findsOneWidget);
+      expect(find.text('+60 puntos · +10 XP'), findsOneWidget);
+      expect(find.text(l.resultadoTandaSinEnviar), findsNothing);
+      // Lo de la última ronda, más pequeño.
+      expect(find.text('Ronda 2 de 2'), findsOneWidget);
+      expect(find.text('+30 puntos · +5 XP'), findsOneWidget);
+    });
+
+    testWidgets('tanda con la primera ronda pendiente: la suma solo cuenta '
+        'la enviada, y lo dice', (tester) async {
+      String? primera;
+      await tandaDeDos(tester, (p) {
+        primera ??= p.clave;
+        return p.clave == primera
+            ? const EnvioFallido(ApiException(TipoErrorApi.sinConexion))
+            : conPremio;
+      });
+      expect(find.text('2 rondas · 50 min'), findsOneWidget);
+      expect(find.text(l.resultadoTandaSinEnviar), findsOneWidget);
+      // La suma (solo la segunda) y la segunda ronda: la misma cifra.
+      expect(find.text('+30 puntos · +5 XP'), findsNWidgets(2));
+      expect(find.text('+60 puntos · +10 XP'), findsNothing);
+    });
+
+    testWidgets('una sesión de 1 ronda se ve como hoy, sin total', (
+      tester,
+    ) async {
+      final m = Montaje(tester);
+      m.api.envioPorDefecto = (_) => conPremio;
+      await m.controlador.iniciar();
+      await m.tanda.empezar(rondas: 1, minutos: 25, descanso: 5);
+      m.reloj.avanzar(const Duration(minutes: 25));
+      await m.motor.terminar();
+      await asentar(tester);
+      expect(m.tanda.alAcabar(m.controlador.resultado.value!), isFalse);
+      await tester.pumpWidget(
+        m.app(
+          ResultadoScreen(
+            controlador: m.controlador,
+            cargarMascota: () async => null,
+          ),
+        ),
+      );
+      await asentar(tester);
+      expect(find.text(l.resultadoCompletada), findsOneWidget);
+      expect(find.text('25 min'), findsOneWidget);
+      expect(find.text('+30 puntos · +5 XP'), findsOneWidget);
+      expect(find.textContaining('rondas'), findsNothing);
+      expect(find.textContaining('Ronda'), findsNothing);
+      expect(find.text(l.resultadoOtraIgual), findsOneWidget);
+      expect(find.text(l.resultadoListo), findsOneWidget);
+    });
+
+    testWidgets('«Otra igual» suelta el resultado y empieza con la misma '
+        'configuración', (tester) async {
+      final m = await tandaDeDos(tester, (_) => conPremio);
+      await tester.tap(find.text(l.resultadoOtraIgual));
+      await asentar(tester);
+      expect(m.controlador.resultado.value, isNull);
+      final s = m.motor.sesion.value!;
+      expect(s.estado.activa, isTrue);
+      expect(s.duracionObjetivo, const Duration(minutes: 25));
+      expect(rondaDeDatos(s.datosApp), (n: 1, de: 2));
+      expect(m.tanda.tanda.value!.descanso, 5);
+      await cerrarSesion(tester, m);
+    });
 
     testWidgets('aceptado: «+25 min a Leer (30 / 30)», puntos y logros', (
       tester,
@@ -502,7 +619,7 @@ void main() {
       expect(find.text(l.resultadoLogrosEnHabits(1)), findsOneWidget);
       expect(m.celebrados, ['MASCOTA_CRIA']);
 
-      await tester.tap(find.text(l.resultadoVolver));
+      await tester.tap(find.text(l.resultadoListo));
       await asentar(tester);
       expect(m.controlador.resultado.value, isNull);
     });

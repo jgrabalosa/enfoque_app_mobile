@@ -320,10 +320,6 @@
       }
     }
   },
-  "resultadoVolver": "Volver al inicio",
-  "@resultadoVolver": {
-    "description": "Botón para salir del resultado"
-  },
   "estSemana": "Esta semana",
   "@estSemana": {
     "description": "Total de la semana"
@@ -831,5 +827,44 @@
   "canalDescansoDescripcion": "Avisa cuando acaba el descanso entre rondas.",
   "@canalDescansoDescripcion": {
     "description": "Descripción del canal de avisos del descanso"
+  },
+  "resultadoTandaTotal": "{rondas} rondas · {duracion}",
+  "@resultadoTandaTotal": {
+    "description": "Resultado de una tanda hecha entera: cuántas rondas y cuánto tiempo en total (la duración, con duracionLegible)",
+    "placeholders": {
+      "rondas": {
+        "type": "int"
+      },
+      "duracion": {
+        "type": "String"
+      }
+    }
+  },
+  "resultadoTandaParcial": "{hechas} de {rondas} rondas · {duracion}",
+  "@resultadoTandaParcial": {
+    "description": "Resultado de una tanda cortada: las rondas que cuentan de las que tenía y el tiempo en total (con duracionLegible)",
+    "placeholders": {
+      "hechas": {
+        "type": "int"
+      },
+      "rondas": {
+        "type": "int"
+      },
+      "duracion": {
+        "type": "String"
+      }
+    }
+  },
+  "resultadoTandaSinEnviar": "Alguna ronda aún no se ha enviado: sus puntos llegarán al enviarse.",
+  "@resultadoTandaSinEnviar": {
+    "description": "Resultado de una tanda: alguna ronda está pendiente o enviándose y la suma de puntos aún no la cuenta"
+  },
+  "resultadoOtraIgual": "Otra igual",
+  "@resultadoOtraIgual": {
+    "description": "Botón principal del resultado: empieza otra tanda (o sesión) con la misma configuración"
+  },
+  "resultadoListo": "Listo",
+  "@resultadoListo": {
+    "description": "Botón secundario del resultado: vuelve a Inicio"
   }
 }

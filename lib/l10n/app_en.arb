@@ -60,7 +60,6 @@
   "resultadoPendiente": "Waiting to be sent. It will go as soon as there's a connection.",
   "resultadoNoAceptada": "The session couldn't be saved.",
   "resultadoLogrosEnHabits": "{n, plural, =1{You have a new achievement in Norday Habits} other{You have {n} new achievements in Norday Habits}}",
-  "resultadoVolver": "Back to home",
   "estSemana": "This week",
   "estMes": "This month",
   "estBarraEtiqueta": "{dia}: {duracion}",
@@ -153,5 +152,10 @@
   "avisoDescansoTitulo": "Break's over",
   "avisoDescansoCuerpo": "Nori is waiting for the next round.",
   "canalDescansoNombre": "End of break",
-  "canalDescansoDescripcion": "Lets you know when the break between rounds ends."
+  "canalDescansoDescripcion": "Lets you know when the break between rounds ends.",
+  "resultadoTandaTotal": "{rondas} rounds · {duracion}",
+  "resultadoTandaParcial": "{hechas} of {rondas} rounds · {duracion}",
+  "resultadoTandaSinEnviar": "Some rounds haven't been sent yet: their points will arrive once they are.",
+  "resultadoOtraIgual": "Same again",
+  "resultadoListo": "Done"
 }
